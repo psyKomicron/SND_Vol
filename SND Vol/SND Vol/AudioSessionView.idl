@@ -1,0 +1,17 @@
+namespace SND_Vol
+{
+    [default_interface]
+    runtimeclass AudioSessionView : Microsoft.UI.Xaml.Controls.UserControl, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        AudioSessionView();
+        AudioSessionView(String header, Double volume);
+
+        String VolumeGlyph{ get; };
+        Double Volume{ get; set; };
+        String Header{ get; set; };
+        Guid Id{ get; set; };
+
+        event Windows.Foundation.TypedEventHandler<AudioSessionView, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs> VolumeChanged;
+        event Windows.Foundation.TypedEventHandler<AudioSessionView, Boolean> VolumeStateChanged;
+    }
+}

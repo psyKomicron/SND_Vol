@@ -1,0 +1,41 @@
+﻿<Window
+    x:Class="SND_Vol.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SND_Vol"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid" Background="{ThemeResource SolidBackgroundFillColorSecondary}" SizeChanged="Grid_SizeChanged">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="40"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock 
+                Text="{x:Bind Title}" 
+                Style="{StaticResource CaptionTextBlockStyle}" 
+                Opacity="0.6"
+                VerticalAlignment="Center"
+                Margin="10,0,0,0"/>
+        </Grid>
+
+        <ScrollViewer x:Name="ContentScrollViewer" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Grid.Row="1">
+            <Grid  
+                x:Name="AudioSessionsPanel" 
+                Grid.Row="1"
+                ColumnSpacing="5"
+                Margin="7,0,7,7"
+                HorizontalAlignment="Center"
+                Loading="AudioSessionsPanel_Loading"
+                Loaded="OnLoaded">
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>
