@@ -57,6 +57,7 @@
 
         <ToggleButton
             x:Name="MuteToggleButton"
+            IsChecked="{x:Bind Muted, Mode=OneWay}"
             Click="MuteToggleButton_Click"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"

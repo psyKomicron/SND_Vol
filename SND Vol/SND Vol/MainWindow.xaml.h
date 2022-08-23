@@ -9,6 +9,7 @@ namespace winrt::SND_Vol::implementation
 {
     struct MainWindow : MainWindowT<MainWindow>
     {
+    public:
         MainWindow();
         ~MainWindow() = default;
 
@@ -21,18 +22,20 @@ namespace winrt::SND_Vol::implementation
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
 
-        std::unique_ptr<Audio::LegacyAudioController> audioController = nullptr;
+        bool loaded = false;
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
         winrt::event_token appWindowClosingEventToken;
         BackdropController backdropController = nullptr;
         winrt::Windows::System::DispatcherQueueController dispatcherQueueController = nullptr;
         winrt::Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration systemBackdropConfiguration = nullptr;
         winrt::Microsoft::UI::Xaml::FrameworkElement::ActualThemeChanged_revoker themeChangedRevoker;
-        std::vector<winrt::event_token> audioSessionVolumeChanged{};
+        std::unique_ptr<Audio::LegacyAudioController> audioController = nullptr;
         std::unique_ptr<std::vector<Audio::AudioSessionContainer>> audioSessions = nullptr;
+
+        std::vector<winrt::event_token> audioSessionVolumeChanged{};
         std::vector<winrt::SND_Vol::AudioSessionView::VolumeChanged_revoker> volumeChangedRevokers{};
         std::vector<winrt::SND_Vol::AudioSessionView::VolumeStateChanged_revoker> volumeStateChangedRevokers{};
-        bool loaded = false;
+        std::vector<winrt::event_token> audioSessionsStateChanged{};
 
         void InitWindow();
         void LoadContent();

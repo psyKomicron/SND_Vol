@@ -17,6 +17,8 @@ namespace winrt::SND_Vol::implementation
         void Header(winrt::hstring const& value);
         winrt::guid Id();
         void Id(winrt::guid const& value);  
+        bool Muted();
+        void Muted(bool const& value);
         double Volume();
         void Volume(double const& value);
         winrt::hstring VolumeGlyph();
@@ -36,6 +38,7 @@ namespace winrt::SND_Vol::implementation
         winrt::hstring _volumeGlyph = L"\ue994";
         winrt::hstring _header = L"";
         winrt::guid _id;
+        bool _muted;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs>>

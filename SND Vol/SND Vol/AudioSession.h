@@ -11,6 +11,7 @@ namespace Audio
         GUID GroupingParam();
         bool IsSystemSoundSession();
         GUID Id();
+        bool Muted();
         /// <summary>
         /// Gets the name of the session. Can be the display name or the name of the executable
         /// associated with the audio session's PID.
@@ -29,10 +30,28 @@ namespace Audio
         /// <returns>The volume of the session</returns>
         float Volume() const;
 
+        winrt::event_token StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, bool> const& handler)
+        {
+            return e_stateChanged.add(handler);
+        };
+        void StateChanged(winrt::event_token const& token)
+        {
+            e_stateChanged.remove(token);
+        };
+        /// <summary>
+        /// Volume changed event subscriber. IInspectable param of handler will contain a winrt::guid struct equal to the id
+        /// of this AudioSession.
+        /// </summary>
+        /// <param name="handler">Event handler</param>
+        /// <returns>event token</returns>
         winrt::event_token VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler)
         {
             return e_volumeChanged.add(handler);
         };
+        /// <summary>
+        /// Volume changed event remover.
+        /// </summary>
+        /// <param name="eventToken">handler token to remove</param>
         void VolumeChanged(winrt::event_token const& eventToken)
         {
             e_volumeChanged.remove(eventToken);
@@ -66,11 +85,13 @@ namespace Audio
         GUID id;
         bool isRegistered = false;
         bool isSystemSoundSession = false;
-        winrt::hstring sessionName{};
+        bool muted;
         DWORD processPID = 0;
         LONG refCount = 1;
+        winrt::hstring sessionName{};
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float>> e_volumeChanged{};
+        winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, bool>> e_stateChanged{};
 
         /// <summary>
         /// Gets the process name from the audio session's PID.

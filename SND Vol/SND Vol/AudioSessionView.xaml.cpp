@@ -70,6 +70,28 @@ namespace winrt::SND_Vol::implementation
         //e_propertyChanged(*this, PropertyChangedEventArgs(L"Id"));
     }
 
+    bool AudioSessionView::Muted()
+    {
+        return _muted;
+    }
+
+    void AudioSessionView::Muted(bool const& value)
+    {
+        _muted = value;
+        e_propertyChanged(*this, PropertyChangedEventArgs(L"Muted"));
+
+        if (_muted)
+        {
+            _volumeGlyph = L"\ue74f";
+        }
+        else
+        {
+            SetGlyph();
+        }
+
+        e_propertyChanged(*this, PropertyChangedEventArgs(L"VolumeGlyph"));
+    }
+
 
     winrt::event_token AudioSessionView::PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
     {
@@ -107,7 +129,7 @@ namespace winrt::SND_Vol::implementation
         _volume = e.NewValue();
         SetGlyph();
 
-        if (!MuteToggleButton().IsChecked().GetBoolean())
+        if (!_muted)
         {
             e_propertyChanged(*this, PropertyChangedEventArgs(L"VolumeGlyph"));
         }

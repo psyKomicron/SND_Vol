@@ -63,6 +63,11 @@ namespace Audio
         return id;
     }
 
+    bool AudioSession::Muted()
+    {
+        return muted;
+    }
+
     hstring AudioSession::Name()
     {
         return sessionName;
@@ -196,11 +201,17 @@ namespace Audio
 
     HRESULT __stdcall AudioSession::OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext)
     {
-        OutputDebugHString(sessionName + L" > Simple volume changed " + winrt::to_hstring(NewVolume) + (NewMute ? L" (muted)" : L""));
         if (*EventContext != globalAudioSessionID)
         {
+            OutputDebugHString(sessionName + L" > Simple volume changed " + winrt::to_hstring(NewVolume) + (NewMute ? L" (muted)" : L""));
             // Wrap this->id into guid to be able to box it to IInspectable. Far from being the best.
             e_volumeChanged(box_value(guid(id)), NewVolume);
+
+            if (NewMute != muted)
+            {
+                muted = NewMute;
+                e_stateChanged(box_value(guid(id)), muted);
+            }
         }
         return S_OK;
     }

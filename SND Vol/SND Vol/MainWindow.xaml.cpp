@@ -37,12 +37,12 @@ namespace winrt::SND_Vol::implementation
     {
         const double padding = Application::Current().Resources().Lookup(box_value(L"WindowPadding")).as<double>();
 
-        int32_t columnSpacing = static_cast<int32_t>(AudioSessionsPanel().ColumnSpacing());
-        int32_t width = padding + AudioSessionsPanel().Children().Size() * (85 + columnSpacing);
-        /*for (UIElement element : AudioSessionsPanel().Children())
+        int32_t columnSpacing = static_cast<int32_t>(AudioSessionsPanel().ColumnSpacing()) * static_cast<int32_t>(AudioSessionsPanel().ColumnDefinitions().Size() > 1);
+        int32_t width = padding/* + AudioSessionsPanel().Children().Size() * (85 + columnSpacing)*/;
+        for (ColumnDefinition colDef : AudioSessionsPanel().ColumnDefinitions())
         {
-            width += element.ActualSize().x + columnSpacing;
-        }*/
+            width += colDef.ActualWidth() + columnSpacing;
+        }
         if (width < 140)
         {
             width = 140;
@@ -225,6 +225,21 @@ namespace winrt::SND_Vol::implementation
                         }
                     });
                 }));
+                audioSessionsStateChanged.push_back(audioSessions->at(i)->StateChanged([&](IInspectable s, bool state)
+                {
+                    DispatcherQueue().TryEnqueue([this, id = unbox_value<guid>(s), state]()
+                    {
+                        auto children = AudioSessionsPanel().Children();
+                        for (UIElement const& uiElement : children)
+                        {
+                            AudioSessionView view = uiElement.try_as<AudioSessionView>();
+                            if (view && view.Id() == id)
+                            {
+                                view.Muted(state);
+                            }
+                        }
+                    });
+                }));
 
                 if (duplicate > 0)
                 {
@@ -246,6 +261,8 @@ namespace winrt::SND_Vol::implementation
 
                 AudioSessionView view = AudioSessionView(audioSessions->at(i)->Name(), audioSessions->at(i)->Volume() * 100.0);
                 view.Id(guid(audioSessions->at(i)->Id()));
+                view.Muted(audioSessions->at(i)->Muted());
+
                 volumeChangedRevokers.push_back(view.VolumeChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeChanged }));
                 volumeStateChangedRevokers.push_back(view.VolumeStateChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeStateChanged }));
 
