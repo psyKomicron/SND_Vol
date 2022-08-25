@@ -19,6 +19,10 @@ namespace winrt::SND_Vol::implementation
     AudioSessionView::AudioSessionView()
     {
         InitializeComponent();
+
+#ifdef _DEBUG
+        HeaderTextBlock().Visibility(Visibility::Collapsed);
+#endif
     }
 
     AudioSessionView::AudioSessionView(winrt::hstring const& header, double const& volume) : AudioSessionView()
@@ -127,10 +131,10 @@ namespace winrt::SND_Vol::implementation
     void AudioSessionView::Slider_ValueChanged(IInspectable const&, RangeBaseValueChangedEventArgs const& e)
     {
         _volume = e.NewValue();
-        SetGlyph();
 
         if (!_muted)
         {
+            SetGlyph();
             e_propertyChanged(*this, PropertyChangedEventArgs(L"VolumeGlyph"));
         }
         e_propertyChanged(*this, PropertyChangedEventArgs(L"Volume"));

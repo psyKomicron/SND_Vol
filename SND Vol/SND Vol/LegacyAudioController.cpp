@@ -72,20 +72,19 @@ namespace Audio
 
     IFACEMETHODIMP_(ULONG) LegacyAudioController::AddRef()
     {
-        return InterlockedIncrement(&refCount);
+        return ++refCount;
     }
 
     IFACEMETHODIMP_(ULONG) LegacyAudioController::Release()
     {
-        if (InterlockedDecrement(&refCount) == 0ul)
+        const uint32_t remaining = --refCount;
+
+        if (remaining == 0)
         {
             delete this;
-            return 0;
         }
-        else
-        {
-            return refCount;
-        }
+
+        return remaining;
     }
 
     IFACEMETHODIMP LegacyAudioController::QueryInterface(REFIID riid, VOID** ppvInterface)
@@ -146,20 +145,21 @@ namespace Audio
 
     HRESULT __stdcall LegacyAudioController::OnSessionCreated(IAudioSessionControl* NewSession)
     {
+        // HACK: Audio session creation notifications are sent in double. Once we receive one, we will ignore the next. This can cause non doubled events to be ignored.
         if (!ignoreNotification)
         {
             IAudioSessionControl2Ptr control2;
             if (SUCCEEDED(NewSession->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
             {
-                AudioSession audioSession = AudioSession(std::move(control2), audioSessionID);
+                AudioSession* audioSession = new AudioSession(std::move(control2), audioSessionID);
 #ifdef _DEBUG
                 if (canUseGuid)
                 {
-                    OutputDebugHString(winrt::to_hstring(managerID) + L" > New session created : " + audioSession.Name());
+                    OutputDebugHString(winrt::to_hstring(managerID) + L" > New session created : " + audioSession->Name());
                 }
                 else
                 {
-                    OutputDebugHString(L"New session created : " + audioSession.Name());
+                    OutputDebugHString(L"New session created : " + audioSession->Name());
                 }
 #else
                 OutputDebugHString(L"New session created : " + audioSession.Name());

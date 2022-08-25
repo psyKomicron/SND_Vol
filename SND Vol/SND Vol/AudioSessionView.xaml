@@ -38,6 +38,7 @@
             Grid.Row="0"/>
 
         <TextBlock 
+            x:Name="HeaderTextBlock"
             Style="{StaticResource CaptionTextBlockStyle}"
             FontSize="14"
             Text="{x:Bind Volume, Mode=OneWay}" 
@@ -48,12 +49,13 @@
         <Slider
             Value="{x:Bind Volume, Mode=OneWay}"
             Maximum="100"
-            ValueChanged="Slider_ValueChanged"
+            StepFrequency="0.01"
             Orientation="Vertical"
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
             Grid.Row="2"
-            Grid.Column="1"/>
+            Grid.Column="1"
+            ValueChanged="Slider_ValueChanged"/>
 
         <ToggleButton
             x:Name="MuteToggleButton"

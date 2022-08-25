@@ -46,6 +46,12 @@ namespace Audio
                 }
             }
         }
+
+        ISimpleAudioVolumePtr volume;
+        if (FAILED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)) || FAILED(volume->GetMute((BOOL*)&muted)))
+        {
+            OutputDebugHString(sessionName + L" > Failed to get session state. Default (unmuted) assumed.");
+        }
     }
 
     GUID AudioSession::GroupingParam()

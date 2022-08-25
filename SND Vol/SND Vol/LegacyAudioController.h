@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioSession.h"
+#include <functional>
 
 namespace Audio
 {
@@ -31,6 +32,8 @@ namespace Audio
         /// <returns>Returns true if the audio controller unregistered successfully</returns>
         bool Unregister();
 
+        //void AudioSessionCreated(std::function())
+
         // IUnknown
         IFACEMETHODIMP_(ULONG) AddRef();
         IFACEMETHODIMP_(ULONG) Release();
@@ -44,7 +47,8 @@ namespace Audio
         bool canUseGuid = true;
         GUID managerID{};
 #endif
-        LONG refCount = 1;
+        winrt::impl::atomic_ref_count refCount{ 1 };
+
 
         bool CreateSessionManager();
 
