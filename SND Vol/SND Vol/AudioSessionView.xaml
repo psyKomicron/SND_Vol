@@ -40,14 +40,16 @@
         <TextBlock 
             x:Name="HeaderTextBlock"
             Style="{StaticResource CaptionTextBlockStyle}"
-            FontSize="14"
             Text="{x:Bind Volume, Mode=OneWay}" 
+            FontSize="14"
             HorizontalAlignment="Center" 
             VerticalAlignment="Center"
+            Visibility="Collapsed"
             Grid.Row="1"
             Grid.Column="1"/>
         <Slider
             Value="{x:Bind Volume, Mode=OneWay}"
+            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
             Maximum="100"
             StepFrequency="0.01"
             Orientation="Vertical"
@@ -60,6 +62,7 @@
         <ToggleButton
             x:Name="MuteToggleButton"
             IsChecked="{x:Bind Muted, Mode=OneWay}"
+            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
             Click="MuteToggleButton_Click"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"

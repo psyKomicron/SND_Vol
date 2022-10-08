@@ -2,11 +2,20 @@
 
 namespace Audio
 {
+    enum AudioState : uint32_t
+    {
+        Active,
+        Inactive,
+        Muted,
+        Unmuted,
+        Expired
+    };
+
     class AudioSession : public IAudioSessionEvents
     {
     public:
         AudioSession(IAudioSessionControl2Ptr audioSessionControl, GUID globalAudioSessionID);
-        ~AudioSession() = default;
+        ~AudioSession();
 
         GUID GroupingParam();
         bool IsSystemSoundSession();
@@ -30,7 +39,24 @@ namespace Audio
         /// <returns>The volume of the session</returns>
         float Volume() const;
 
-        winrt::event_token StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, bool> const& handler)
+        /// <summary>
+        /// Sets the session audio level to mute if state == true.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns>True if the audio session has been muted.</returns>
+        bool SetMute(bool const& state);
+        /// <summary>
+        /// Registers the audio session to audio events.
+        /// </summary>
+        /// <returns>Return true if the registration succeeded</returns>
+        bool Register();
+        /// <summary>
+        /// Unregisters the audio session from audio events.
+        /// </summary>
+        /// <returns></returns>
+        bool Unregister();
+
+        winrt::event_token StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, uint32_t> const& handler)
         {
             return e_stateChanged.add(handler);
         };
@@ -56,22 +82,6 @@ namespace Audio
         {
             e_volumeChanged.remove(eventToken);
         };
-        /// <summary>
-        /// Sets the session audio level to mute if state == true.
-        /// </summary>
-        /// <param name="state"></param>
-        /// <returns>True if the audio session has been muted.</returns>
-        bool SetMute(bool const& state);
-        /// <summary>
-        /// Registers the audio session to audio events.
-        /// </summary>
-        /// <returns>Return true if the registration succeeded</returns>
-        bool Register();
-        /// <summary>
-        /// Unregisters the audio session from audio events.
-        /// </summary>
-        /// <returns></returns>
-        bool Unregister();
 
         // IUnknown
         IFACEMETHODIMP_(ULONG) AddRef();
@@ -91,7 +101,7 @@ namespace Audio
         winrt::hstring sessionName{};
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float>> e_volumeChanged{};
-        winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, bool>> e_stateChanged{};
+        winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, uint32_t>> e_stateChanged{};
 
         /// <summary>
         /// Gets the process name from the audio session's PID.
@@ -106,7 +116,7 @@ namespace Audio
         STDMETHOD(OnSimpleVolumeChanged)(float NewVolume, BOOL NewMute, LPCGUID EventContext);
         STDMETHOD(OnChannelVolumeChanged)(DWORD /*ChannelCount*/, float /*NewChannelVolumeArray*/[], DWORD /*ChangedChannel*/, LPCGUID /*EventContext*/) { return S_OK; };
         STDMETHOD(OnGroupingParamChanged)(LPCGUID /*NewGroupingParam*/, LPCGUID /*EventContext*/) { return S_OK; };
-        STDMETHOD(OnStateChanged)(AudioSessionState NewState);
+        STDMETHOD(OnStateChanged)(::AudioSessionState NewState);
         STDMETHOD(OnSessionDisconnected)(AudioSessionDisconnectReason DisconnectReason);
     };
 }

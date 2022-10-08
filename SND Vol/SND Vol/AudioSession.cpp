@@ -6,6 +6,7 @@
 using namespace winrt;
 using namespace std;
 
+
 namespace Audio
 {
     AudioSession::AudioSession(IAudioSessionControl2Ptr _audioSessionControl, GUID globalAudioSessionID) :
@@ -54,6 +55,15 @@ namespace Audio
         }
     }
 
+    AudioSession::~AudioSession()
+    {
+        /*if (isRegistered)
+        {
+            Unregister();
+        }*/
+    }
+
+
     GUID AudioSession::GroupingParam()
     {
         return groupingParam;
@@ -78,6 +88,7 @@ namespace Audio
     {
         return sessionName;
     }
+
 
     bool AudioSession::Volume(float const& desiredVolume)
     {
@@ -117,9 +128,9 @@ namespace Audio
     {
         if (!isRegistered)
         {
-            return SUCCEEDED(audioSessionControl->RegisterAudioSessionNotification(this));
+            isRegistered =  SUCCEEDED(audioSessionControl->RegisterAudioSessionNotification(this));
         }
-        return true;
+        return isRegistered;
     }
 
     bool AudioSession::Unregister()
@@ -213,33 +224,29 @@ namespace Audio
             // Wrap this->id into guid to be able to box it to IInspectable. Far from being the best.
             e_volumeChanged(box_value(guid(id)), NewVolume);
 
-            if (NewMute != muted)
+            if (static_cast<bool>(NewMute) != muted)
             {
                 muted = NewMute;
-                e_stateChanged(box_value(guid(id)), muted);
+                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Muted));
             }
         }
         return S_OK;
     }
 
-    HRESULT __stdcall AudioSession::OnStateChanged(AudioSessionState NewState)
+    HRESULT __stdcall AudioSession::OnStateChanged(::AudioSessionState NewState)
     {
-#ifdef _DEBUG
-        hstring state{};
         switch (NewState)
         {
-            case AudioSessionState::AudioSessionStateActive:
-                state = L"active";
+            case ::AudioSessionState::AudioSessionStateActive:
+                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Active));
                 break;
-            case AudioSessionState::AudioSessionStateExpired:
-                state = L"expired";
+            case ::AudioSessionState::AudioSessionStateInactive:
+                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Inactive));
                 break;
-            case AudioSessionState::AudioSessionStateInactive:
-                state = L"inactive";
+            case ::AudioSessionState::AudioSessionStateExpired:
+                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Expired));
                 break;
         }
-        OutputDebugHString(sessionName + L" > Session state changed : " + state);
-#endif // _DEBUG
 
         return S_OK;
     }

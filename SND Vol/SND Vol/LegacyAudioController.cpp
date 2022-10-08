@@ -13,14 +13,14 @@ namespace Audio
     LegacyAudioController::LegacyAudioController(GUID const& guid) :
         audioSessionID(guid)
     {
-#ifdef _DEBUG
-        if (FAILED(UuidCreate(&managerID)))
-        {
-            canUseGuid = false;
-            OutputDebugString(L"Failed to create manager GUID.");
-        }
-#endif // _DEBUG
+    }
 
+    LegacyAudioController::~LegacyAudioController()
+    {
+        /*if (isRegistered)
+        {
+            Unregister();
+        }*/
     }
 
     vector<AudioSessionContainer>* LegacyAudioController::GetSessions()
@@ -62,12 +62,38 @@ namespace Audio
 
     bool LegacyAudioController::Register()
     {
-        return audioSessionManager && SUCCEEDED(audioSessionManager->RegisterSessionNotification(this));
+        if (!isRegistered)
+        {
+            isRegistered = audioSessionManager && SUCCEEDED(audioSessionManager->RegisterSessionNotification(this));
+        }
+        return isRegistered;
     }
 
     bool LegacyAudioController::Unregister()
     {
         return SUCCEEDED(audioSessionManager->UnregisterSessionNotification(this));
+    }
+
+    AudioSession* LegacyAudioController::NewSession()
+    {
+        if (newSessions.empty())
+        {
+            return nullptr;
+        }
+        else
+        {
+            return newSessions.top().release();
+        }
+    }
+
+    winrt::event_token LegacyAudioController::SessionAdded(const winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>& handler)
+    {
+        return e_sessionAdded.add(handler);
+    }
+
+    void LegacyAudioController::SessionAdded(const winrt::event_token& token)
+    {
+        e_sessionAdded.remove(token);
     }
 
     IFACEMETHODIMP_(ULONG) LegacyAudioController::AddRef()
@@ -151,19 +177,10 @@ namespace Audio
             IAudioSessionControl2Ptr control2;
             if (SUCCEEDED(NewSession->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
             {
-                AudioSession* audioSession = new AudioSession(std::move(control2), audioSessionID);
-#ifdef _DEBUG
-                if (canUseGuid)
-                {
-                    OutputDebugHString(winrt::to_hstring(managerID) + L" > New session created : " + audioSession->Name());
-                }
-                else
-                {
-                    OutputDebugHString(L"New session created : " + audioSession->Name());
-                }
-#else
-                OutputDebugHString(L"New session created : " + audioSession.Name());
-#endif // _DEBUG
+                OutputDebugString(L"New session created\n");
+                newSessions.push(AudioSessionContainer(new AudioSession(std::move(control2), audioSessionID)));
+
+                e_sessionAdded(winrt::Windows::Foundation::IInspectable(), winrt::Windows::Foundation::IInspectable());
             }
         }
         ignoreNotification = !ignoreNotification;

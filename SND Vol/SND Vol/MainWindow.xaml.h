@@ -40,6 +40,7 @@ namespace winrt::SND_Vol::implementation
         void InitWindow();
         void LoadContent();
         void SetBackground();
+        void CreateAudioView(Audio::AudioSession* audioSession, bool enabled);
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
     };
 }

@@ -4,6 +4,14 @@
 
 namespace winrt::SND_Vol::implementation
 {
+    enum AudioSessionState
+    {
+        Active,
+        Inactive,
+        Muted,
+        Expired
+    };
+
     struct App : AppT<App>
     {
         App();

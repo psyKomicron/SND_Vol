@@ -7,8 +7,11 @@
 #include <rpc.h>
 
 using namespace Audio;
+
 using namespace std;
+
 using namespace winrt;
+
 using namespace winrt::Microsoft::UI;
 using namespace winrt::Microsoft::UI::Composition;
 using namespace winrt::Microsoft::UI::Composition::SystemBackdrops;
@@ -16,13 +19,12 @@ using namespace winrt::Microsoft::UI::Windowing;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Media;
+
 using namespace winrt::Windows::Devices::Enumeration;
 using namespace winrt::Windows::Graphics;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::System;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace winrt::SND_Vol::implementation
 {
@@ -152,7 +154,7 @@ namespace winrt::SND_Vol::implementation
             timestamp.Text(to_hstring(__TIME__) + L", " + to_hstring(__DATE__));
             timestamp.Margin(Thickness(0, 0, 5, 2));
 
-            Grid::SetRow(timestamp, 1);
+            Grid::SetRow(timestamp, RootGrid().RowDefinitions().GetView().Size() - 1);
             RootGrid().Children().Append(timestamp);
 #endif // _DEBUG
 
@@ -188,92 +190,170 @@ namespace winrt::SND_Vol::implementation
         {
             audioController = make_unique<LegacyAudioController>(appID);
             audioSessions = unique_ptr<vector<AudioSessionContainer>>(audioController->GetSessions());
+
             if (!audioController->Register())
             {
                 OutputDebugString(L"Failed to register audio controller.");
+                // I18N
+                WindowInfoBar().Title(L"Audio sessions notifications unavailable");
+                WindowInfoBar().Severity(Controls::InfoBarSeverity::Warning);
+            }
+            else
+            {
+                WindowInfoBar().Title(L"Audio sessions notifications available");
+                WindowInfoBar().Severity(Controls::InfoBarSeverity::Success);
             }
 
-            size_t gridIndex = 0;
+            audioController->SessionAdded([this](auto /*sender*/, auto /*args*/)
+            {
+                DispatcherQueue().TryEnqueue([this]()
+                {
+                    while (AudioSession* newSession = audioController->NewSession())
+                    {
+                        CreateAudioView(newSession, false);
+                    }
+                });
+            });
+
             for (size_t i = 0; i < audioSessions->size(); i++)
             {
-                if (!audioSessions->at(i)->Register())
-                {
-                    OutputDebugHString(L"Failed to register audio session '" + audioSessions->at(i)->Name() + L"'");
-                }
-
-                int16_t duplicate = -1;
-                for (size_t j = 0; j < audioSessions->size(); j++)
-                {
-                    if (audioSessions->at(j)->GroupingParam() == audioSessions->at(i)->GroupingParam())
-                    {
-                        duplicate++;
-                    }
-                }
-
-                audioSessionVolumeChanged.push_back(audioSessions->at(i)->VolumeChanged([&](IInspectable s, float newVolume)
-                {
-                    DispatcherQueue().TryEnqueue([this, id = unbox_value<guid>(s), newVolume]()
-                    {
-                        auto children = AudioSessionsPanel().Children();
-                        for (UIElement const& uiElement : children)
-                        {
-                            AudioSessionView view = uiElement.try_as<AudioSessionView>();
-                            if (view && view.Id() == id)
-                            {
-                                view.Volume(static_cast<double>(newVolume) * 100.0);
-                            }
-                        }
-                    });
-                }));
-                audioSessionsStateChanged.push_back(audioSessions->at(i)->StateChanged([&](IInspectable s, bool state)
-                {
-                    DispatcherQueue().TryEnqueue([this, id = unbox_value<guid>(s), state]()
-                    {
-                        auto children = AudioSessionsPanel().Children();
-                        for (UIElement const& uiElement : children)
-                        {
-                            AudioSessionView view = uiElement.try_as<AudioSessionView>();
-                            if (view && view.Id() == id)
-                            {
-                                view.Muted(state);
-                            }
-                        }
-                    });
-                }));
-
-                if (duplicate > 0)
-                {
-                    bool alreadyAdded = false;
-                    for (auto&& children : AudioSessionsPanel().Children())
-                    {
-                        AudioSessionView audioSessionView = children.try_as<AudioSessionView>();
-                        if (audioSessionView && audioSessionView.Header() == audioSessions->at(i)->Name())
-                        {
-                            alreadyAdded = true;
-                            break;
-                        }
-                    }
-                    if (alreadyAdded)
-                    {
-                        continue;
-                    }
-                }
-
-                AudioSessionView view = AudioSessionView(audioSessions->at(i)->Name(), audioSessions->at(i)->Volume() * 100.0);
-                view.Id(guid(audioSessions->at(i)->Id()));
-                view.Muted(audioSessions->at(i)->Muted());
-
-                volumeChangedRevokers.push_back(view.VolumeChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeChanged }));
-                volumeStateChangedRevokers.push_back(view.VolumeStateChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeStateChanged }));
-
-                ColumnDefinition colDef{};
-                colDef.Width(GridLength(85.0, GridUnitType::Pixel));
-                AudioSessionsPanel().ColumnDefinitions().Append(colDef);
-                Grid::SetColumn(view, gridIndex++);
-                AudioSessionsPanel().Children().Append(view);
+                CreateAudioView(audioSessions->at(i).get(), true);
             }
         }
         //TODO: if the GUID cannot be created, try another time. Show error message if still no GUID.
+    }
+
+    void MainWindow::CreateAudioView(AudioSession* audioSession, bool enabled)
+    {
+        if (!audioSession->Register())
+        {
+            OutputDebugHString(L"Failed to register audio session '" + audioSession->Name() + L"'");
+            enabled = false;
+        }
+
+        int16_t duplicate = -1;
+        for (size_t j = 0; j < audioSessions->size(); j++)
+        {
+            if (audioSessions->at(j)->GroupingParam() == audioSession->GroupingParam())
+            {
+                duplicate++;
+            }
+        }
+
+        audioSessionVolumeChanged.push_back(audioSession->VolumeChanged([&](IInspectable s, float newVolume)
+        {
+            DispatcherQueue().TryEnqueue([this, id = unbox_value<guid>(s), newVolume]()
+            {
+                auto children = AudioSessionsPanel().Children();
+                for (UIElement const& uiElement : children)
+                {
+                    AudioSessionView view = uiElement.try_as<AudioSessionView>();
+                    if (view && view.Id() == id)
+                    {
+                        view.Volume(static_cast<double>(newVolume) * 100.0);
+                    }
+                }
+            });
+        }));
+        audioSessionsStateChanged.push_back(audioSession->StateChanged([&](IInspectable s, uint32_t state)
+        {
+            DispatcherQueue().TryEnqueue([this, id = unbox_value<guid>(s), state]()
+            {
+                auto children = AudioSessionsPanel().Children();
+                for (UIElement const& uiElement : children)
+                {
+                    AudioSessionView view = uiElement.try_as<AudioSessionView>();
+                    if (view && view.Id() == id)
+                    {
+                        AudioState audioState = (AudioState)state;
+                        switch (audioState)
+                        {
+                            case AudioState::Muted:
+                                view.Muted(true);
+                                break;
+                            case AudioState::Unmuted:
+                                view.Muted(false);
+                                break;
+                            case AudioState::Active:
+                                break;
+                            case AudioState::Inactive:
+                                break;
+                            case AudioState::Expired:
+                                uint32_t indexOf = 0;
+                                if (AudioSessionsPanel().Children().IndexOf(view, indexOf))
+                                {
+                                    AudioSessionsPanel().Children().RemoveAt(indexOf);
+                                    AudioSessionsPanel().ColumnDefinitions().GetAt(indexOf).Width(GridLengthHelper::FromPixels(0));
+                                    Grid_SizeChanged(nullptr, nullptr);
+                                }
+                                break;
+                        }
+                    }
+                }
+            });
+        }));
+
+        if (duplicate > 0)
+        {
+            bool alreadyAdded = false;
+            for (auto&& children : AudioSessionsPanel().Children())
+            {
+                AudioSessionView audioSessionView = children.try_as<AudioSessionView>();
+                if (audioSessionView && audioSessionView.Header() == audioSession->Name())
+                {
+                    alreadyAdded = true;
+                    break;
+                }
+            }
+            if (alreadyAdded)
+            {
+                return;
+            }
+        }
+
+
+        AudioSessionView view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0);
+        view.Id(guid(audioSession->Id()));
+        view.Muted(audioSession->Muted());
+
+        volumeChangedRevokers.push_back(view.VolumeChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeChanged }));
+        volumeStateChangedRevokers.push_back(view.VolumeStateChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeStateChanged }));
+
+        {
+            ColumnDefinition colDef{};
+            colDef.Width(GridLength(85.0, GridUnitType::Pixel));
+            AudioSessionsPanel().ColumnDefinitions().Append(colDef);
+            Grid::SetColumn(view, AudioSessionsPanel().ColumnDefinitions().GetView().Size() - 1);
+            AudioSessionsPanel().Children().Append(view);
+        }
+
+
+        const double padding = Application::Current().Resources().Lookup(box_value(L"WindowPadding")).as<double>();
+        int32_t columnSpacing = static_cast<int32_t>(AudioSessionsPanel().ColumnSpacing()) * static_cast<int32_t>(AudioSessionsPanel().ColumnDefinitions().Size() > 1);
+        int32_t width = padding;
+
+        int32_t colDefWidth = 85;
+        for (ColumnDefinition colDef : AudioSessionsPanel().ColumnDefinitions())
+        {
+            width += colDefWidth + columnSpacing;
+        }
+
+        if (width < 140)
+        {
+            width = 140;
+        }
+
+        DisplayArea display = DisplayArea::GetFromPoint(PointInt32(0, 0), DisplayAreaFallback::Primary);
+        int32_t height = appWindow.Size().Height;
+        PointInt32 pos = appWindow.Position();
+
+        int32_t posX = pos.X + width;
+        if (posX > display.WorkArea().Width)
+        {
+            pos.X -= posX - display.WorkArea().Width;
+        }
+
+        appWindow.MoveAndResize(RectInt32(pos.X, pos.Y, width, height));
     }
 
     void MainWindow::SetBackground()
