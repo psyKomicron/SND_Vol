@@ -14,8 +14,8 @@
             <x:Int32 x:Key="WindowHeight">400</x:Int32>
 
             <x:Double x:Key="WindowPadding">30.0</x:Double>
-            <x:Double x:Key="MicaControllerTintOpacity">0.1</x:Double>
-            <x:Double x:Key="MicaControllerLuminosityOpacity">0.6</x:Double>
+            <x:Double x:Key="BackdropTintOpacity">0.6</x:Double>
+            <x:Double x:Key="BackdropLuminosityOpacity">0.8</x:Double>
 
             <Color x:Key="AppTitleBarHoverColor">#8A8780</Color>
             <Color x:Key="ButtonHoverBackgroundColor">#38F5F5F5</Color>

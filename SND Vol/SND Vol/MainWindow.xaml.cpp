@@ -222,26 +222,24 @@ namespace winrt::SND_Vol::implementation
                 // I18N
                 WindowInfoBar().Title(L"Audio sessions notifications unavailable");
                 WindowInfoBar().Severity(Controls::InfoBarSeverity::Warning);
-                WindowInfoBar().IsOpen(true);
             }
             else
             {
                 WindowInfoBar().Title(L"Audio sessions notifications available");
                 WindowInfoBar().Severity(Controls::InfoBarSeverity::Success);
-                WindowInfoBar().IsOpen(true);
-
-                audioController->SessionAdded([this](auto /*sender*/, auto /*args*/)
-                {
-                    DispatcherQueue().TryEnqueue([this]()
-                    {
-                        while (AudioSession* newSession = audioController->NewSession())
-                        {
-                            audioSessions->push_back(AudioSessionContainer(newSession));
-                            CreateAudioView(newSession, false);
-                        }
-                    });
-                });
             }
+
+            audioController->SessionAdded([this](auto /*sender*/, auto /*args*/)
+            {
+                DispatcherQueue().TryEnqueue([this]()
+                {
+                    while (AudioSession* newSession = audioController->NewSession())
+                    {
+                        audioSessions->push_back(AudioSessionContainer(newSession));
+                        CreateAudioView(newSession, false);
+                    }
+                });
+            });
 
 
             mainAudioEndpoint = unique_ptr<MainAudioEndpoint>(audioController->GetMainAudioEndpoint());
@@ -457,8 +455,8 @@ namespace winrt::SND_Vol::implementation
                 backdropController = BackdropController();
                 backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
                 backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
-                backdropController.TintOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"MicaControllerTintOpacity")).as<double>()));
-                backdropController.LuminosityOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"MicaControllerLuminosityOpacity")).as<double>()));
+                backdropController.TintOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropTintOpacity")).as<double>()));
+                backdropController.LuminosityOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropLuminosityOpacity")).as<double>()));
                 backdropController.SetSystemBackdropConfiguration(systemBackdropConfiguration);
                 backdropController.AddSystemBackdropTarget(supportsBackdrop);
             }
