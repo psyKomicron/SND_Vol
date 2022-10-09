@@ -13,52 +13,9 @@ namespace Audio
     LegacyAudioController::LegacyAudioController(GUID const& guid) :
         audioSessionID(guid)
     {
+        CreateSessionManager();
     }
 
-    LegacyAudioController::~LegacyAudioController()
-    {
-        /*if (isRegistered)
-        {
-            Unregister();
-        }*/
-    }
-
-    vector<AudioSessionContainer>* LegacyAudioController::GetSessions()
-    {
-        if (!CreateSessionManager())
-        {
-            return nullptr;
-        }
-
-        vector<AudioSessionContainer>* sessions = nullptr;
-        IAudioSessionEnumeratorPtr enumerator;
-
-        if (SUCCEEDED(audioSessionManager->GetSessionEnumerator(&enumerator)))
-        {
-            sessions = new vector<AudioSessionContainer>();
-            int sessionCount;
-            if (SUCCEEDED(enumerator->GetCount(&sessionCount)))
-            {
-                for (int i = 0; i < sessionCount; i++)
-                {
-                    IAudioSessionControlPtr control;
-                    if (SUCCEEDED(enumerator->GetSession(i, &control)))
-                    {
-                        GUID grouping{};
-                        if (SUCCEEDED(control->GetGroupingParam(&grouping)))
-                        {
-                            IAudioSessionControl2Ptr control2;
-                            if (SUCCEEDED(control->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
-                            {
-                                sessions->push_back(make_unique<AudioSession>(std::move(control2), audioSessionID));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return sessions;
-    }
 
     bool LegacyAudioController::Register()
     {
@@ -74,28 +31,7 @@ namespace Audio
         return SUCCEEDED(audioSessionManager->UnregisterSessionNotification(this));
     }
 
-    AudioSession* LegacyAudioController::NewSession()
-    {
-        if (newSessions.empty())
-        {
-            return nullptr;
-        }
-        else
-        {
-            return newSessions.top().release();
-        }
-    }
-
-    winrt::event_token LegacyAudioController::SessionAdded(const winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>& handler)
-    {
-        return e_sessionAdded.add(handler);
-    }
-
-    void LegacyAudioController::SessionAdded(const winrt::event_token& token)
-    {
-        e_sessionAdded.remove(token);
-    }
-
+    #pragma region IUnknown
     IFACEMETHODIMP_(ULONG) LegacyAudioController::AddRef()
     {
         return ++refCount;
@@ -132,6 +68,98 @@ namespace Audio
         }
         return S_OK;
     }
+    #pragma endregion
+
+    vector<AudioSessionContainer>* LegacyAudioController::GetSessions()
+    {
+        if (!audioSessionManager && !CreateSessionManager())
+        {
+            return nullptr;
+        }
+
+        vector<AudioSessionContainer>* sessions = nullptr;
+        IAudioSessionEnumeratorPtr enumerator;
+
+        if (SUCCEEDED(audioSessionManager->GetSessionEnumerator(&enumerator)))
+        {
+            sessions = new vector<AudioSessionContainer>();
+            int sessionCount;
+            if (SUCCEEDED(enumerator->GetCount(&sessionCount)))
+            {
+                for (int i = 0; i < sessionCount; i++)
+                {
+                    IAudioSessionControlPtr control;
+                    if (SUCCEEDED(enumerator->GetSession(i, &control)))
+                    {
+                        GUID grouping{};
+                        if (SUCCEEDED(control->GetGroupingParam(&grouping)))
+                        {
+                            IAudioSessionControl2Ptr control2;
+                            if (SUCCEEDED(control->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
+                            {
+                                sessions->push_back(make_unique<AudioSession>(std::move(control2), audioSessionID));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return sessions;
+    }
+
+    AudioSession* LegacyAudioController::NewSession()
+    {
+        if (newSessions.empty())
+        {
+            return nullptr;
+        }
+        else
+        {
+            return newSessions.top().release();
+        }
+    }
+
+    MainAudioEndpoint* LegacyAudioController::GetMainAudioEndpoint()
+    {
+        IMMDevicePtr pDevice;
+        IMMDeviceEnumeratorPtr pEnumerator;
+
+        // Create the device enumerator.
+        if (FAILED(CoCreateInstance(
+            __uuidof(MMDeviceEnumerator),
+            NULL, CLSCTX_ALL,
+            __uuidof(IMMDeviceEnumerator),
+            (void**)&pEnumerator)))
+        {
+            OutputDebugString(L"Failed to create device enumerator (LegacyAudioController::GetMainAudioEndpoint).\n");
+            return nullptr;
+        }
+
+        // Get the default audio device.
+        if (FAILED(pEnumerator->GetDefaultAudioEndpoint(
+            eRender, eConsole, &pDevice)))
+        {
+            OutputDebugString(L"Failed to get default audio endpoint (LegacyAudioController::GetMainAudioEndpoint).\n");
+            return nullptr;
+        }
+
+        IAudioEndpointVolume* audioEndpointVolume = nullptr;
+        check_hresult(pDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&audioEndpointVolume));
+
+        return new MainAudioEndpoint(audioEndpointVolume, audioSessionID);
+    }
+
+    #pragma region Events
+    winrt::event_token LegacyAudioController::SessionAdded(const winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>& handler)
+    {
+        return e_sessionAdded.add(handler);
+    }
+
+    void LegacyAudioController::SessionAdded(const winrt::event_token& token)
+    {
+        e_sessionAdded.remove(token);
+    }
+    #pragma endregion
 
 
     bool LegacyAudioController::CreateSessionManager()

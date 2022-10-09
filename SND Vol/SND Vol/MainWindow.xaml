@@ -3,15 +3,16 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:snd_vol="using:SND_Vol"
     mc:Ignorable="d">
 
     <Grid x:Name="RootGrid" Background="{ThemeResource SolidBackgroundFillColorSecondary}" SizeChanged="Grid_SizeChanged">
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
-            <RowDefinition Height="Auto" MaxHeight="32"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -26,23 +27,52 @@
                 Margin="10,0,0,0"/>
         </Grid>
 
-        <InfoBar x:Name="WindowInfoBar" Grid.Row="1" Visibility="Collapsed" IsClosable="True"/>
+        <InfoBar x:Name="WindowInfoBar" Grid.Row="1"/>
 
         <ScrollViewer x:Name="ContentScrollViewer" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Grid.Row="2">
-            <Grid  
-                x:Name="AudioSessionsPanel" 
-                Grid.Row="1"
-                ColumnSpacing="5"
-                Margin="7,0,7,7"
-                HorizontalAlignment="Center"
-                Loading="AudioSessionsPanel_Loading"
-                Loaded="OnLoaded">
-                <Grid.ChildrenTransitions>
-                    <TransitionCollection>
-                        <PopupThemeTransition/>
-                        <RepositionThemeTransition/>
-                    </TransitionCollection>
-                </Grid.ChildrenTransitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid  
+                    x:Name="AudioSessionsPanel" 
+                    Grid.Row="2"
+                    ColumnSpacing="5"
+                    Margin="7,10,7,7"
+                    Loading="AudioSessionsPanel_Loading"
+                    Loaded="OnLoaded">
+                    <Grid.ChildrenTransitions>
+                        <TransitionCollection>
+                            <PopupThemeTransition FromHorizontalOffset="200"/>
+                        </TransitionCollection>
+                    </Grid.ChildrenTransitions>
+                </Grid>
+
+                <Border Height="1" Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="1"/>
+
+                <Border 
+                    x:Name="SystemVolumeActivityBorder"
+                    Background="{ThemeResource SystemAccentColorLight1}"
+                    Opacity="0.3"
+                    Grid.Row="0" 
+                    Margin="15,0,15,0"
+                    Height="8"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Stretch"
+                    Scale="0,1,1">
+                    <Border.ScaleTransition>
+                        <Vector3Transition Duration="0:0:0.1" Components="X"/>
+                    </Border.ScaleTransition>
+                </Border>
+                <Slider 
+                    x:Name="SystemVolumeSlider"
+                    Grid.Row="0" 
+                    Margin="15,0,15,0"
+                    VerticalAlignment="Center"
+                    ValueChanged="SystemVolumeSlider_ValueChanged"/>
             </Grid>
         </ScrollViewer>
     </Grid>

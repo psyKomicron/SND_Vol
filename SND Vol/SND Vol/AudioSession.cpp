@@ -2,6 +2,9 @@
 #include "AudioSession.h"
 
 #include <rpc.h>
+#include <appmodel.h>
+#include <ShObjIdl.h>
+#include <objbase.h>
 
 using namespace winrt;
 using namespace std;
@@ -24,12 +27,12 @@ namespace Audio
         }
         else
         {
-            LPWSTR wStr{};
+            LPWSTR wStr = nullptr;
             DWORD pid;
             if (SUCCEEDED(audioSessionControl->GetDisplayName(&wStr)))
             {
                 hstring displayName = to_hstring(wStr);
-                // free memory allocated by audioSessionControl->GetDisplayName
+                // Free memory allocated by audioSessionControl->GetDisplayName
                 CoTaskMemFree(wStr);
                 if (displayName.empty())
                 {
@@ -37,6 +40,10 @@ namespace Audio
                     {
                         sessionName = GetProcessName(pid);
                     }
+                }
+                else
+                {
+                    sessionName = displayName;
                 }
             }
             else
@@ -53,14 +60,6 @@ namespace Audio
         {
             OutputDebugHString(sessionName + L" > Failed to get session state. Default (unmuted) assumed.");
         }
-    }
-
-    AudioSession::~AudioSession()
-    {
-        /*if (isRegistered)
-        {
-            Unregister();
-        }*/
     }
 
 
@@ -89,7 +88,6 @@ namespace Audio
         return sessionName;
     }
 
-
     bool AudioSession::Volume(float const& desiredVolume)
     {
         ISimpleAudioVolumePtr volume;
@@ -112,6 +110,7 @@ namespace Audio
         }
         return 0.0f;
     }
+
 
     bool AudioSession::SetMute(bool const& state)
     {
@@ -142,7 +141,30 @@ namespace Audio
         return true;
     }
 
-    IFACEMETHODIMP_(ULONG) AudioSession::AddRef()
+    #pragma region Events
+    winrt::event_token AudioSession::StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, uint32_t> const& handler)
+    {
+        return e_stateChanged.add(handler);
+    }
+
+    void AudioSession::StateChanged(winrt::event_token const& token)
+    {
+        e_stateChanged.remove(token);
+    }
+
+    winrt::event_token AudioSession::VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler)
+    {
+        return e_volumeChanged.add(handler);
+    }
+
+    void AudioSession::VolumeChanged(winrt::event_token const& eventToken)
+    {
+        e_volumeChanged.remove(eventToken);
+    }
+    #pragma endregion
+
+    #pragma region IUnknown
+    IFACEMETHODIMP_(ULONG)AudioSession::AddRef()
     {
         return InterlockedIncrement(&refCount);
     }
@@ -179,6 +201,7 @@ namespace Audio
         }
         return S_OK;
     }
+    #pragma endregion
 
 
     hstring AudioSession::GetProcessName(DWORD const& pId)
@@ -186,9 +209,39 @@ namespace Audio
         HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pId);
         if (processHandle != NULL && processHandle != INVALID_HANDLE_VALUE)
         {
+            // Try to get display name for UWP-like apps
+            uint32_t applicationUserModelIdLength = 0;
+            PWSTR id = nullptr;
+
+            LONG retCode = GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, id);
+            if (retCode != APPMODEL_ERROR_NO_APPLICATION && retCode == ERROR_INSUFFICIENT_BUFFER)
+            {
+                // TRACK: Not initializing memory to 0
+                id = new WCHAR[applicationUserModelIdLength](0);
+                if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, id)))
+                {
+                    hstring shellPath = L"shell:appsfolder\\" + to_hstring(id);
+                    delete id;
+
+                    IShellItem* shellItem = nullptr;
+                    if (SUCCEEDED(SHCreateItemFromParsingName(shellPath.c_str(), nullptr, IID_PPV_ARGS(&shellItem))))
+                    {
+                        LPWSTR wStr = nullptr;
+                        if (SUCCEEDED(shellItem->GetDisplayName(SIGDN::SIGDN_NORMALDISPLAY, &wStr)))
+                        {
+                            hstring displayName = to_hstring(wStr);
+                            CoTaskMemFree(wStr);
+                            return displayName;
+                        }
+
+                        shellItem->Release();
+                    }
+                }
+            }
+
+            // Default naming using PID.
             HMODULE moduleHandle = NULL;
             DWORD cbNeeded = 0;
-
             if (EnumProcessModulesEx(processHandle, &moduleHandle, sizeof(moduleHandle), &cbNeeded, LIST_MODULES_ALL))
             {
                 WCHAR baseName[MAX_PATH](0);

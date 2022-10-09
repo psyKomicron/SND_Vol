@@ -9,6 +9,7 @@
     MinHeight="200"
     MinWidth="30"
     CornerRadius="5"
+    HorizontalAlignment="Stretch"
     Background="{ThemeResource ExpanderBackground}">
 
     <Grid 

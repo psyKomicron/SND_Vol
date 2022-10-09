@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IComEventImplementation.h"
+
 namespace Audio
 {
     enum AudioState : uint32_t
@@ -11,11 +13,10 @@ namespace Audio
         Expired
     };
 
-    class AudioSession : public IAudioSessionEvents
+    class AudioSession : private IAudioSessionEvents, public IComEventImplementation
     {
     public:
         AudioSession(IAudioSessionControl2Ptr audioSessionControl, GUID globalAudioSessionID);
-        ~AudioSession();
 
         GUID GroupingParam();
         bool IsSystemSoundSession();
@@ -39,49 +40,30 @@ namespace Audio
         /// <returns>The volume of the session</returns>
         float Volume() const;
 
+        bool Register();
+        bool Unregister();
+
         /// <summary>
         /// Sets the session audio level to mute if state == true.
         /// </summary>
         /// <param name="state"></param>
         /// <returns>True if the audio session has been muted.</returns>
         bool SetMute(bool const& state);
-        /// <summary>
-        /// Registers the audio session to audio events.
-        /// </summary>
-        /// <returns>Return true if the registration succeeded</returns>
-        bool Register();
-        /// <summary>
-        /// Unregisters the audio session from audio events.
-        /// </summary>
-        /// <returns></returns>
-        bool Unregister();
 
-        winrt::event_token StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, uint32_t> const& handler)
-        {
-            return e_stateChanged.add(handler);
-        };
-        void StateChanged(winrt::event_token const& token)
-        {
-            e_stateChanged.remove(token);
-        };
+        winrt::event_token StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, uint32_t> const& handler);
+        void StateChanged(winrt::event_token const& token);
         /// <summary>
         /// Volume changed event subscriber. IInspectable param of handler will contain a winrt::guid struct equal to the id
         /// of this AudioSession.
         /// </summary>
         /// <param name="handler">Event handler</param>
         /// <returns>event token</returns>
-        winrt::event_token VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler)
-        {
-            return e_volumeChanged.add(handler);
-        };
+        winrt::event_token VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler);
         /// <summary>
         /// Volume changed event remover.
         /// </summary>
         /// <param name="eventToken">handler token to remove</param>
-        void VolumeChanged(winrt::event_token const& eventToken)
-        {
-            e_volumeChanged.remove(eventToken);
-        };
+        void VolumeChanged(winrt::event_token const& eventToken);
 
         // IUnknown
         IFACEMETHODIMP_(ULONG) AddRef();

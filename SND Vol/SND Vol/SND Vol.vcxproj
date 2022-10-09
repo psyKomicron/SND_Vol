@@ -108,7 +108,9 @@
       <DependentUpon>AudioSessionView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="IComEventImplementation.h" />
     <ClInclude Include="LegacyAudioController.h" />
+    <ClInclude Include="MainAudioEndpoint.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -131,6 +133,7 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="LegacyAudioController.cpp" />
+    <ClCompile Include="MainAudioEndpoint.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

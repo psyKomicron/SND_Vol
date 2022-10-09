@@ -1,13 +1,15 @@
 #pragma once
 
-#include "AudioSession.h"
 #include <stack>
+#include "IComEventImplementation.h"
+#include "AudioSession.h"
+#include "MainAudioEndpoint.h"
 
 namespace Audio
 {
     using AudioSessionContainer = std::unique_ptr<AudioSession>;
 
-    class LegacyAudioController : public IAudioSessionNotification
+    class LegacyAudioController : private IAudioSessionNotification, public IComEventImplementation
     {
     public:
         /// <summary>
@@ -15,7 +17,14 @@ namespace Audio
         /// </summary>
         /// <param name="guid">GUID to give audio sessions to ignore audio events</param>
         LegacyAudioController(GUID const& guid);
-        ~LegacyAudioController();
+
+        // IUnknown
+        IFACEMETHODIMP_(ULONG) AddRef();
+        IFACEMETHODIMP_(ULONG) Release();
+        IFACEMETHODIMP QueryInterface(REFIID riid, VOID** ppvInterface);
+
+        bool Register();
+        bool Unregister();
 
         /// <summary>
         /// Enumerates current audio sessions.
@@ -23,29 +32,15 @@ namespace Audio
         /// <returns>Audio sessions currently active</returns>
         std::vector<AudioSessionContainer>* GetSessions();
         /// <summary>
-        /// Registers the controller for changes in audio sessions.
-        /// </summary>
-        /// <returns>Returns true if the registration succeeded</returns>
-        bool Register();
-        /// <summary>
-        /// Unregisters the audio controller from audio events.
-        /// </summary>
-        /// <returns>Returns true if the audio controller unregistered successfully</returns>
-        bool Unregister();
-        /// <summary>
         /// Newly created sessions. Call in loop to get all the new sessions.
         /// </summary>
         /// <param name="handler"></param>
         /// <returns></returns>
         AudioSession* NewSession();
+        MainAudioEndpoint* GetMainAudioEndpoint();
 
         winrt::event_token SessionAdded(const winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>& handler);
         void SessionAdded(const ::winrt::event_token& token);
-
-        // IUnknown
-        IFACEMETHODIMP_(ULONG) AddRef();
-        IFACEMETHODIMP_(ULONG) Release();
-        IFACEMETHODIMP QueryInterface(REFIID riid, VOID** ppvInterface);
 
     private:
         GUID audioSessionID;
