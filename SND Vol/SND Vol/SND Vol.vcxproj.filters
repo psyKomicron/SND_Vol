@@ -6,6 +6,7 @@
   <ItemGroup>
     <Page Include="MainWindow.xaml" />
     <Page Include="AudioSessionView.xaml" />
+    <Page Include="SecondWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />

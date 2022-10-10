@@ -38,6 +38,7 @@ namespace Audio
         /// <returns></returns>
         AudioSession* NewSession();
         MainAudioEndpoint* GetMainAudioEndpoint();
+        IAudioMeterInformation* GetMainAudioEnpointMeterInfo();
 
         winrt::event_token SessionAdded(const winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>& handler);
         void SessionAdded(const ::winrt::event_token& token);
@@ -52,7 +53,7 @@ namespace Audio
 
         winrt::event<winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>> e_sessionAdded{};
 
-        bool CreateSessionManager();
+        void CreateSessionManager();
 
         STDMETHOD(OnSessionCreated)(IAudioSessionControl* NewSession);
     };

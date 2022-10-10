@@ -8,3 +8,10 @@
 #define REFIID
 #define STDMETHODIMP_(type)
 #define _DEBUG
+#define NULL
+#define NULL ((void *)0)
+#define CLSCTX_ALL (CLSCTX_INPROC_SERVER| CLSCTX_INPROC_HANDLER| CLSCTX_LOCAL_SERVER| CLSCTX_REMOTE_SERVER)
+#define CLSCTX_ALL (CLSCTX_INPROC_SERVER| CLSCTX_INPROC_HANDLER| CLSCTX_LOCAL_SERVER )
+#define IID_PPV_ARGS(ppType) __uuidof(**(ppType)), IID_PPV_ARGS_Helper(ppType)
+#define FAILED(hr) (((HRESULT)(hr)) < 0)
+#define OutputDebugString

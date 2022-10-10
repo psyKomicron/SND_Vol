@@ -2,12 +2,16 @@
 
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
+#include "SecondWindow.xaml.h"
 
 using namespace winrt;
-using namespace Windows::Foundation;
+
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Navigation;
+
+using namespace Windows::Foundation;
+
 using namespace SND_Vol;
 using namespace SND_Vol::implementation;
 
@@ -41,6 +45,12 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
+#ifdef DEBUG
+    window = make<SecondWindow>();
+    window.Activate();
+#else
     window = make<MainWindow>();
     window.Activate();
+#endif // DEBUG
+
 }

@@ -29,17 +29,16 @@
 
         <InfoBar x:Name="WindowInfoBar" Grid.Row="1"/>
 
-        <ScrollViewer x:Name="ContentScrollViewer" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Grid.Row="2">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="1"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-                <Grid  
-                    x:Name="AudioSessionsPanel" 
-                    Grid.Row="2"
+            <ScrollViewer x:Name="ContentScrollViewer" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Grid.Row="2">
+                <Grid
+                    x:Name="AudioSessionsPanel"
                     ColumnSpacing="5"
                     Margin="7,10,7,7"
                     Loading="AudioSessionsPanel_Loading"
@@ -50,30 +49,33 @@
                         </TransitionCollection>
                     </Grid.ChildrenTransitions>
                 </Grid>
+            </ScrollViewer>
 
-                <Border Height="1" Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="1"/>
+            <Border Height="1" Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="1"/>
 
-                <Border 
-                    x:Name="SystemVolumeActivityBorder"
-                    Background="{ThemeResource SystemAccentColorLight1}"
-                    Opacity="0.3"
-                    Grid.Row="0" 
-                    Margin="15,0,15,0"
-                    Height="8"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Stretch"
-                    Scale="0,1,1">
-                    <Border.ScaleTransition>
-                        <Vector3Transition Duration="0:0:0.1" Components="X"/>
-                    </Border.ScaleTransition>
-                </Border>
-                <Slider 
-                    x:Name="SystemVolumeSlider"
-                    Grid.Row="0" 
-                    Margin="15,0,15,0"
-                    VerticalAlignment="Center"
-                    ValueChanged="SystemVolumeSlider_ValueChanged"/>
-            </Grid>
-        </ScrollViewer>
+            <Border 
+                x:Name="SystemVolumeActivityBorder"
+                Background="{ThemeResource SystemAccentColor}"
+                BorderBrush="{ThemeResource SystemAccentColor}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Opacity="1"
+                Grid.Row="0"
+                Margin="15,0,15,0"
+                Height="6"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                Scale="0,1,1">
+                <Border.ScaleTransition>
+                    <Vector3Transition Duration="0:0:0.1" Components="X"/>
+                </Border.ScaleTransition>
+            </Border>
+            <Slider 
+                x:Name="SystemVolumeSlider"
+                Grid.Row="0" 
+                Margin="15,0,15,0"
+                VerticalAlignment="Center"
+                ValueChanged="SystemVolumeSlider_ValueChanged"/>
+        </Grid>
     </Grid>
 </Window>

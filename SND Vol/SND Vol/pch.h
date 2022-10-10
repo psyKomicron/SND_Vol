@@ -11,6 +11,12 @@
 #include <Psapi.h>
 #include <dispatcherqueue.h>
 
+
+#ifdef _DEBUG
+ #define DEBUG
+#else
+ #undef DEBUG
+#endif
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
@@ -46,35 +52,38 @@
 #pragma comment(lib, "Shell32.lib")
 
 
-/// IMMDevicePtr
+// IMMDevicePtr
 _COM_SMARTPTR_TYPEDEF(IMMDevice, __uuidof(IMMDevice));
 
-/// IMMDeviceEnumeratorPtr
+// IMMDeviceEnumeratorPtr
 _COM_SMARTPTR_TYPEDEF(IMMDeviceEnumerator, __uuidof(IMMDeviceEnumerator));
 
-/// IAudioSessionManager2Ptr
+// IAudioSessionManager2Ptr
 _COM_SMARTPTR_TYPEDEF(IAudioSessionManager2, __uuidof(IAudioSessionManager2));
 
-/// IAudioSessionManager2Ptr
+// IAudioSessionManager2Ptr
 _COM_SMARTPTR_TYPEDEF(IAudioSessionManager2, __uuidof(IAudioSessionManager2));
 
-/// IAudioSessionEnumeratorPtr
+// IAudioSessionEnumeratorPtr
 _COM_SMARTPTR_TYPEDEF(IAudioSessionEnumerator, __uuidof(IAudioSessionEnumerator));
 
-/// IAudioSessionControl2Ptr
+// IAudioSessionControl2Ptr
 _COM_SMARTPTR_TYPEDEF(IAudioSessionControl2, __uuidof(IAudioSessionControl2));
 
-/// IAudioSessionControlPtr
+// IAudioSessionControlPtr
 _COM_SMARTPTR_TYPEDEF(IAudioSessionControl, __uuidof(IAudioSessionControl));
 
-/// ISimpleAudioVolumePtr
+// ISimpleAudioVolumePtr
 _COM_SMARTPTR_TYPEDEF(ISimpleAudioVolume, __uuidof(ISimpleAudioVolume));
 
-/// IAudioSessionNotificationPtr
+// IAudioSessionNotificationPtr
 _COM_SMARTPTR_TYPEDEF(IAudioSessionNotification, __uuidof(IAudioSessionNotification));
 
-/// IAudioEndpointVolumePtr
+// IAudioEndpointVolumePtr
 _COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
+
+// IAudioMeterInformationPtr
+_COM_SMARTPTR_TYPEDEF(IAudioMeterInformation, __uuidof(IAudioMeterInformation));
 
 
 inline void OutputDebugHString(winrt::hstring const& text)

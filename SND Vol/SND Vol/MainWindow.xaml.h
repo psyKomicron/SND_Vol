@@ -24,21 +24,25 @@ namespace winrt::SND_Vol::implementation
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
 
+        // Logic related attributes
+        std::unique_ptr<Audio::MainAudioEndpoint> mainAudioEndpoint{ nullptr };
+        std::unique_ptr<Audio::LegacyAudioController> audioController{ nullptr };
+        std::unique_ptr<std::vector<Audio::AudioSessionContainer>> audioSessions{ nullptr };
+        IAudioMeterInformationPtr audioMeterInfo{ nullptr };
+        winrt::event_token mainAudioEndpointVolumeChangedToken;
+        std::vector<winrt::event_token> audioSessionVolumeChanged{};
+        std::vector<winrt::event_token> audioSessionsStateChanged{};
+        // UI related attributes
         bool loaded = false;
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
         winrt::event_token appWindowClosingEventToken;
-        winrt::event_token mainAudioEndpointVolumeChangedToken;
         BackdropController backdropController = nullptr;
         winrt::Windows::System::DispatcherQueueController dispatcherQueueController = nullptr;
         winrt::Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration systemBackdropConfiguration = nullptr;
         winrt::Microsoft::UI::Xaml::FrameworkElement::ActualThemeChanged_revoker themeChangedRevoker;
-        std::unique_ptr<Audio::LegacyAudioController> audioController = nullptr;
-        std::unique_ptr<std::vector<Audio::AudioSessionContainer>> audioSessions = nullptr;
-        std::unique_ptr<Audio::MainAudioEndpoint> mainAudioEndpoint{ nullptr };
-        std::vector<winrt::event_token> audioSessionVolumeChanged{};
-        std::vector<winrt::event_token> audioSessionsStateChanged{};
         std::vector<winrt::SND_Vol::AudioSessionView::VolumeChanged_revoker> volumeChangedRevokers{};
         std::vector<winrt::SND_Vol::AudioSessionView::VolumeStateChanged_revoker> volumeStateChangedRevokers{};
+        winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer timer = nullptr;
 
         void InitWindow();
         void LoadContent();

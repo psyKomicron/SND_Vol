@@ -72,9 +72,9 @@ namespace Audio
 
     vector<AudioSessionContainer>* LegacyAudioController::GetSessions()
     {
-        if (!audioSessionManager && !CreateSessionManager())
+        if (!audioSessionManager)
         {
-            return nullptr;
+            CreateSessionManager();
         }
 
         vector<AudioSessionContainer>* sessions = nullptr;
@@ -125,11 +125,25 @@ namespace Audio
         IMMDeviceEnumeratorPtr pEnumerator;
 
         // Create the device enumerator.
+        check_hresult(CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, IID_PPV_ARGS(&pEnumerator)));
+        // Get the default audio device.
+        check_hresult(pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice));
+
+        IAudioEndpointVolume* audioEndpointVolume = nullptr;
+        check_hresult(pDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&audioEndpointVolume));
+
+        return new MainAudioEndpoint(audioEndpointVolume, audioSessionID);
+    }
+
+    IAudioMeterInformation* LegacyAudioController::GetMainAudioEnpointMeterInfo()
+    {
+        IMMDevicePtr pDevice;
+        IMMDeviceEnumeratorPtr pEnumerator;
+
+        // Create the device enumerator.
         if (FAILED(CoCreateInstance(
             __uuidof(MMDeviceEnumerator),
-            NULL, CLSCTX_ALL,
-            __uuidof(IMMDeviceEnumerator),
-            (void**)&pEnumerator)))
+            NULL, CLSCTX_ALL, IID_PPV_ARGS(&pEnumerator))))
         {
             OutputDebugString(L"Failed to create device enumerator (LegacyAudioController::GetMainAudioEndpoint).\n");
             return nullptr;
@@ -143,10 +157,15 @@ namespace Audio
             return nullptr;
         }
 
-        IAudioEndpointVolume* audioEndpointVolume = nullptr;
-        check_hresult(pDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&audioEndpointVolume));
-
-        return new MainAudioEndpoint(audioEndpointVolume, audioSessionID);
+        IAudioMeterInformation* audioMeterInfo = nullptr;
+        if (FAILED(pDevice->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&audioMeterInfo)))
+        {
+            return nullptr;
+        }
+        else
+        {
+            return audioMeterInfo;
+        }
     }
 
     #pragma region Events
@@ -162,7 +181,7 @@ namespace Audio
     #pragma endregion
 
 
-    bool LegacyAudioController::CreateSessionManager()
+    void LegacyAudioController::CreateSessionManager()
     {
         // TODO: Use exceptions or more meaningful error messages
 
@@ -170,31 +189,12 @@ namespace Audio
         IMMDeviceEnumeratorPtr pEnumerator;
 
         // Create the device enumerator.
-        if (FAILED(CoCreateInstance(
-            __uuidof(MMDeviceEnumerator),
-            NULL, CLSCTX_ALL,
-            __uuidof(IMMDeviceEnumerator),
-            (void**)&pEnumerator)))
-        {
-            return false;
-        }
-        
+        check_hresult(CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, IID_PPV_ARGS(&pEnumerator)));
         // Get the default audio device.
-        if (FAILED(pEnumerator->GetDefaultAudioEndpoint(
-            eRender, eConsole, &pDevice)))
-        {
-            return false;
-        }
+        check_hresult(pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice));
 
         // Get the session manager.
-        if (FAILED(pDevice->Activate(
-            __uuidof(IAudioSessionManager2), CLSCTX_ALL,
-            NULL, (void**)&audioSessionManager)))
-        {
-            return false;
-        }
-
-        return true;
+        check_hresult(pDevice->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, NULL, (void**)&audioSessionManager));
     }
 
     HRESULT __stdcall LegacyAudioController::OnSessionCreated(IAudioSessionControl* NewSession)

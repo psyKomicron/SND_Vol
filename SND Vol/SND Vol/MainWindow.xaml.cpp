@@ -27,6 +27,7 @@ using namespace winrt::Windows::Graphics;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::System;
 
+
 namespace winrt::SND_Vol::implementation
 {
     MainWindow::MainWindow()
@@ -35,24 +36,16 @@ namespace winrt::SND_Vol::implementation
         InitWindow();
         SetBackground();
 
-        //timer = DispatcherQueue().CreateTimer();
-        //timer.Interval(TimeSpan(std::chrono::milliseconds(50)));
-        //timer.Tick([&](auto /*sender*/, auto /*args*/)
-        //{
-        //    static const float arr[]{ .7, .3, .6, .5, .9, .9, .9, .9, .2, .1, .1, .4, .8, .9, .1, .2, .1, .1, .1, .1, .3, .3, .3, .3, .6, .6, .6 };
-        //    static int iterator = 0;
-
-        //    float volume = arr[(iterator++) % 24];
-        //    OutputDebugHString(to_hstring(volume));
-        //    
-        //    /*double width = SystemVolumeSlider().ActualWidth();
-        //    OutputDebugHString(L"Actual width : " + to_hstring(width));
-        //    double newWidth = width * volume;
-        //    OutputDebugHString(to_hstring(volume) + L" - " + to_hstring(newWidth));*/
-
-        //    SystemVolumeActivityBorder().Scale(::Numerics::float3(volume, 1, 1));
-        //});
-        //timer.Start();
+        timer = DispatcherQueue().CreateTimer();
+        timer.Interval(TimeSpan(std::chrono::milliseconds(10)));
+        timer.Tick([&](auto /*sender*/, auto /*args*/)
+        {
+            float volume = 0;
+            if (SUCCEEDED(audioMeterInfo->GetPeakValue(&volume)))
+            {
+                SystemVolumeActivityBorder().Scale(::Numerics::float3(volume, 1, 1));
+            }
+        });
     }
 
     void MainWindow::OnLoaded(IInspectable const& sender, RoutedEventArgs const& e)
@@ -125,7 +118,7 @@ namespace winrt::SND_Vol::implementation
         uint32_t columnSpacing = static_cast<uint32_t>(AudioSessionsPanel().ColumnSpacing());
         uint32_t pixels = AudioSessionsPanel().Children().Size() * (85ul + columnSpacing) + padding;
         uint32_t width = appWindow.Size().Width;
-        if ((width - arbitraryPadding) > pixels)
+        if ((width + arbitraryPadding) > pixels)
         {
             //AudioSessionsPanel().HorizontalAlignment(HorizontalAlignment::Stretch);
             for (ColumnDefinition col : AudioSessionsPanel().ColumnDefinitions())
@@ -133,7 +126,7 @@ namespace winrt::SND_Vol::implementation
                 col.Width(GridLengthHelper::FromValueAndType(2, GridUnitType::Star));
             }
         }
-        else if ((width + arbitraryPadding) < pixels)
+        else if ((width - arbitraryPadding) < pixels)
         {
             for (ColumnDefinition col : AudioSessionsPanel().ColumnDefinitions())
             {
@@ -258,6 +251,20 @@ namespace winrt::SND_Vol::implementation
             {
                 CreateAudioView(audioSessions->at(i).get(), true);
             }
+
+            // Get audio meter.
+            audioMeterInfo = IAudioMeterInformationPtr(audioController->GetMainAudioEnpointMeterInfo());
+            if (audioMeterInfo.GetInterfacePtr())
+            {
+                timer.Start();
+            }
+#ifdef DEBUG
+            else
+            {
+                OutputDebugString(L"\nFailed to create IAudioMeterInformation object.\n");
+            }
+#endif // DEBUG
+
         }
         //TODO: if the GUID cannot be created, try another time. Show error message if still no GUID.
     }
@@ -473,6 +480,12 @@ namespace winrt::SND_Vol::implementation
             mainAudioEndpoint->VolumeChanged(mainAudioEndpointVolumeChangedToken);
             mainAudioEndpoint->Unregister();
             mainAudioEndpoint->Release();
+        }
+
+        if (audioMeterInfo.GetInterfacePtr())
+        {
+            timer.Stop();
+            audioMeterInfo.Release();
         }
 
         // Unsuscribe to VolumeChanged event.
