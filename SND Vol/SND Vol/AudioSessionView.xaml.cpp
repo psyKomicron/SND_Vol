@@ -5,24 +5,23 @@
 #endif
 
 #include <math.h>
+#include <limits>
+using namespace winrt::Windows::UI;
 
 using namespace winrt;
-using namespace Microsoft::UI::Xaml;
+
+using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
+using namespace winrt::Microsoft::UI::Xaml::Media;
+
 using namespace winrt::Windows::Foundation;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace winrt::SND_Vol::implementation
 {
     AudioSessionView::AudioSessionView()
     {
         InitializeComponent();
-
-#ifdef _DEBUG
-        HeaderTextBlock().Visibility(Visibility::Collapsed);
-#endif
     }
 
     AudioSessionView::AudioSessionView(winrt::hstring const& header, double const& volume) : AudioSessionView()
@@ -33,6 +32,7 @@ namespace winrt::SND_Vol::implementation
     }
 
 
+    #pragma region Properties
     winrt::hstring AudioSessionView::VolumeGlyph()
     {
         return _volumeGlyph;
@@ -95,8 +95,10 @@ namespace winrt::SND_Vol::implementation
 
         e_propertyChanged(*this, PropertyChangedEventArgs(L"VolumeGlyph"));
     }
+    #pragma endregion
 
 
+    #pragma region Events
     winrt::event_token AudioSessionView::PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
     {
         return e_propertyChanged.add(value);
@@ -125,6 +127,54 @@ namespace winrt::SND_Vol::implementation
     void AudioSessionView::VolumeStateChanged(winrt::event_token const& token)
     {
         e_volumeStateChanged.remove(token);
+    }
+    #pragma endregion
+
+
+    void AudioSessionView::SetStatus(const AudioSessionState& state)
+    {
+        auto resources = Application::Current().Resources();
+        switch (state)
+        {
+            case AudioSessionState::Active:
+                isActive = true;
+                StatusEllipse().Fill(::Media::SolidColorBrush(Windows::UI::Colors::Green()));
+                StatusEllipse().Stroke(::Media::SolidColorBrush(Windows::UI::Colors::Green()));
+                break;
+
+            case AudioSessionState::Expired:
+            case AudioSessionState::Inactive:
+            default:
+                isActive = false;
+                StatusEllipse().Fill(::Media::SolidColorBrush(Windows::UI::Colors::Transparent()));
+                StatusEllipse().Stroke(::Media::SolidColorBrush(Windows::UI::Colors::Orange()));
+                break;
+        }
+    }
+
+    void AudioSessionView::SetPeak(float peak)
+    {
+        if (!isActive) return;
+
+        if (peak > 0.9f)
+        {
+            StatusEllipse().Fill(SolidColorBrush(Colors::LimeGreen()));
+            //StatusEllipse().Stroke(SolidColorBrush(Colors::Transparent()));
+        }
+        else if (peak > 0.5f)
+        {
+            StatusEllipse().Fill(SolidColorBrush(Colors::Green()));
+        }
+        else if (peak > 0.2f)
+        {
+            StatusEllipse().Fill(SolidColorBrush(Colors::DarkGreen()));
+            //StatusEllipse().Stroke(SolidColorBrush(Colors::Transparent()));
+        }
+        else //if (peak > 0.1f)
+        {
+            StatusEllipse().Fill(SolidColorBrush(Colors::Transparent()));
+            //StatusEllipse().Stroke(SolidColorBrush(Colors::Green()));
+        }
     }
 
 
@@ -156,6 +206,16 @@ namespace winrt::SND_Vol::implementation
         e_volumeStateChanged(*this, MuteToggleButton().IsChecked().GetBoolean());
     }
 
+    void AudioSessionView::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
+    {
+        /*double height = CenterRow().ActualHeight();
+        VolumePeakBorder().Height(height);
+        ::Numerics::float3 translation = VolumePeakBorder().Translation();
+        translation.y = height;
+        VolumePeakBorder().Translation(translation);*/
+    }
+
+
     void AudioSessionView::SetGlyph()
     {
         if (_volume > 75.0)
@@ -179,4 +239,10 @@ namespace winrt::SND_Vol::implementation
             _volumeGlyph = L"\ue74f";// 🔇
         }
     }
+}
+
+
+void winrt::SND_Vol::implementation::AudioSessionView::UserControl_Loaded(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+{
+    Grid_SizeChanged(nullptr, nullptr);
 }

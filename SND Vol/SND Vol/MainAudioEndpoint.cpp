@@ -1,48 +1,120 @@
 #include "pch.h"
 #include "MainAudioEndpoint.h"
 
+#include <Functiondiscoverykeys_devpkey.h>
+#include "LegacyAudioController.h"
+
+using namespace winrt;
+
+
 namespace Audio
 {
-	MainAudioEndpoint::MainAudioEndpoint(IAudioEndpointVolume* audioEndpointVolume, GUID eventContextId) :
-		audioEndpointVolume{ audioEndpointVolume },
+	MainAudioEndpoint::MainAudioEndpoint(IMMDevice* pDevice, GUID eventContextId) :
+		device{ pDevice },
 		eventContextId(eventContextId)
 	{
+		/*if (FAILED(device->GetId(&deviceId)))
+		{
+			deviceId = nullptr;
+			OutputDebugString(L"MainAudioEndpoint failed to get ID\n");
+		}*/
+
+		check_hresult(device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&audioEndpointVolume));
+	}
+
+	MainAudioEndpoint::~MainAudioEndpoint()
+	{
+		/*if (deviceId)
+		{
+			CoTaskMemFree(deviceId);
+		}*/
 	}
 
 
+	winrt::hstring MainAudioEndpoint::Name() const
+	{
+		IPropertyStore* pProps = nullptr;
+		if (SUCCEEDED(device->OpenPropertyStore(STGM_READ, &pProps)))
+		{
+			PROPVARIANT deviceFriendlyName{};
+			PropVariantInit(&deviceFriendlyName);
+			if (SUCCEEDED(pProps->GetValue(PKEY_Device_FriendlyName, &deviceFriendlyName)))
+			{
+				return hstring(deviceFriendlyName.pwszVal);
+			}
+		}
+		return hstring();
+	}
+
 	void MainAudioEndpoint::Volume(const float& value)
 	{
-		winrt::check_hresult(audioEndpointVolume->SetMasterVolumeLevelScalar(value, &eventContextId));
+		if (audioEndpointVolume.GetInterfacePtr())
+		{
+			winrt::check_hresult(audioEndpointVolume->SetMasterVolumeLevelScalar(value, &eventContextId));
+		}
 	}
 
 	float MainAudioEndpoint::Volume() const
 	{
 		float volumeLevel = 0.0;
-		winrt::check_hresult(audioEndpointVolume->GetMasterVolumeLevelScalar(&volumeLevel));
+		if (audioEndpointVolume.GetInterfacePtr())
+		{
+			winrt::check_hresult(audioEndpointVolume->GetMasterVolumeLevelScalar(&volumeLevel));
+		}
 		return volumeLevel;
 	}
 
+	uint32_t MainAudioEndpoint::Channels() const
+	{
+		uint32_t channelCount = 0;
+		if (audioEndpointVolume.GetInterfacePtr())
+		{
+			check_hresult(audioEndpointVolume->GetChannelCount(&channelCount));
+		}
+		return channelCount;
+	}
+
+
 	void MainAudioEndpoint::Mute()
 	{
-		winrt::check_hresult(audioEndpointVolume->SetMute(true, &eventContextId));
+		if (audioEndpointVolume.GetInterfacePtr())
+		{
+			winrt::check_hresult(audioEndpointVolume->SetMute(true, &eventContextId));
+		}
 	}
 
 	void MainAudioEndpoint::Unmute()
 	{
-		winrt::check_hresult(audioEndpointVolume->SetMute(false, &eventContextId));
+		if (audioEndpointVolume.GetInterfacePtr())
+		{
+			winrt::check_hresult(audioEndpointVolume->SetMute(false, &eventContextId));
+		}
+	}
+
+	IAudioMeterInformation* MainAudioEndpoint::GetEndpointMeterInfo()
+	{
+		IAudioMeterInformation* audioMeterInfo = nullptr;
+		if (FAILED(device->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&audioMeterInfo)))
+		{
+			return nullptr;
+		}
+		else
+		{
+			return audioMeterInfo;
+		}
 	}
 
 	bool MainAudioEndpoint::Register()
 	{
-		return SUCCEEDED(audioEndpointVolume->RegisterControlChangeNotify(this));
+		return audioEndpointVolume.GetInterfacePtr() && SUCCEEDED(audioEndpointVolume->RegisterControlChangeNotify(this));
 	}
 
 	bool MainAudioEndpoint::Unregister()
 	{
-		return SUCCEEDED(audioEndpointVolume->UnregisterControlChangeNotify(this));
+		return audioEndpointVolume.GetInterfacePtr() && SUCCEEDED(audioEndpointVolume->UnregisterControlChangeNotify(this));
 	}
 
-    #pragma region IUnknown
+    #pragma region  IUnknown
 	IFACEMETHODIMP_(ULONG) MainAudioEndpoint::AddRef()
 	{
 		return ++refCount;
@@ -54,7 +126,7 @@ namespace Audio
 
 		if (remaining == 0)
 		{
-			delete this;
+			delete(static_cast<void*>(this));
 		}
 
 		return remaining;
@@ -82,7 +154,7 @@ namespace Audio
     #pragma endregion
 
 
-	STDMETHODIMP_(HRESULT __stdcall) MainAudioEndpoint::OnNotify(__in PAUDIO_VOLUME_NOTIFICATION_DATA pNotify)
+	STDMETHODIMP MainAudioEndpoint::OnNotify(__in PAUDIO_VOLUME_NOTIFICATION_DATA pNotify)
 	{
 		if (pNotify->guidEventContext != eventContextId)
 		{

@@ -6,48 +6,68 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    MinHeight="200"
-    MinWidth="30"
+    MinHeight="250"
+    Width="85"
     CornerRadius="5"
     HorizontalAlignment="Stretch"
-    Background="{ThemeResource ExpanderBackground}">
+    VerticalAlignment="Stretch"
+    Background="{ThemeResource ExpanderBackground}"
+    Loaded="UserControl_Loaded">
 
-    <Grid 
-        RowSpacing="5"
-        Padding="0,7"
+    <Grid
+        Padding="0,5,0,3"
+        RowSpacing="4"
         HorizontalAlignment="Stretch"
         Background="{x:Bind Background, Mode=OneWay}"
-        CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
-        <Grid.ScaleTransition>
-            <Vector3Transition Components="Y"/>
-        </Grid.ScaleTransition>
+        CornerRadius="{x:Bind CornerRadius, Mode=OneWay}"
+        SizeChanged="Grid_SizeChanged">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition x:Name="CenterRow" Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock 
-            Text="{x:Bind Header, Mode=OneWay}"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            FontSize="14"
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Center"
-            TextWrapping="Wrap"
-            Margin="7,0"
-            Grid.Row="0"/>
+        <Grid.Resources>
+            <Storyboard x:Name="VolumeBorderScaleStorybard">
+                <DoubleAnimation
+                    x:Name="VolumeBorderScaleAnimation"
+                    Storyboard.TargetName="VolumePeakBorderRenderTransform"
+                    Storyboard.TargetProperty="ScaleY"
+                    Duration="00:00:0.1"/>
+            </Storyboard>
+        </Grid.Resources>
+        
 
         <TextBlock 
-            x:Name="HeaderTextBlock"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{x:Bind Volume, Mode=OneWay}" 
-            FontSize="14"
-            HorizontalAlignment="Center" 
-            VerticalAlignment="Center"
-            Visibility="Collapsed"
-            Grid.Row="1"
-            Grid.Column="1"/>
+            Text="{x:Bind Header, Mode=OneWay}"
+            FontStretch="ExtraCondensed"
+            VerticalAlignment="Bottom"
+            HorizontalAlignment="Center"
+            TextAlignment="Center"
+            TextWrapping="Wrap"
+            Margin="3,0,3,0"
+            Grid.Row="0"/>
+
+        <!--<Border 
+            x:Name="VolumePeakBorder"
+            Background="{ThemeResource SystemAccentColor}"
+            BorderBrush="{ThemeResource SystemAccentColor}"
+            CornerRadius="3"
+            BorderThickness="1"
+            Opacity="1"
+            Grid.Row="2"
+            Width="6.5"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Center"
+            Scale="1,0,1"
+            Translation="7.7,0,0"
+            Rotation="180">
+            <Border.ScaleTransition>
+                <Vector3Transition Duration="0:0:0.1" Components="Y"/>
+            </Border.ScaleTransition>
+        </Border>-->
         <Slider
             Value="{x:Bind Volume, Mode=OneWay}"
             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
@@ -57,24 +77,37 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
             Grid.Row="2"
-            Grid.Column="1"
+            Margin="0,0,0,0"
+            Translation="0,0,0"
             ValueChanged="Slider_ValueChanged"/>
 
         <ToggleButton
             x:Name="MuteToggleButton"
             IsChecked="{x:Bind Muted, Mode=OneWay}"
             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-            Click="MuteToggleButton_Click"
+            Background="Transparent"
+            Padding="7"
+            BorderThickness="0"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
-            Padding="7"
-            Background="Transparent"
-            BorderThickness="0"
-            Grid.Column="1"
-            Grid.Row="3">
-
+            Grid.Row="3"
+            Click="MuteToggleButton_Click">
+            
             <FontIcon Glyph="{x:Bind VolumeGlyph, Mode=OneWay}"/>
         </ToggleButton>
+
+        <Ellipse 
+            x:Name="StatusEllipse"
+            Grid.Row="4" 
+            Height="8" 
+            Width="8"
+            HorizontalAlignment="Center" 
+            Margin="0,-2,0,0"
+            StrokeThickness="1"
+            Stroke="Green"
+            VerticalAlignment="Top">
+        </Ellipse>
+
     </Grid>
 </UserControl>

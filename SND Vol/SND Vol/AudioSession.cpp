@@ -12,11 +12,12 @@ using namespace std;
 
 namespace Audio
 {
-    AudioSession::AudioSession(IAudioSessionControl2Ptr _audioSessionControl, GUID globalAudioSessionID) :
+    AudioSession::AudioSession(IAudioSessionControl2* _audioSessionControl, GUID globalAudioSessionID, uint32_t channel) :
         globalAudioSessionID(globalAudioSessionID),
-        sessionName(L"Unknown")
+        sessionName(L"Unknown"),
+        channel(channel)
     {
-        audioSessionControl = move(_audioSessionControl);
+        audioSessionControl = IAudioSessionControl2Ptr(_audioSessionControl);
 
         check_hresult(UuidCreate(&id));
         check_hresult(audioSessionControl->GetGroupingParam(&groupingParam));
@@ -24,6 +25,7 @@ namespace Audio
         if (audioSessionControl->IsSystemSoundsSession() == S_OK)
         {
             sessionName = L"System";
+            isSystemSoundSession = true;
         }
         else
         {
@@ -58,10 +60,20 @@ namespace Audio
         ISimpleAudioVolumePtr volume;
         if (FAILED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)) || FAILED(volume->GetMute((BOOL*)&muted)))
         {
-            OutputDebugHString(sessionName + L" > Failed to get session state. Default (unmuted) assumed.");
+            OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get session state. Default (unmuted) assumed.");
+        }
+
+        if (FAILED(audioSessionControl->QueryInterface(__uuidof(IAudioMeterInformation), (void**)&audioMeter)))
+        {
+            OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get audio meter info. Peak values will be blank.");
         }
     }
 
+
+    uint32_t AudioSession::Channel()
+    {
+        return channel;
+    }
 
     GUID AudioSession::GroupingParam()
     {
@@ -105,10 +117,17 @@ namespace Audio
         if (SUCCEEDED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&audioVolume)))
         {
             float volume = 0.0f;
-            HRESULT hResult = audioVolume->GetMasterVolume(&volume);
+            audioVolume->GetMasterVolume(&volume);
             return volume;
         }
         return 0.0f;
+    }
+
+    AudioSessionState AudioSession::State() const
+    {
+        AudioSessionState state{};
+        check_hresult(audioSessionControl->GetState(&state));
+        return state;
     }
 
 
@@ -121,6 +140,13 @@ namespace Audio
             return SUCCEEDED(hResult);
         }
         return false;
+    }
+
+    float AudioSession::GetPeak() const
+    {
+        float peak = 0.f;
+        audioMeter->GetPeakValue(&peak);
+        return peak;
     }
 
     bool AudioSession::Register()
@@ -142,7 +168,7 @@ namespace Audio
     }
 
     #pragma region Events
-    winrt::event_token AudioSession::StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, uint32_t> const& handler)
+    winrt::event_token AudioSession::StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t> const& handler)
     {
         return e_stateChanged.add(handler);
     }
@@ -152,7 +178,7 @@ namespace Audio
         e_stateChanged.remove(token);
     }
 
-    winrt::event_token AudioSession::VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler)
+    winrt::event_token AudioSession::VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float> const& handler)
     {
         return e_volumeChanged.add(handler);
     }
@@ -211,17 +237,17 @@ namespace Audio
         {
             // Try to get display name for UWP-like apps
             uint32_t applicationUserModelIdLength = 0;
-            PWSTR id = nullptr;
+            PWSTR applicationUserModelId = nullptr;
 
-            LONG retCode = GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, id);
+            LONG retCode = GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId);
             if (retCode != APPMODEL_ERROR_NO_APPLICATION && retCode == ERROR_INSUFFICIENT_BUFFER)
             {
                 // TRACK: Not initializing memory to 0
-                id = new WCHAR[applicationUserModelIdLength](0);
-                if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, id)))
+                applicationUserModelId = new WCHAR[applicationUserModelIdLength](0);
+                if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId)))
                 {
-                    hstring shellPath = L"shell:appsfolder\\" + to_hstring(id);
-                    delete id;
+                    hstring shellPath = L"shell:appsfolder\\" + to_hstring(applicationUserModelId);
+                    delete applicationUserModelId;
 
                     IShellItem* shellItem = nullptr;
                     if (SUCCEEDED(SHCreateItemFromParsingName(shellPath.c_str(), nullptr, IID_PPV_ARGS(&shellItem))))
@@ -257,54 +283,39 @@ namespace Audio
         return winrt::hstring();
     }
 
-    HRESULT __stdcall AudioSession::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID)
+    STDMETHODIMP AudioSession::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID)
     {
         OutputDebugHString(sessionName + L" > Display name changed : " + to_hstring(NewDisplayName));
         return S_OK;
     }
 
-    HRESULT __stdcall AudioSession::OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID)
+    STDMETHODIMP AudioSession::OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID)
     {
         OutputDebugHString(sessionName + L" > Icon path changed : " + to_hstring(NewIconPath));
         return S_OK;
     }
 
-    HRESULT __stdcall AudioSession::OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext)
+    STDMETHODIMP AudioSession::OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext)
     {
         if (*EventContext != globalAudioSessionID)
         {
-            OutputDebugHString(sessionName + L" > Simple volume changed " + winrt::to_hstring(NewVolume) + (NewMute ? L" (muted)" : L""));
-            // Wrap this->id into guid to be able to box it to IInspectable. Far from being the best.
-            e_volumeChanged(box_value(guid(id)), NewVolume);
+            e_volumeChanged(guid(id), NewVolume);
 
-            if (static_cast<bool>(NewMute) != muted)
-            {
-                muted = NewMute;
-                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Muted));
-            }
+            muted = NewMute;
+            // 3 = AudioSessionState::Muted
+            e_stateChanged(guid(id), muted ? 3u : 4u);
         }
         return S_OK;
     }
 
-    HRESULT __stdcall AudioSession::OnStateChanged(::AudioSessionState NewState)
+    STDMETHODIMP AudioSession::OnStateChanged(::AudioSessionState NewState)
     {
-        switch (NewState)
-        {
-            case ::AudioSessionState::AudioSessionStateActive:
-                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Active));
-                break;
-            case ::AudioSessionState::AudioSessionStateInactive:
-                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Inactive));
-                break;
-            case ::AudioSessionState::AudioSessionStateExpired:
-                e_stateChanged(box_value(guid(id)), static_cast<uint32_t>(AudioState::Expired));
-                break;
-        }
+        e_stateChanged(guid(id), static_cast<uint32_t>(NewState));
 
         return S_OK;
     }
 
-    HRESULT __stdcall AudioSession::OnSessionDisconnected(AudioSessionDisconnectReason DisconnectReason)
+    STDMETHODIMP AudioSession::OnSessionDisconnected(AudioSessionDisconnectReason DisconnectReason)
     {
 #ifdef _DEBUG
         hstring reason{};
@@ -334,6 +345,8 @@ namespace Audio
         }
         OutputDebugHString(sessionName + L" > Session disconnected : " + reason);
 #endif // _DEBUG
+
+        e_stateChanged(guid(id), static_cast<uint32_t>(AudioSessionState::AudioSessionStateExpired));
 
         return S_OK;
     }

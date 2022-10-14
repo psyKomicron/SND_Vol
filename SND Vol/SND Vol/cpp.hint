@@ -15,3 +15,10 @@
 #define IID_PPV_ARGS(ppType) __uuidof(**(ppType)), IID_PPV_ARGS_Helper(ppType)
 #define FAILED(hr) (((HRESULT)(hr)) < 0)
 #define OutputDebugString
+#define WINRT_EXPORT
+#define STDMETHOD(method)
+#define STDMETHOD(method) HRESULT (STDMETHODCALLTYPE * method)
+#define __in _SAL1_Source_(__in, (), _In_)
+#define __in _SAL_VERSION_CHECK(__in)
+#define __in_opt _SAL1_Source_(__in_opt, (), _In_opt_)
+#define __in_opt _SAL_VERSION_CHECK(__in_opt)

@@ -30,8 +30,12 @@ namespace winrt::SND_Vol::implementation
         winrt::event_token VolumeStateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, bool> const& handler);
         void VolumeStateChanged(winrt::event_token const& token);
 
+        void SetStatus(const winrt::SND_Vol::AudioSessionState& state);
+        void SetPeak(float peak);
+
         void Slider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
         void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void Grid_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
 
     private:
         double _volume = 50.0;
@@ -39,6 +43,8 @@ namespace winrt::SND_Vol::implementation
         winrt::hstring _header = L"";
         winrt::guid _id{};
         bool _muted = false;
+        float lastPeak = 0;
+        bool isActive;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs>>
@@ -46,6 +52,8 @@ namespace winrt::SND_Vol::implementation
         winrt::event< winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, bool> > e_volumeStateChanged;
 
         void SetGlyph();
+    public:
+        void UserControl_Loaded(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 

@@ -2,16 +2,16 @@
 
 class IComEventImplementation
 {
-public:
-    /// <summary>
-    /// Register the com event implementation for events.
-    /// </summary>
-    /// <returns>True if the implementation registered successfully</returns>
+    /**
+     * @brief Register the com event implementation for events.
+     * @return True if the implementation registered successfully
+    */
     virtual bool Register() PURE;
-    /// <summary>
-    /// Unregister the com event implementation from events.
-    /// </summary>
-    /// <returns>True if the implementation unregistered successfully</returns>
+
+    /**
+     * @brief Unregister the com event implementation from events.
+     * @return True if the implementation unregistered successfully
+    */
     virtual bool Unregister() PURE;
 };
 

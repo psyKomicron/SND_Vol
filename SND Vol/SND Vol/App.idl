@@ -1,10 +1,4 @@
 namespace SND_Vol
 {
-    enum AudioSessionState
-    {
-        Active,
-        Inactive,
-        Muted,
-        Expired
-    };
+    
 }

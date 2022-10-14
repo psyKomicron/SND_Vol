@@ -4,24 +4,37 @@
 
 namespace Audio
 {
-	class MainAudioEndpoint : IComEventImplementation, IAudioEndpointVolumeCallback
+	class MainAudioEndpoint : public IComEventImplementation, private IAudioEndpointVolumeCallback
 	{
 	public:
-		MainAudioEndpoint(IAudioEndpointVolume* audioEndpointVolume, GUID eventContextId);
+		/**
+		 * @brief Default constructor.
+		 * @param devicePtr IMMDevice pointer.
+		 * @param eventContextId GUID used by this app to generate events.
+		*/
+		MainAudioEndpoint(IMMDevice* devicePtr, GUID eventContextId);
+		~MainAudioEndpoint();
 
-		// IUnkown
-		IFACEMETHODIMP_(ULONG) AddRef();
-		IFACEMETHODIMP_(ULONG) Release();
-		IFACEMETHODIMP QueryInterface(REFIID riid, VOID** ppvInterface);
-
-		// ComEventImplementation
-		bool Register();
-		bool Unregister();
-
+		/**
+		 * @brief Gets the friendly name of the audio endpoint.
+		 * @return Friendly name of the audio endpoint
+		*/
+		winrt::hstring Name() const;
+		/**
+		 * @brief Set the volume of the audio endpoint.
+		 * @param value Volume expressed in percentage (0 to 1)
+		*/
 		void Volume(const float& value);
+		/**
+		 * @brief Gets the volume of the audio endpoint.
+		 * @return Volume expressed in percentage (0 to 1)
+		*/
 		float Volume() const;
-		void Mute();
-		void Unmute();
+		/**
+		 * @brief Gets the number of channels for the endpoint.
+		 * @return Number of channels
+		*/
+		uint32_t Channels() const;
 
 		inline winrt::event_token VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler)
 		{
@@ -32,14 +45,27 @@ namespace Audio
 			e_volumeChanged.remove(eventToken);
 		};
 
+		IFACEMETHODIMP_(ULONG) AddRef();
+		IFACEMETHODIMP_(ULONG) Release();
+		IFACEMETHODIMP QueryInterface(REFIID riid, VOID** ppvInterface);
+		bool Register();
+		bool Unregister();
+		void Mute();
+		void Unmute();
+		IAudioMeterInformation* GetEndpointMeterInfo();
+
 	private:
-		IAudioEndpointVolumePtr audioEndpointVolume = nullptr;
+		IAudioEndpointVolumePtr audioEndpointVolume{ nullptr };
+		IMMDevicePtr device{ nullptr };
 		::winrt::impl::atomic_ref_count refCount{ 1 };
 		GUID eventContextId;
+		LPWSTR deviceId = nullptr;
 
-		winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float>> e_volumeChanged {};
+		winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float>> e_volumeChanged{};
 
-		STDMETHOD(OnNotify)(__in PAUDIO_VOLUME_NOTIFICATION_DATA pNotify);
+#pragma region IAudioEndpointVolumeCallback
+		STDMETHODIMP OnNotify(__in PAUDIO_VOLUME_NOTIFICATION_DATA pNotify);
+#pragma endregion
 	};
 }
 

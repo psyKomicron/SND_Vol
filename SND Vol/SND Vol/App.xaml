@@ -20,7 +20,7 @@
             <Color x:Key="AppTitleBarHoverColor">#8A8780</Color>
             <Color x:Key="ButtonHoverBackgroundColor">#38F5F5F5</Color>
 
-            <x:String x:Key="AppTitle">SND Vol</x:String>
+            <x:String x:Key="AppTitle">Croak</x:String>
 
         </ResourceDictionary>
     </Application.Resources>

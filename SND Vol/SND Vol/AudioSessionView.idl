@@ -1,5 +1,14 @@
 namespace SND_Vol
 {
+    enum AudioSessionState
+    {
+        Inactive,
+        Active,
+        Expired,
+        Muted,
+        Unmuted
+    };
+
     [default_interface]
     runtimeclass AudioSessionView : Microsoft.UI.Xaml.Controls.UserControl, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
@@ -14,5 +23,8 @@ namespace SND_Vol
 
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs> VolumeChanged;
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Boolean> VolumeStateChanged;
+
+        void SetStatus(AudioSessionState state);
+        void SetPeak(Single peak);
     }
 }
