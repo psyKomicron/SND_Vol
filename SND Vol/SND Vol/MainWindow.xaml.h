@@ -21,6 +21,7 @@ namespace winrt::SND_Vol::implementation
         void Grid_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void SystemVolumeSlider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
         void Window_Activated(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
+        void SystemVolumeActivityBorder_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
 
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
@@ -55,6 +56,7 @@ namespace winrt::SND_Vol::implementation
         void MainAudioEndpoint_VolumeChanged(winrt::Windows::Foundation::IInspectable /*sender*/, const float& newVolume);
         void AudioSession_VolumeChanged(const winrt::guid& sender, const float& newVolume);
         void AudioSession_StateChanged(const winrt::guid& sender, const uint32_t& state);
+    public:
     };
 }
 

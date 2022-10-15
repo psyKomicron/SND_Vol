@@ -9,7 +9,7 @@
   <Identity
     Name="d638911b-ba40-4581-8fed-b7f8d0093ef9"
     Publisher="CN=psyKomicron"
-    Version="2.4.1.0" />
+    Version="2.5.1.0" />
 
   <Properties>
     <DisplayName>Croak (Package)</DisplayName>
@@ -32,7 +32,7 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="Croak"
-        Description="Control your computer&apos;s audio mix easily with modern app design."
+        Description="Control your computer&apos;s audio mix easily with a modern app design."
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">

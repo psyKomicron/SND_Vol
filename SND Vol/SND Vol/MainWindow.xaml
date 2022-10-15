@@ -30,13 +30,13 @@
                 x:Name="MainEndpointNameTextBlock" 
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Opacity="0.5"
-                FontStretch="Expanded"
+                TextWrapping="Wrap"
                 VerticalAlignment="Center"
-                Margin="7,0,0,0"
+                Margin="7,2,0,0"
                 Grid.Column="0"/>
         </Grid>
 
-        <Grid Grid.Row="2" Padding="3,0,0,3" RowSpacing="2">
+        <Grid Grid.Row="2" Padding="3,0,0,0" RowSpacing="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="1"/>
@@ -49,6 +49,16 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <Grid.Resources>
+                    <Storyboard x:Name="VolumeStoryboard">
+                        <DoubleAnimation 
+                            x:Name="VolumeAnimation"
+                            Storyboard.TargetName="BorderClippingCompositeTransform"
+                            Storyboard.TargetProperty="ScaleX"
+                            To="0"
+                            Duration="0:0:0.1"/>
+                    </Storyboard>
+                </Grid.Resources>
 
                 <Border 
                     x:Name="SystemVolumeActivityBorder"
@@ -61,10 +71,14 @@
                     Height="6"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Stretch"
-                    Scale="0,1,1">
-                    <Border.ScaleTransition>
-                        <Vector3Transition Duration="0:0:0.1" Components="X"/>
-                    </Border.ScaleTransition>
+                    SizeChanged="SystemVolumeActivityBorder_SizeChanged">
+                    <Border.Clip>
+                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClipping" Rect="0 0 0 0">
+                            <RectangleGeometry.Transform>
+                                <CompositeTransform x:Name="BorderClippingCompositeTransform" ScaleX="0"/>
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </Border.Clip>
                 </Border>
                 <Slider 
                     x:Name="SystemVolumeSlider"
@@ -77,11 +91,11 @@
 
             <InfoBar x:Name="WindowInfoBar" Grid.Row="2"/>
 
-            <ScrollViewer Grid.Row="3">
+            <ScrollViewer x:Name="AudioSessionsScrollViewer" Grid.Row="3">
                 <GridView
                     x:Name="AudioSessionsPanel"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
+                    VerticalAlignment="Stretch"
                     SelectionMode="None"
                     CanReorderItems="True"
                     AllowDrop="True"
@@ -92,6 +106,12 @@
                             <PopupThemeTransition FromHorizontalOffset="200"/>
                         </TransitionCollection>
                     </GridView.ItemContainerTransitions>
+
+                    <GridView.Resources>
+                        <Style TargetType="snd_vol:AudioSessionView">
+                            <Setter x:Name="AudioSessionViewHeightSetter" Property="Height" Value="250"/>
+                        </Style>
+                    </GridView.Resources>
                 </GridView>
             </ScrollViewer>
         </Grid>

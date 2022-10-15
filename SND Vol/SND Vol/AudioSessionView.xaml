@@ -6,12 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    MinHeight="250"
+    MinHeight="{ThemeResource AudioSessionViewMinHeight}"
+    MaxHeight="{ThemeResource AudioSessionViewMaxHeight}"
+    Background="{ThemeResource ExpanderBackground}"
     Width="85"
     CornerRadius="5"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
-    Background="{ThemeResource ExpanderBackground}"
     Loaded="UserControl_Loaded">
 
     <Grid

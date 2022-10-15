@@ -6,6 +6,9 @@
 
 #include <rpc.h>
 #include <chrono>
+#include <math.h>
+
+#define USE_TIMER 1
 
 using namespace Audio;
 
@@ -54,7 +57,13 @@ namespace winrt::SND_Vol::implementation
     void MainWindow::OnLoaded(IInspectable const& sender, RoutedEventArgs const& e)
     {
         loaded = true;
+        #if USE_TIMER
         timer.Start();
+        VolumeStoryboard().Begin();
+        #endif // USE_TIMER
+
+        // Generate size changed event to get correct clipping rectangle size
+        SystemVolumeActivityBorder_SizeChanged(nullptr, nullptr);
     }
 
     void MainWindow::AudioSessionView_VolumeChanged(AudioSessionView const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& args)
@@ -98,7 +107,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const& args)
     {
-        #if FALSE
+        #if defined DEBUG & USE_TIMER
         if (args.WindowActivationState() == WindowActivationState::Deactivated && timer.IsRunning())
         {
             timer.Stop();
@@ -108,6 +117,11 @@ namespace winrt::SND_Vol::implementation
             timer.Start();
         }
         #endif
+    }
+
+    void MainWindow::SystemVolumeActivityBorder_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
+    {
+        SystemVolumeActivityBorderClipping().Rect(Rect(0, 0, SystemVolumeActivityBorder().ActualWidth(), SystemVolumeActivityBorder().ActualHeight()));
     }
 
 
@@ -382,6 +396,7 @@ namespace winrt::SND_Vol::implementation
         if (timer.IsRunning())
         {
             timer.Stop();
+            VolumeStoryboard().Stop();
         }
 
         if (audioController.get())
@@ -419,7 +434,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::UpdatePeakMeters(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
     {
-        constexpr uint32_t refreshCount = 5u;
+        constexpr uint32_t refreshCount = 6u;
         static uint32_t count = 0u;
 
         if (!loaded) return;
@@ -429,13 +444,20 @@ namespace winrt::SND_Vol::implementation
             float volume = 0.f;
             if (SUCCEEDED(audioMeterInfo->GetPeakValue(&volume)))
             {
-                SystemVolumeActivityBorder().Scale(::Numerics::float3(volume, 1, 1));
+                //SystemVolumeActivityBorder().Scale(::Numerics::float3(volume, 1, 1));
+                //BorderClippingCompositeTransform().ScaleX(volume);
+                double from = VolumeAnimation().To().GetDouble();
+                VolumeAnimation().From();
+                VolumeAnimation().To(volume);
+                VolumeStoryboard().Begin();
             }
             count = 0u;
         }
 
         for (size_t i = 0; i < audioSessions->size(); i++)
         {
+            if (!loaded) return;
+
             guid id = audioSessions->at(i)->Id();
             auto children = AudioSessionsPanel().Items();
             for (auto const& uiElement : children)
