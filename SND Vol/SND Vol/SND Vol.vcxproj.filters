@@ -7,6 +7,12 @@
     <Page Include="MainWindow.xaml" />
     <Page Include="AudioSessionView.xaml" />
     <Page Include="SecondWindow.xaml" />
+    <Page Include="HotKeyView.xaml" />
+    <Page Include="Themes\Generic.xaml" />
+    <Page Include="ResourceDictionary1.xaml" />
+    <Page Include="HotKeysViewer.xaml">
+      <Filter>Controls</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
@@ -24,6 +30,18 @@
     <ClCompile Include="MainAudioEndpoint.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
+    <ClCompile Include="HotKeyManager.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="HotKey.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyIcon.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="LetterKeyIcon.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -37,6 +55,13 @@
       <Filter>Audio</Filter>
     </ClInclude>
     <ClInclude Include="IComEventImplementation.h" />
+    <ClInclude Include="HotKeyManager.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="HotKey.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -44,6 +69,15 @@
     </Filter>
     <Filter Include="Audio">
       <UniqueIdentifier>{9a22920b-3507-4064-bd20-bc8f24939a27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{78036dd1-e109-4116-9bae-3b56bedb73a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Translations">
+      <UniqueIdentifier>{c7557cbd-8373-4959-8b08-70cb664c7dc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controls">
+      <UniqueIdentifier>{575436b8-e91e-46a3-8497-892f793ad9b2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -58,5 +92,10 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Resources.lang-en-us.resw">
+      <Filter>Translations</Filter>
+    </PRIResource>
   </ItemGroup>
 </Project>

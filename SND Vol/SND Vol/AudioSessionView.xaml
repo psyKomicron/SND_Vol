@@ -9,6 +9,8 @@
     MinHeight="{ThemeResource AudioSessionViewMinHeight}"
     MaxHeight="{ThemeResource AudioSessionViewMaxHeight}"
     Background="{ThemeResource ExpanderBackground}"
+    ToolTipService.ToolTip="{x:Bind Header, Mode=OneWay}"
+    Height="230"
     Width="85"
     CornerRadius="5"
     HorizontalAlignment="Stretch"
@@ -27,48 +29,20 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition x:Name="CenterRow" Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <Grid.Resources>
-            <Storyboard x:Name="VolumeBorderScaleStorybard">
-                <DoubleAnimation
-                    x:Name="VolumeBorderScaleAnimation"
-                    Storyboard.TargetName="VolumePeakBorderRenderTransform"
-                    Storyboard.TargetProperty="ScaleY"
-                    Duration="00:00:0.1"/>
-            </Storyboard>
-        </Grid.Resources>
-        
 
         <TextBlock 
             Text="{x:Bind Header, Mode=OneWay}"
+            FontSize="14"
+            Margin="3,0,3,0"
             FontStretch="ExtraCondensed"
             VerticalAlignment="Bottom"
             HorizontalAlignment="Center"
             TextAlignment="Center"
-            TextWrapping="Wrap"
-            Margin="3,0,3,0"
+            TextTrimming="CharacterEllipsis"
+            MaxLines="1"
             Grid.Row="0"/>
 
-        <!--<Border 
-            x:Name="VolumePeakBorder"
-            Background="{ThemeResource SystemAccentColor}"
-            BorderBrush="{ThemeResource SystemAccentColor}"
-            CornerRadius="3"
-            BorderThickness="1"
-            Opacity="1"
-            Grid.Row="2"
-            Width="6.5"
-            VerticalAlignment="Stretch"
-            HorizontalAlignment="Center"
-            Scale="1,0,1"
-            Translation="7.7,0,0"
-            Rotation="180">
-            <Border.ScaleTransition>
-                <Vector3Transition Duration="0:0:0.1" Components="Y"/>
-            </Border.ScaleTransition>
-        </Border>-->
         <Slider
             Value="{x:Bind Volume, Mode=OneWay}"
             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
@@ -82,23 +56,19 @@
             Translation="0,0,0"
             ValueChanged="Slider_ValueChanged"/>
 
-        <ToggleButton
+        <Button
             x:Name="MuteToggleButton"
-            IsChecked="{x:Bind Muted, Mode=OneWay}"
+            Style="{StaticResource MuteButtonStyle}"
             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-            Background="Transparent"
-            Padding="7"
-            BorderThickness="0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            HorizontalContentAlignment="Center"
             Grid.Row="3"
             Click="MuteToggleButton_Click">
-            
-            <FontIcon Glyph="{x:Bind VolumeGlyph, Mode=OneWay}"/>
-        </ToggleButton>
 
-        <Ellipse 
+            <Viewbox Height="{StaticResource FontIconHeight}">
+                <FontIcon x:Name="VolumeFontIcon" Glyph="{x:Bind VolumeGlyph, Mode=OneWay}"/>
+            </Viewbox>
+        </Button>
+
+        <!--<Ellipse 
             x:Name="StatusEllipse"
             Grid.Row="4" 
             Height="8" 
@@ -108,7 +78,7 @@
             StrokeThickness="1"
             Stroke="Green"
             VerticalAlignment="Top">
-        </Ellipse>
+        </Ellipse>-->
 
     </Grid>
 </UserControl>

@@ -1,0 +1,456 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Accept" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Application" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CapitalLock" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Control" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Convert" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Decimal" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Divide" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Down" xml:space="preserve">
+    <value />
+  </data>
+  <data name="End" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Enter" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Escape" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Execute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F10" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F11" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F13" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F14" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F15" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F16" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F17" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F18" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F19" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F2" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F20" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F21" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F22" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F23" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F24" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F3" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F4" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F5" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F6" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F7" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F8" xml:space="preserve">
+    <value />
+  </data>
+  <data name="F9" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Favorites" xml:space="preserve">
+    <value />
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value />
+  </data>
+  <data name="GoForward" xml:space="preserve">
+    <value />
+  </data>
+  <data name="GoHome" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Insert" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Left" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LeftButton" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LeftControl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LeftMenu" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LeftShift" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LeftWindows" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Menu" xml:space="preserve">
+    <value />
+  </data>
+  <data name="MiddleButton" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ModeChange" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Multiply" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationAccept" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationCancel" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationDown" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationLeft" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationMenu" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationRight" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationUp" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NavigationView" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NonConvert" xml:space="preserve">
+    <value />
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Number0" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number2" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number3" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number4" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number5" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number6" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number7" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number8" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Number9" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberKeyLock" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad0" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad2" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad3" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad4" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad5" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad6" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad7" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad8" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NumberPad9" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PageDown" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PageUp" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Pause" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Right" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RightButton" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RightControl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RightMenu" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RightShift" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RightWindows" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Scroll" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Separator" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Shift" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Snapshot" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Space" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Subtract" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Tab" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Up" xml:space="preserve">
+    <value />
+  </data>
+  <data name="XButton1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="XButton2" xml:space="preserve">
+    <value />
+  </data>
+</root>

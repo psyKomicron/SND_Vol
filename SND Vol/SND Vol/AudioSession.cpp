@@ -5,6 +5,7 @@
 #include <appmodel.h>
 #include <ShObjIdl.h>
 #include <objbase.h>
+#include <strsafe.h>
 
 using namespace winrt;
 using namespace std;
@@ -12,15 +13,15 @@ using namespace std;
 
 namespace Audio
 {
-    AudioSession::AudioSession(IAudioSessionControl2* _audioSessionControl, GUID globalAudioSessionID, uint32_t channel) :
-        globalAudioSessionID(globalAudioSessionID),
+    AudioSession::AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId, uint32_t channel) :
+        eventContextId(eventContextId),
         sessionName(L"Unknown"),
-        channel(channel)
+        channel(channel),
+        audioSessionControl{ audioSessionControl }
     {
-        audioSessionControl = IAudioSessionControl2Ptr(_audioSessionControl);
-
-        check_hresult(UuidCreate(&id));
+        check_bool(UuidCreate(&id) == 0);
         check_hresult(audioSessionControl->GetGroupingParam(&groupingParam));
+        check_hresult(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&simpleAudioVolume));
 
         if (audioSessionControl->IsSystemSoundsSession() == S_OK)
         {
@@ -36,16 +37,21 @@ namespace Audio
                 hstring displayName = to_hstring(wStr);
                 // Free memory allocated by audioSessionControl->GetDisplayName
                 CoTaskMemFree(wStr);
+
                 if (displayName.empty())
                 {
                     if (SUCCEEDED(audioSessionControl->GetProcessId(&pid)))
                     {
-                        sessionName = GetProcessName(pid);
+                        displayName = GetProcessName(pid);
+                        if (!displayName.empty())
+                        {
+                            sessionName = std::move(displayName);
+                        }
                     }
                 }
                 else
                 {
-                    sessionName = displayName;
+                    sessionName = std::move(displayName);
                 }
             }
             else
@@ -57,8 +63,7 @@ namespace Audio
             }
         }
 
-        ISimpleAudioVolumePtr volume;
-        if (FAILED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)) || FAILED(volume->GetMute((BOOL*)&muted)))
+        if (FAILED(simpleAudioVolume->GetMute((BOOL*)&muted)))
         {
             OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get session state. Default (unmuted) assumed.");
         }
@@ -100,27 +105,16 @@ namespace Audio
         return sessionName;
     }
 
-    bool AudioSession::Volume(float const& desiredVolume)
+    void AudioSession::Volume(float const& desiredVolume)
     {
-        ISimpleAudioVolumePtr volume;
-        if (SUCCEEDED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)))
-        {
-            HRESULT hResult = volume->SetMasterVolume(desiredVolume, &globalAudioSessionID);
-            return SUCCEEDED(hResult);
-        }
-        return false;
+        check_hresult(simpleAudioVolume->SetMasterVolume(desiredVolume, &eventContextId));
     }
 
     float AudioSession::Volume() const
     {
-        ISimpleAudioVolumePtr audioVolume;
-        if (SUCCEEDED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&audioVolume)))
-        {
-            float volume = 0.0f;
-            audioVolume->GetMasterVolume(&volume);
-            return volume;
-        }
-        return 0.0f;
+        float volume = 0.0f;
+        check_hresult(simpleAudioVolume->GetMasterVolume(&volume));
+        return volume;
     }
 
     AudioSessionState AudioSession::State() const
@@ -136,7 +130,7 @@ namespace Audio
         ISimpleAudioVolumePtr volume;
         if (SUCCEEDED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)))
         {
-            HRESULT hResult = volume->SetMute(state, &globalAudioSessionID);
+            HRESULT hResult = volume->SetMute(state, &eventContextId);
             return SUCCEEDED(hResult);
         }
         return false;
@@ -192,20 +186,19 @@ namespace Audio
     #pragma region IUnknown
     IFACEMETHODIMP_(ULONG)AudioSession::AddRef()
     {
-        return InterlockedIncrement(&refCount);
+        return ++refCount;
     }
 
     IFACEMETHODIMP_(ULONG) AudioSession::Release()
     {
-        if (InterlockedDecrement(&refCount) == 0ul)
+        const uint32_t remaining = --refCount;
+
+        if (remaining == 0)
         {
             delete this;
-            return 0;
         }
-        else
-        {
-            return refCount;
-        }
+
+        return remaining;
     }
 
     IFACEMETHODIMP AudioSession::QueryInterface(REFIID riid, VOID** ppvInterface)
@@ -232,22 +225,23 @@ namespace Audio
 
     hstring AudioSession::GetProcessName(DWORD const& pId)
     {
+        hstring processName{};
+
         HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pId);
+
         if (processHandle != NULL && processHandle != INVALID_HANDLE_VALUE)
         {
             // Try to get display name for UWP-like apps
             uint32_t applicationUserModelIdLength = 0;
             PWSTR applicationUserModelId = nullptr;
 
-            LONG retCode = GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId);
-            if (retCode != APPMODEL_ERROR_NO_APPLICATION && retCode == ERROR_INSUFFICIENT_BUFFER)
+            if (GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId) == ERROR_INSUFFICIENT_BUFFER)
             {
-                // TRACK: Not initializing memory to 0
                 applicationUserModelId = new WCHAR[applicationUserModelIdLength](0);
                 if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId)))
                 {
                     hstring shellPath = L"shell:appsfolder\\" + to_hstring(applicationUserModelId);
-                    delete applicationUserModelId;
+                    delete[] applicationUserModelId;
 
                     IShellItem* shellItem = nullptr;
                     if (SUCCEEDED(SHCreateItemFromParsingName(shellPath.c_str(), nullptr, IID_PPV_ARGS(&shellItem))))
@@ -255,32 +249,112 @@ namespace Audio
                         LPWSTR wStr = nullptr;
                         if (SUCCEEDED(shellItem->GetDisplayName(SIGDN::SIGDN_NORMALDISPLAY, &wStr)))
                         {
-                            hstring displayName = to_hstring(wStr);
-                            CoTaskMemFree(wStr);
-                            return displayName;
-                        }
+                            processName = to_hstring(wStr);
 
-                        shellItem->Release();
+                            CoTaskMemFree(wStr);
+
+                            // If the shell item name is not empty, clean up resources and return name.
+                            if (!processName.empty())
+                            {
+                                shellItem->Release();
+                                CloseHandle(processHandle);
+                                return processName;
+                            }
+                        }
+                        else // Failed to get shell item display name, release the object and continue to default naming using PID.
+                        {
+                            shellItem->Release();
+                        }
                     }
                 }
             }
-
+            
             // Default naming using PID.
-            HMODULE moduleHandle = NULL;
-            DWORD cbNeeded = 0;
-            if (EnumProcessModulesEx(processHandle, &moduleHandle, sizeof(moduleHandle), &cbNeeded, LIST_MODULES_ALL))
-            {
-                WCHAR baseName[MAX_PATH](0);
-                if (!GetModuleBaseName(processHandle, moduleHandle, baseName, MAX_PATH) || wcslen(baseName) == 0)
-                {
-                    return L"Unknown process";
-                }
-                return winrt::to_hstring(baseName);
-            }
 
-            CloseHandle(processHandle);
+            wchar_t executableName[MAX_PATH]{};
+            DWORD executableNameLength = MAX_PATH;
+            if (QueryFullProcessImageName(processHandle, 0, executableName, &executableNameLength))
+            {
+                CloseHandle(processHandle); // Close handle since we don't need it anymore.
+
+                uint64_t fileVersionInfoSize = GetFileVersionInfoSize(executableName, NULL);
+                if (fileVersionInfoSize > 0)
+                {
+                    void* lpData = malloc(fileVersionInfoSize);
+                    if (lpData)
+                    {
+                        ZeroMemory(lpData, fileVersionInfoSize);
+
+                        // TODO: Numeric narrowing
+                        if (GetFileVersionInfo(executableName, 0, fileVersionInfoSize, lpData))
+                        {
+                            uint32_t cbTranslate = 0;
+                            struct LANGANDCODEPAGE
+                            {
+                                WORD wLanguage;
+                                WORD wCodePage;
+                            } *lpTranslate = nullptr;
+
+                            wchar_t strSubBlock[MAX_PATH]{ 0 };
+                            if (VerQueryValue(lpData, L"\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &cbTranslate))
+                            {
+                                if ((cbTranslate / sizeof(LANGANDCODEPAGE)) == 1)
+                                {
+                                    HRESULT hr = StringCchPrintf(
+                                        strSubBlock,
+                                        50,
+                                        L"\\StringFileInfo\\%04x%04x\\FileDescription",
+                                        lpTranslate[0].wLanguage,
+                                        lpTranslate[0].wCodePage
+                                    );
+
+                                    if (SUCCEEDED(hr))
+                                    {
+                                        wchar_t* lpBuffer = nullptr;
+                                        uint32_t lpBufferSize = 0;
+                                        if (VerQueryValue(lpData, strSubBlock, (void**)&lpBuffer, &lpBufferSize) && lpBufferSize > 0)
+                                        {
+                                            processName = to_hstring(lpBuffer);
+                                        }
+                                    }
+                                }
+
+                                /*
+                                for (size_t i = 0; i < (cbTranslate / sizeof(LANGANDCODEPAGE)); i++)
+                                {
+                                    HRESULT hr = StringCchPrintf(
+                                        strSubBlock,
+                                        50,
+                                        L"\\StringFileInfo\\%04x%04x\\FileDescription",
+                                        lpTranslate[i].wLanguage,
+                                        lpTranslate[i].wCodePage
+                                    );
+
+                                    if (SUCCEEDED(hr))
+                                    {
+                                        wchar_t* lpBuffer = nullptr;
+                                        uint32_t lpBufferSize = 0;
+                                        if (VerQueryValue(lpData, strSubBlock, (void**)&lpBuffer, &lpBufferSize) && lpBufferSize > 0)
+                                        {
+                                            OutputDebugString(lpBuffer);
+                                        }
+                                    }
+                                }
+                                */
+                            }
+                        }
+
+                        free(lpData);
+                    }
+                }
+            }
+            else
+            {
+                CloseHandle(processHandle);
+            }
         }
-        return winrt::hstring();
+
+        return processName;
     }
 
     STDMETHODIMP AudioSession::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID)
@@ -297,7 +371,7 @@ namespace Audio
 
     STDMETHODIMP AudioSession::OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext)
     {
-        if (*EventContext != globalAudioSessionID)
+        if (*EventContext != eventContextId)
         {
             e_volumeChanged(guid(id), NewVolume);
 
@@ -315,37 +389,8 @@ namespace Audio
         return S_OK;
     }
 
-    STDMETHODIMP AudioSession::OnSessionDisconnected(AudioSessionDisconnectReason DisconnectReason)
+    STDMETHODIMP AudioSession::OnSessionDisconnected(AudioSessionDisconnectReason /*DisconnectReason*/)
     {
-#ifdef _DEBUG
-        hstring reason{};
-        switch (DisconnectReason)
-        {
-            case DisconnectReasonDeviceRemoval:
-                reason = L"device removal";
-                break;
-            case DisconnectReasonServerShutdown:
-                reason = L"server shutdown";
-                break;
-            case DisconnectReasonFormatChanged:
-                reason = L"format changed";
-                break;
-            case DisconnectReasonSessionLogoff:
-                reason = L"session log off";
-                break;
-            case DisconnectReasonSessionDisconnected:
-                reason = L"session disconnected";
-                break;
-            case DisconnectReasonExclusiveModeOverride:
-                reason = L"exclusive mode override";
-                break;
-            default:
-                reason = L"unknown";
-                break;
-        }
-        OutputDebugHString(sessionName + L" > Session disconnected : " + reason);
-#endif // _DEBUG
-
         e_stateChanged(guid(id), static_cast<uint32_t>(AudioSessionState::AudioSessionStateExpired));
 
         return S_OK;

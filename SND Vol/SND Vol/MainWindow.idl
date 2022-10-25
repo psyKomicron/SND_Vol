@@ -1,8 +1,12 @@
+import "AudioSessionView.idl";
+
 namespace SND_Vol
 {
     [default_interface]
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
         MainWindow();
+
+        IObservableVector<AudioSessionView> AudioSessions{ get; };
     }
 }

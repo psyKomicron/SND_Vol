@@ -4,11 +4,11 @@
 #include "MainWindow.g.cpp"
 #endif
 
-#include <rpc.h>
-#include <chrono>
-#include <math.h>
+#include "HotKey.h"
+#include "SecondWindow.xaml.h"
 
 #define USE_TIMER 1
+#define DEACTIVATE_TIMER 0
 
 using namespace Audio;
 
@@ -23,9 +23,12 @@ using namespace winrt::Microsoft::UI::Windowing;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Media;
+using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
 
-using namespace winrt::Windows::Devices::Enumeration;
+using namespace winrt::Windows::ApplicationModel;
+using namespace winrt::Windows::ApplicationModel::Core;
 using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::System;
@@ -36,13 +39,12 @@ namespace winrt::SND_Vol::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
+
         InitWindow();
         SetBackground();
 
-        timer = DispatcherQueue().CreateTimer();
-
 #ifdef DEBUG
-        Application::Current().UnhandledException([&](IInspectable const& /*sender*/, UnhandledExceptionEventArgs const& e)
+        Application::Current().UnhandledException([&](IInspectable const&/*sender*/, UnhandledExceptionEventArgs const&e)
         {
             TextBlock block{};
             block.TextWrapping(TextWrapping::Wrap);
@@ -54,34 +56,45 @@ namespace winrt::SND_Vol::implementation
 
     }
 
-    void MainWindow::OnLoaded(IInspectable const& sender, RoutedEventArgs const& e)
+    void MainWindow::OnLoaded(IInspectable const&, RoutedEventArgs const&)
     {
         loaded = true;
+
         #if USE_TIMER
-        timer.Start();
+        oneMsTimer.Start();
+        fiveMstimer.Start();
         VolumeStoryboard().Begin();
         #endif // USE_TIMER
 
         // Generate size changed event to get correct clipping rectangle size
         SystemVolumeActivityBorder_SizeChanged(nullptr, nullptr);
+        Grid_SizeChanged(nullptr, nullptr);
+
+        //hotKeyManager.RegisterHotKey(System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, static_cast<uint32_t>(VirtualKey::X)));
     }
 
-    void MainWindow::AudioSessionView_VolumeChanged(AudioSessionView const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& args)
+    void MainWindow::AudioSessionView_VolumeChanged(AudioSessionView const&sender, RangeBaseValueChangedEventArgs const&args)
     {
+        unique_lock lock{ audioSessionsMutex };
+
         for (size_t i = 0; i < audioSessions->size(); i++)
         {
-            if (audioSessions->at(i)->Name() == sender.Header())
+            guid id = audioSessions->at(i)->Id();
+            if (id == sender.Id())
             {
                 audioSessions->at(i)->Volume(static_cast<float>(args.NewValue() / 100.0));
             }
         }
     }
 
-    void MainWindow::AudioSessionView_VolumeStateChanged(winrt::SND_Vol::AudioSessionView const& sender, bool const& args)
+    void MainWindow::AudioSessionView_VolumeStateChanged(winrt::SND_Vol::AudioSessionView const&sender, bool const&args)
     {
+        unique_lock lock{ audioSessionsMutex };
+
         for (size_t i = 0; i < audioSessions->size(); i++)
         {
-            if (audioSessions->at(i)->Name() == sender.Header())
+            guid id = audioSessions->at(i)->Id();
+            if (id == sender.Id())
             {
                 audioSessions->at(i)->SetMute(args);
             }
@@ -95,191 +108,267 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
+        SetDragRectangles();
     }
 
-    void MainWindow::SystemVolumeSlider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
+    void MainWindow::SystemVolumeSlider_ValueChanged(IInspectable const&, RangeBaseValueChangedEventArgs const&e)
     {
-        if (mainAudioEndpoint.get())
+        if (mainAudioEndpoint)
         {
             mainAudioEndpoint->Volume(static_cast<float>(e.NewValue() / 100.));
         }
     }
 
-    void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const& args)
+    void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const&)
     {
-        #if defined DEBUG & USE_TIMER
-        if (args.WindowActivationState() == WindowActivationState::Deactivated && timer.IsRunning())
+        #if DEACTIVATE_TIMER
+        if (args.WindowActivationState() == WindowActivationState::Deactivated && oneMsTimer.IsRunning())
         {
-            timer.Stop();
+            oneMsTimer.Stop();
         }
-        else if (!timer.IsRunning())
+        else if (!oneMsTimer.IsRunning())
         {
-            timer.Start();
+            oneMsTimer.Start();
         }
         #endif
     }
 
     void MainWindow::SystemVolumeActivityBorder_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        SystemVolumeActivityBorderClipping().Rect(Rect(0, 0, SystemVolumeActivityBorder().ActualWidth(), SystemVolumeActivityBorder().ActualHeight()));
+        SystemVolumeActivityBorderClipping().Rect(
+            Rect(0, 0, static_cast<float>(SystemVolumeActivityBorder().ActualWidth()), static_cast<float>(SystemVolumeActivityBorder().ActualHeight()))
+        );
     }
 
-
-    void MainWindow::LoadContent()
+    void MainWindow::HideMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
-        timer.Interval(TimeSpan(std::chrono::milliseconds(1)));
-        timer.Tick({ this, &MainWindow::UpdatePeakMeters });
+        appWindow.Presenter().as<OverlappedPresenter>().Minimize();
+    }
 
-        GUID appID{};
-        if (SUCCEEDED(UuidCreate(&appID)))
+    void MainWindow::RestartMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        // TODO: Restart app with restart API
+        if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(L"") != AppRestartFailureReason::RestartPending)
         {
-            audioController = make_unique<LegacyAudioController>(appID);
+            // I18N:
+            WindowInfoBar().Title(L"Could not restart. Close the window.");
+            WindowInfoBar().IsOpen(true);
+        }
+    }
 
-            if (audioController->Register())
+    void MainWindow::SwitchStateMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        bool setMute = false;
+
+        uint32_t count = 0;
+        if (globalSessionAudioState == winrt::SND_Vol::AudioSessionState::Unmuted)
+        {
+            for (auto&& view : audioSessionViews)
             {
-                audioController->SessionAdded([this](auto /*sender*/, auto /*args*/)
+                if (view.Muted())
                 {
-                    DispatcherQueue().TryEnqueue([this]()
-                    {
-                        while (AudioSession* newSession = audioController->NewSession())
-                        {
-                            audioSessions->push_back(AudioSessionContainer(newSession));
-                            CreateAudioView(newSession, false);
-                        }
-                    });
-                });
-
-                audioController->EndpointChanged([&](auto /*sender*/, auto /*args*/) noexcept
+                    count++;
+                }
+            }
+            
+            if (count != audioSessionViews.Size())
+            {
+                setMute = true;
+                globalSessionAudioState = AudioSessionState::Muted;
+            }
+        }
+        else if (globalSessionAudioState == winrt::SND_Vol::AudioSessionState::Muted)
+        {
+            for (auto&& view : audioSessionViews)
+            {
+                if (!view.Muted())
                 {
-                    OutputDebugHString(mainAudioEndpoint->Name());
+                    count++;
+                }
+            }
 
-                    #if TRUE
-                    MainAudioEndpoint* mainAudioEndpointPtr = mainAudioEndpoint.release();
-                    mainAudioEndpointPtr->VolumeChanged(mainAudioEndpointVolumeChangedToken);
-                    mainAudioEndpointPtr->Unregister();
-                    mainAudioEndpointPtr->Release();
-
-                    mainAudioEndpoint = unique_ptr<MainAudioEndpoint>(audioController->GetMainAudioEndpoint());;
-                    if (mainAudioEndpoint->Register())
-                    {
-                        mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
-                    }
-
-                    DispatcherQueue().TryEnqueue([&]()
-                    {
-                        MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
-                        SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
-
-                        auto children = AudioSessionsPanel().Items();
-                        for (auto const& uiElement : children)
-                        {
-                            AudioSessionView view = uiElement.as<AudioSessionView>();
-
-                            for (size_t i = 0; i < audioSessions->size(); i++)
-                            {
-                                guid id = audioSessions->at(i)->Id();
-
-                                if (view.Id() == id)
-                                {
-                                    audioSessions->at(i)->Volume(view.Volume() / 100.f);
-                                }
-                            }
-                        }
-
-                    });
-                    #endif // FALSE
-                });
-
+            if (count == audioSessionViews.Size())
+            {
+                setMute = true;
+                globalSessionAudioState = AudioSessionState::Muted;
             }
             else
             {
-                // I18N
+                setMute = false;
+                globalSessionAudioState = AudioSessionState::Unmuted;
+            }
+        }
+
+        {
+            unique_lock lock{ audioSessionsMutex };
+            for (AudioSession* session : *audioSessions)
+            {
+                session->SetMute(setMute);
+            }
+        }
+
+        for (AudioSessionView view : audioSessionViews)
+        {
+            view.Muted(setMute);
+        }
+    }
+
+    void MainWindow::HorizontalViewMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        AudioSessionsScrollViewer().HorizontalScrollBarVisibility(ScrollBarVisibility::Auto);
+        AudioSessionsScrollViewer().VerticalScrollBarVisibility(ScrollBarVisibility::Disabled);
+        AudioSessionsPanel().Style(
+            RootGrid().Resources().Lookup(box_value(L"GridViewHorizontalLayout")).as<Style>()
+        );
+    }
+
+    void MainWindow::VerticalViewMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        AudioSessionsScrollViewer().HorizontalScrollBarVisibility(ScrollBarVisibility::Disabled);
+        AudioSessionsScrollViewer().VerticalScrollBarVisibility(ScrollBarVisibility::Auto);
+        AudioSessionsPanel().Style(
+            RootGrid().Resources().Lookup(box_value(L"GridViewVerticalLayout")).as<Style>()
+        );
+    }
+
+    void MainWindow::AutoViewMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        AudioSessionsScrollViewer().HorizontalScrollBarVisibility(ScrollBarVisibility::Disabled);
+        AudioSessionsScrollViewer().VerticalScrollBarVisibility(ScrollBarVisibility::Auto);
+
+        AudioSessionsPanel().Style(
+            RootGrid().Resources().Lookup(box_value(L"GridViewHorizontalLayout")).as<Style>()
+        );
+    }
+
+    void MainWindow::ReloadMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        if (oneMsTimer.IsRunning())
+        {
+            oneMsTimer.Stop();
+        }
+        if (fiveMstimer.IsRunning())
+        {
+            fiveMstimer.Stop();
+        }
+
+        // I18N:
+        StackPanel panel{};
+        panel.Orientation(Orientation::Horizontal);
+        panel.Spacing(10);
+        TextBlock title{};
+        title.Text(L"Reloading audio sessions...");
+        panel.Children().Append(title);
+        panel.Children().Append(ProgressRing());
+
+        WindowInfoBar().Content(panel);
+        WindowInfoBar().IsClosable(false);
+        WindowInfoBar().IsOpen(true);
+
+        audioSessionViews.Clear();
+        VolumeStoryboard().Stop();
+
+        // Clean up ComPtr/IUnknown objects
+        if (audioController)
+        {
+            if (mainAudioEndpoint)
+            {
+                mainAudioEndpoint->VolumeChanged(mainAudioEndpointVolumeChangedToken);
+                mainAudioEndpoint->Unregister();
+                mainAudioEndpoint->Release();
+            }
+
+            audioController->EndpointChanged(audioControllerEndpointChangedToken);
+            audioController->SessionAdded(audioControllerSessionAddedToken);
+
+            audioController->Unregister();
+            audioController->Release();
+        }
+
+        // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
+        {
+            unique_lock lock{ audioSessionsMutex };
+
+            for (size_t i = 0; i < audioSessions->size(); i++)
+            {
+                audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[audioSessions->at(i)->Id()]);
+                audioSessions->at(i)->Unregister();
+                audioSessions->at(i)->Release();
+            }
+
+            audioSessions->clear();
+        }
+
+
+        // Reload content
+        GUID appID{};
+        if (SUCCEEDED(UuidCreate(&appID)))
+        {
+            // Create and setup audio interfaces.
+            audioController = new LegacyAudioController(appID);
+            if (audioController->Register())
+            {
+                audioController->SessionAdded({ this, &MainWindow::AudioController_SessionAdded });
+                audioController->EndpointChanged({ this, &MainWindow::AudioController_EndpointChanged });
+            }
+            else
+            {
+                // I18N:
                 WindowInfoBar().Title(L"Audio sessions notifications unavailable");
                 WindowInfoBar().Severity(Controls::InfoBarSeverity::Warning);
                 WindowInfoBar().IsOpen(true);
             }
-            
 
-            mainAudioEndpoint = unique_ptr<MainAudioEndpoint>(audioController->GetMainAudioEndpoint());
+
+            mainAudioEndpoint = audioController->GetMainAudioEndpoint();
             if (mainAudioEndpoint->Register())
             {
                 mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
             }
-
+            
             MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
             SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
 
 
-            audioSessions = unique_ptr<vector<AudioSessionContainer>>(audioController->GetSessions());
+            audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
             for (size_t i = 0; i < audioSessions->size(); i++)
             {
-                CreateAudioView(audioSessions->at(i).get(), true);
+                CreateAudioView(audioSessions->at(i), true);
             }
 
-            // Get audio meter.
-            audioMeterInfo = IAudioMeterInformationPtr(mainAudioEndpoint->GetEndpointMeterInfo());
-            if (!audioMeterInfo.GetInterfacePtr())
-            {
-                OutputDebugString(L"\nFailed to create IAudioMeterInformation object.\n");
-            }
+            WindowInfoBar().Content(nullptr);
+            // I18N:
+            WindowInfoBar().Title(L"Reloaded");
+            WindowInfoBar().IsClosable(true);
         }
-        //TODO: if the GUID cannot be created, try another time. Show error message if still no GUID.
+        else
+        {
+            // I18N:
+            WindowInfoBar().Title(L"Hard failure, app needs to restart.");
+            WindowInfoBar().IsOpen(true);
+        }
     }
 
-    void MainWindow::CreateAudioView(AudioSession* audioSession, bool enabled)
+    void MainWindow::KeepOnTopToggleMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        if (!audioSession->Register())
-        {
-            OutputDebugHString(L"Failed to register audio session '" + audioSession->Name() + L"'");
-            enabled = false;
-        }
-
-        // Check for duplicates, multiple audio sessions might be grouped under one by the app/system owning the sessions.
-        int16_t duplicate = -1;
-        for (size_t j = 0; j < audioSessions->size(); j++)
-        {
-            if (audioSessions->at(j)->GroupingParam() == audioSession->GroupingParam())
-            {
-                duplicate++;
-            }
-        }
-
-        audioSessionVolumeChanged.push_back(
-            audioSession->VolumeChanged({ this, &MainWindow::AudioSession_VolumeChanged })
-        );
-        audioSessionsStateChanged.push_back(
-            audioSession->StateChanged({ this, &MainWindow::AudioSession_StateChanged })
-        );
-
-        if (duplicate > 0)
-        {
-            bool alreadyAdded = false;
-            for (auto&& children : AudioSessionsPanel().Items())
-            {
-                AudioSessionView audioSessionView = children.try_as<AudioSessionView>();
-                if (audioSessionView && audioSessionView.Header() == audioSession->Name())
-                {
-                    alreadyAdded = true;
-                    break;
-                }
-            }
-            if (alreadyAdded)
-            {
-                return;
-            }
-        }
-
-
-        AudioSessionView view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0);
-        view.Id(guid(audioSession->Id()));
-        view.Muted(audioSession->Muted());
-        view.SetStatus((AudioSessionState)audioSession->State());
-
-        volumeChangedRevokers.push_back(view.VolumeChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeChanged }));
-        volumeStateChangedRevokers.push_back(view.VolumeStateChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeStateChanged }));
-
-        AudioSessionsPanel().Items().Append(view);
+        bool alwaysOnTop = KeepOnTopToggleMenuFlyoutItem().IsChecked();
+        appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop(alwaysOnTop);
+        ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
     }
+
+    void MainWindow::HotKeySettingsMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        Window w = make<SecondWindow>();
+        w.Activate();
+    }
+
+    void MainWindow::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        mainAudioEndpoint->SetMute(MuteToggleButton().IsChecked().GetBoolean());
+        MuteToggleButtonFontIcon().Glyph(
+            MuteToggleButton().IsChecked().GetBoolean() ? L"\ue74f" : L"\ue767");
+    }
+
 
     void MainWindow::InitWindow()
     {
@@ -315,7 +404,7 @@ namespace winrt::SND_Vol::implementation
             appWindow.MoveAndResize(RectInt32(lastPosition.X, lastPosition.Y, width, height));
 
 
-#ifdef _DEBUG
+            #ifdef _DEBUG
             TextBlock timestamp{};
             timestamp.IsHitTestVisible(false);
             timestamp.Opacity(0.6);
@@ -326,7 +415,7 @@ namespace winrt::SND_Vol::implementation
 
             Grid::SetRow(timestamp, RootGrid().RowDefinitions().GetView().Size() - 1);
             RootGrid().Children().Append(timestamp);
-#endif // _DEBUG
+            #endif // _DEBUG
 
             appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>());
 
@@ -337,11 +426,15 @@ namespace winrt::SND_Vol::implementation
                 appWindow.TitleBar().ExtendsContentIntoTitleBar(true);
                 appWindow.TitleBar().IconShowOptions(IconShowOptions::HideIconAndSystemMenu);
 
+                LeftPaddingColumn().Width(GridLengthHelper::FromPixels(static_cast<double>(appWindow.TitleBar().LeftInset())));
+                
                 appWindow.TitleBar().ButtonBackgroundColor(Colors::Transparent());
                 appWindow.TitleBar().ButtonForegroundColor(Colors::White());
                 appWindow.TitleBar().ButtonInactiveBackgroundColor(Colors::Transparent());
-                appWindow.TitleBar().ButtonInactiveForegroundColor(Application::Current().Resources().TryLookup(box_value(L"AppTitleBarHoverColor")).as<Windows::UI::Color>());
-                appWindow.TitleBar().ButtonHoverBackgroundColor(Application::Current().Resources().TryLookup(box_value(L"ButtonHoverBackgroundColor")).as<Windows::UI::Color>());
+                appWindow.TitleBar().ButtonInactiveForegroundColor(
+                    Application::Current().Resources().TryLookup(box_value(L"AppTitleBarHoverColor")).as<Windows::UI::Color>());
+                appWindow.TitleBar().ButtonHoverBackgroundColor(
+                    Application::Current().Resources().TryLookup(box_value(L"ButtonHoverBackgroundColor")).as<Windows::UI::Color>());
                 appWindow.TitleBar().ButtonHoverForegroundColor(Colors::White());
                 appWindow.TitleBar().ButtonPressedBackgroundColor(Colors::Transparent());
                 appWindow.TitleBar().ButtonPressedForegroundColor(Colors::White());
@@ -349,7 +442,12 @@ namespace winrt::SND_Vol::implementation
                 auto&& presenter = appWindow.Presenter().as<OverlappedPresenter>();
                 presenter.IsMaximizable(false);
                 presenter.IsMinimizable(false);
-                presenter.IsAlwaysOnTop(true);
+                bool alwaysOnTop = unbox_value_or(
+                    ApplicationData::Current().LocalSettings().Values().TryLookup(L"IsAlwaysOnTop"),
+                    true
+                );
+                presenter.IsAlwaysOnTop(alwaysOnTop);
+                KeepOnTopToggleMenuFlyoutItem().IsChecked(alwaysOnTop);
             }
         }
     }
@@ -391,86 +489,217 @@ namespace winrt::SND_Vol::implementation
         }
     }
 
-    void MainWindow::AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs)
+    void MainWindow::LoadContent()
     {
-        if (timer.IsRunning())
+        GUID appID{};
+        if (SUCCEEDED(UuidCreate(&appID)))
         {
-            timer.Stop();
-            VolumeStoryboard().Stop();
+            // Create and setup peak meters timers
+            oneMsTimer = DispatcherQueue().CreateTimer();
+            fiveMstimer = DispatcherQueue().CreateTimer();
+
+            oneMsTimer.Interval(TimeSpan(std::chrono::milliseconds(1)));
+            oneMsTimer.Tick({ this, &MainWindow::UpdatePeakMeters });
+            
+            fiveMstimer.Interval(TimeSpan(std::chrono::milliseconds(85)));
+            fiveMstimer.Tick([&](auto, auto)
+            {
+                if (!loaded)
+                {
+                    return;
+                }
+
+                try
+                {
+                    float volume = mainAudioEndpoint->GetPeak();
+                    VolumeAnimation().To(static_cast<double>(volume));
+                    VolumeStoryboard().Begin();
+                }
+                catch (const hresult_error&)
+                {
+                    // TODO: Handle error.
+                }
+            });
+
+
+            // Create and setup audio interfaces.
+            audioController = new LegacyAudioController(appID);
+
+            if (audioController->Register())
+            {
+                audioController->SessionAdded({this, &MainWindow::AudioController_SessionAdded });
+                audioController->EndpointChanged({this, &MainWindow::AudioController_EndpointChanged });
+            }
+            else
+            {
+                // I18N
+                WindowInfoBar().Title(L"Audio sessions notifications unavailable");
+                WindowInfoBar().Severity(Controls::InfoBarSeverity::Warning);
+                WindowInfoBar().IsOpen(true);
+            }
+            
+
+            mainAudioEndpoint = audioController->GetMainAudioEndpoint();
+            if (mainAudioEndpoint->Register())
+            {
+                mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
+                mainAudioEndpointStateChangedToken = mainAudioEndpoint->StateChanged([this](IInspectable, bool muted)
+                {
+                    DispatcherQueue().TryEnqueue([this, muted]()
+                    {
+                        MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+                        MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
+                    });
+                });
+            }
+
+            MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
+            SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
+            MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+            MuteToggleButtonFontIcon().Glyph(
+                MuteToggleButton().IsChecked().GetBoolean() ? L"\ue74f" : L"\ue767");
+
+
+            audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
+            for (size_t i = 0; i < audioSessions->size(); i++)
+            {
+                CreateAudioView(audioSessions->at(i), true);
+            }
+        }
+        else
+        {
+            // I18N
+            WindowInfoBar().Title(L"Hard failure, app needs to restart.");
+            WindowInfoBar().IsOpen(true);
+        }
+    }
+
+    void MainWindow::CreateAudioView(AudioSession* audioSession, bool enabled)
+    {
+        if (!audioSession->Register())
+        {
+            OutputDebugHString(L"Failed to register audio session '" + audioSession->Name() + L"'");
+            enabled = false;
         }
 
-        if (audioController.get())
+        // Check for duplicates, multiple audio sessions might be grouped under one by the app/system owning the sessions.
         {
-            if (mainAudioEndpoint.get())
+            unique_lock lock{ audioSessionsMutex };
+
+            char hitcount = 0;
+            for (size_t j = 0; j < audioSessions->size(); j++)
+            {
+                if (audioSessions->at(j)->GroupingParam() == audioSession->GroupingParam())
+                {
+                    if (hitcount > 1)
+                    {
+                        return;
+                    }
+                    hitcount++;
+                }
+            }
+        }
+
+        audioSessionVolumeChanged.insert({ audioSession->Id(), audioSession->VolumeChanged({ this, &MainWindow::AudioSession_VolumeChanged }) });
+        audioSessionsStateChanged.insert({ audioSession->Id(), audioSession->StateChanged({ this, &MainWindow::AudioSession_StateChanged }) });
+
+        AudioSessionView view{ audioSession->Name(), audioSession->Volume() * 100.0 };
+        view.Id(guid(audioSession->Id()));
+        view.Muted(audioSession->Muted());
+        view.SetState((AudioSessionState)audioSession->State());
+        view.IsEnabled(enabled);
+
+        volumeChangedRevokers.push_back(view.VolumeChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeChanged }));
+        volumeStateChangedRevokers.push_back(view.VolumeStateChanged(auto_revoke, { this, &MainWindow::AudioSessionView_VolumeStateChanged }));
+
+        audioSessionViews.Append(view);
+    }
+
+    void MainWindow::SetDragRectangles()
+    {
+        RectInt32 dragRectangle{};
+
+        dragRectangle.X = static_cast<int32_t>(LeftPaddingColumn().ActualWidth() + SettingsButtonColumn().ActualWidth());
+        dragRectangle.Y = 0;
+        dragRectangle.Width = static_cast<int32_t>(TitleBarGrid().ActualWidth() - (LeftPaddingColumn().ActualWidth() + SettingsButtonColumn().ActualWidth()));
+        dragRectangle.Height = static_cast<int32_t>(TitleBarGrid().ActualHeight());
+
+        appWindow.TitleBar().SetDragRectangles(vector<RectInt32>{ dragRectangle });
+    }
+
+    void MainWindow::UpdatePeakMeters(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
+    {
+        if (!loaded) return;
+
+        for (size_t i = 0; i < audioSessions->size(); i++)
+        {
+            if (audioSessions->at(i))
+            {
+                guid id = audioSessions->at(i)->Id();
+
+                for (auto const& view : audioSessionViews)
+                {
+                    if (view.Id() == id)
+                    {
+                        view.SetPeak(audioSessions->at(i)->GetPeak());
+                    }
+                }
+            }
+        }
+    }
+
+    void MainWindow::AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs)
+    {
+        if (oneMsTimer.IsRunning())
+        {
+            oneMsTimer.Stop();
+        }
+
+        if (fiveMstimer.IsRunning())
+        {
+            fiveMstimer.Stop();
+        }
+
+        VolumeStoryboard().Stop();
+
+        // Clean up ComPtr/IUnknown objects
+        if (audioController)
+        {
+            if (mainAudioEndpoint)
             {
                 mainAudioEndpoint->VolumeChanged(mainAudioEndpointVolumeChangedToken);
                 mainAudioEndpoint->Unregister();
                 mainAudioEndpoint->Release();
             }
 
+            audioController->EndpointChanged(audioControllerEndpointChangedToken);
+            audioController->SessionAdded(audioControllerSessionAddedToken);
+
             audioController->Unregister();
             audioController->Release();
         }
 
-        // Unregister VolumeChanged event handler.
-        for (size_t i = 0; i < audioSessionVolumeChanged.size(); i++)
+        // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
         {
-            audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[i]);
-        }
+            unique_lock lock{ audioSessionsMutex };
 
-        // Unregister audio sessions from audio events and release com ptrs.
-        for (size_t i = 0; i < audioSessions->size(); i++)
-        {
-            audioSessions->at(i)->Unregister();
-            audioSessions->at(i)->Release();
-        }
-
-        ApplicationData::Current().LocalSettings().Values().Insert(L"WindowHeight", box_value(appWindow.Size().Height));
-        ApplicationData::Current().LocalSettings().Values().Insert(L"WindowWidth", box_value(appWindow.Size().Width));
-        ApplicationData::Current().LocalSettings().Values().Insert(L"WindowPosX", box_value(appWindow.Position().X));
-        ApplicationData::Current().LocalSettings().Values().Insert(L"WindowPosY", box_value(appWindow.Position().Y));
-    }
-
-
-    void MainWindow::UpdatePeakMeters(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
-    {
-        constexpr uint32_t refreshCount = 6u;
-        static uint32_t count = 0u;
-
-        if (!loaded) return;
-
-        if (count > refreshCount)
-        {
-            float volume = 0.f;
-            if (SUCCEEDED(audioMeterInfo->GetPeakValue(&volume)))
+            for (size_t i = 0; i < audioSessions->size(); i++)
             {
-                //SystemVolumeActivityBorder().Scale(::Numerics::float3(volume, 1, 1));
-                //BorderClippingCompositeTransform().ScaleX(volume);
-                double from = VolumeAnimation().To().GetDouble();
-                VolumeAnimation().From();
-                VolumeAnimation().To(volume);
-                VolumeStoryboard().Begin();
-            }
-            count = 0u;
-        }
-
-        for (size_t i = 0; i < audioSessions->size(); i++)
-        {
-            if (!loaded) return;
-
-            guid id = audioSessions->at(i)->Id();
-            auto children = AudioSessionsPanel().Items();
-            for (auto const& uiElement : children)
-            {
-                AudioSessionView view = uiElement.as<AudioSessionView>();
-                if (view.Id() == id)
-                {
-                    view.SetPeak(audioSessions->at(i)->GetPeak());
-                }
+                audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[audioSessions->at(i)->Id()]);
+                audioSessions->at(i)->Unregister();
+                audioSessions->at(i)->Release();
             }
         }
 
-        count++;
+
+        // Save settings
+        IPropertySet settings = ApplicationData::Current().LocalSettings().Values();
+        settings.Insert(L"WindowHeight", box_value(appWindow.Size().Height));
+        settings.Insert(L"WindowWidth", box_value(appWindow.Size().Width));
+        settings.Insert(L"WindowPosX", box_value(appWindow.Position().X));
+        settings.Insert(L"WindowPosY", box_value(appWindow.Position().Y));
+        settings.Insert(L"IsAlwaysOnTop", box_value(appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop()));
+        settings.Insert(L"Layout", box_value(0));
     }
 
     void MainWindow::MainAudioEndpoint_VolumeChanged(winrt::Windows::Foundation::IInspectable, const float& newVolume)
@@ -483,16 +712,14 @@ namespace winrt::SND_Vol::implementation
         });
     }
 
-    void MainWindow::AudioSession_VolumeChanged(const winrt::guid& sender, const float& newVolume)
+    void MainWindow::AudioSession_VolumeChanged(const winrt::guid& id, const float& newVolume)
     {
         if (!loaded) return;
 
-        DispatcherQueue().TryEnqueue([this, id = sender, newVolume]()
+        DispatcherQueue().TryEnqueue([this, id, newVolume]()
         {
-            auto children = AudioSessionsPanel().Items();
-            for (auto const& uiElement : children)
+            for (auto const&view : audioSessionViews)
             {
-                AudioSessionView view = uiElement.as<AudioSessionView>();
                 if (view.Id() == id)
                 {
                     view.Volume(static_cast<double>(newVolume) * 100.0);
@@ -501,38 +728,130 @@ namespace winrt::SND_Vol::implementation
         });
     }
 
-    void MainWindow::AudioSession_StateChanged(const winrt::guid& sender, const uint32_t& state)
+    void MainWindow::AudioSession_StateChanged(const winrt::guid& id, const uint32_t& state)
     {
         if (!loaded) return;
 
-        DispatcherQueue().TryEnqueue([this, id = sender, state]()
+        // Cast state to AudioSessionState, uint32_t is only used to cross ABI
+        AudioSessionState audioState = (AudioSessionState)state;
+
+        if (audioState == AudioSessionState::Expired)
         {
-            auto children = AudioSessionsPanel().Items();
-            for (auto const& uiElement : children)
+            unique_lock lock{ audioSessionsMutex };
+
+            oneMsTimer.Stop();
+
+            GUID sessionID = id;
+            for (size_t i = 0; i < audioSessions->size(); i++)
             {
-                AudioSessionView view = uiElement.as<AudioSessionView>();
+                if (audioSessions->at(i)->Id() == sessionID)
+                {
+                    AudioSession* session = audioSessions->at(i);
+                    session->Unregister();
+                    session->Release();
+
+                    audioSessions->erase(audioSessions->begin() + i);
+                }
+            }
+
+            oneMsTimer.Start();
+        }
+
+        DispatcherQueue().TryEnqueue([this, id, audioState]()
+        {
+            for (auto const& view : audioSessionViews)
+            {
                 if (view.Id() == id)
                 {
-                    AudioSessionState audioState = (AudioSessionState)state;
                     switch (audioState)
                     {
                         case AudioSessionState::Muted:
                             view.Muted(true);
                             break;
+
                         case AudioSessionState::Unmuted:
                             view.Muted(false);
                             break;
+
                         case AudioSessionState::Active:
                         case AudioSessionState::Inactive:
-                            view.SetStatus(audioState);
+                            view.SetState(audioState);
                             break;
+
                         case AudioSessionState::Expired:
                             uint32_t indexOf = 0;
-                            if (AudioSessionsPanel().Items().IndexOf(view, indexOf))
+                            if (audioSessionViews.IndexOf(view, indexOf))
                             {
-                                AudioSessionsPanel().Items().RemoveAt(indexOf);
+                                audioSessionViews.RemoveAt(indexOf);
                             }
                             break;
+                    }
+
+                    return;
+                }
+            }
+        });
+    }
+
+    void MainWindow::AudioController_SessionAdded(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
+    {
+        DispatcherQueue().TryEnqueue([this]()
+        {
+            oneMsTimer.Stop();
+            while (AudioSession* newSession = audioController->NewSession())
+            {
+                {
+                    unique_lock lock{ audioSessionsMutex };
+                    audioSessions->push_back(newSession);
+                }
+                CreateAudioView(newSession, true);
+            }
+            oneMsTimer.Start();
+        });
+    }
+
+    void MainWindow::AudioController_EndpointChanged(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
+    {
+        mainAudioEndpoint->VolumeChanged(mainAudioEndpointVolumeChangedToken);
+        mainAudioEndpoint->StateChanged(mainAudioEndpointStateChangedToken);
+        mainAudioEndpoint->Unregister();
+        mainAudioEndpoint->Release();
+
+        mainAudioEndpoint = audioController->GetMainAudioEndpoint();
+        if (mainAudioEndpoint->Register())
+        {
+            mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
+            mainAudioEndpointStateChangedToken = mainAudioEndpoint->StateChanged([this](IInspectable, bool muted)
+            {
+                DispatcherQueue().TryEnqueue([this, muted]()
+                {
+                    MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+                    MuteToggleButtonFontIcon().Glyph(
+                        muted ? L"\ue74f" : L"\ue767");
+                });
+            });
+        }
+
+        DispatcherQueue().TryEnqueue([&]()
+        {
+            MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
+            SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
+            MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+
+            unique_lock lock{ audioSessionsMutex };
+            /*for (auto const&view : audioSessionViews)
+            {*/
+            for (auto const& item : AudioSessionsPanel().Items())
+            {
+                AudioSessionView view = item.as<AudioSessionView>();
+
+                for (size_t i = 0; i < audioSessions->size(); i++)
+                {
+                    guid id = audioSessions->at(i)->Id();
+
+                    if (view.Id() == id)
+                    {
+                        audioSessions->at(i)->Volume(view.Volume() / 100.f);
                     }
                 }
             }

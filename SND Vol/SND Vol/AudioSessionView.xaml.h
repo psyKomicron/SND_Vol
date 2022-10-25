@@ -30,7 +30,7 @@ namespace winrt::SND_Vol::implementation
         winrt::event_token VolumeStateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, bool> const& handler);
         void VolumeStateChanged(winrt::event_token const& token);
 
-        void SetStatus(const winrt::SND_Vol::AudioSessionState& state);
+        void SetState(const winrt::SND_Vol::AudioSessionState& state);
         void SetPeak(float peak);
 
         void Slider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);

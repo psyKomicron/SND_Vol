@@ -10,24 +10,15 @@ using namespace winrt;
 namespace Audio
 {
 	MainAudioEndpoint::MainAudioEndpoint(IMMDevice* pDevice, GUID eventContextId) :
-		device{ pDevice },
-		eventContextId(eventContextId)
+		eventContextId{ eventContextId },
+		device{ pDevice }
 	{
-		/*if (FAILED(device->GetId(&deviceId)))
-		{
-			deviceId = nullptr;
-			OutputDebugString(L"MainAudioEndpoint failed to get ID\n");
-		}*/
-
 		check_hresult(device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&audioEndpointVolume));
-	}
 
-	MainAudioEndpoint::~MainAudioEndpoint()
-	{
-		/*if (deviceId)
+		if (FAILED(device->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&audioMeterInfo)))
 		{
-			CoTaskMemFree(deviceId);
-		}*/
+			OutputDebugHString(L"Main audio endpoint failed to get audio meter information, peak values will be blank.");
+		}
 	}
 
 
@@ -48,70 +39,51 @@ namespace Audio
 
 	void MainAudioEndpoint::Volume(const float& value)
 	{
-		if (audioEndpointVolume.GetInterfacePtr())
-		{
-			winrt::check_hresult(audioEndpointVolume->SetMasterVolumeLevelScalar(value, &eventContextId));
-		}
+		winrt::check_hresult(audioEndpointVolume->SetMasterVolumeLevelScalar(value, &eventContextId));
 	}
 
 	float MainAudioEndpoint::Volume() const
 	{
 		float volumeLevel = 0.0;
-		if (audioEndpointVolume.GetInterfacePtr())
-		{
-			winrt::check_hresult(audioEndpointVolume->GetMasterVolumeLevelScalar(&volumeLevel));
-		}
+		winrt::check_hresult(audioEndpointVolume->GetMasterVolumeLevelScalar(&volumeLevel));
 		return volumeLevel;
 	}
 
 	uint32_t MainAudioEndpoint::Channels() const
 	{
 		uint32_t channelCount = 0;
-		if (audioEndpointVolume.GetInterfacePtr())
-		{
-			check_hresult(audioEndpointVolume->GetChannelCount(&channelCount));
-		}
+		check_hresult(audioEndpointVolume->GetChannelCount(&channelCount));
 		return channelCount;
 	}
 
-
-	void MainAudioEndpoint::Mute()
+	bool MainAudioEndpoint::Muted() const
 	{
-		if (audioEndpointVolume.GetInterfacePtr())
-		{
-			winrt::check_hresult(audioEndpointVolume->SetMute(true, &eventContextId));
-		}
+		BOOL mute = false;
+		check_hresult(audioEndpointVolume->GetMute(&mute));
+		return mute & 1;
 	}
 
-	void MainAudioEndpoint::Unmute()
-	{
-		if (audioEndpointVolume.GetInterfacePtr())
-		{
-			winrt::check_hresult(audioEndpointVolume->SetMute(false, &eventContextId));
-		}
-	}
 
-	IAudioMeterInformation* MainAudioEndpoint::GetEndpointMeterInfo()
+	float MainAudioEndpoint::GetPeak() const
 	{
-		IAudioMeterInformation* audioMeterInfo = nullptr;
-		if (FAILED(device->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&audioMeterInfo)))
-		{
-			return nullptr;
-		}
-		else
-		{
-			return audioMeterInfo;
-		}
+		float peak = 0.f;
+		audioMeterInfo->GetPeakValue(&peak);
+		return peak;
 	}
 
 	bool MainAudioEndpoint::Register()
 	{
-		return audioEndpointVolume.GetInterfacePtr() && SUCCEEDED(audioEndpointVolume->RegisterControlChangeNotify(this));
+		return SUCCEEDED(audioEndpointVolume->RegisterControlChangeNotify(this));
 	}
 
 	bool MainAudioEndpoint::Unregister()
 	{
-		return audioEndpointVolume.GetInterfacePtr() && SUCCEEDED(audioEndpointVolume->UnregisterControlChangeNotify(this));
+		return SUCCEEDED(audioEndpointVolume->UnregisterControlChangeNotify(this));
+	}
+
+	void MainAudioEndpoint::SetMute(const bool& mute)
+	{
+		winrt::check_hresult(audioEndpointVolume->SetMute(mute, &eventContextId));
 	}
 
     #pragma region  IUnknown
@@ -159,8 +131,8 @@ namespace Audio
 		if (pNotify->guidEventContext != eventContextId)
 		{
 			// Handle notifications
-			OutputDebugHString(L"Master volume changed: " + winrt::to_hstring(pNotify->fMasterVolume));
 			e_volumeChanged(winrt::Windows::Foundation::IInspectable(), pNotify->fMasterVolume);
+			e_stateChanged(winrt::Windows::Foundation::IInspectable(), pNotify->bMuted & 1);
 		}
 
 		return S_OK;

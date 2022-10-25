@@ -7,8 +7,6 @@
 
 namespace Audio
 {
-    using AudioSessionContainer = std::unique_ptr<AudioSession>;
-
     class LegacyAudioController : public IComEventImplementation, private IAudioSessionNotification, private IMMNotificationClient
     {
     public:
@@ -37,17 +35,20 @@ namespace Audio
         bool Register();
         bool Unregister();
 
-        /// <summary>
-        /// Enumerates current audio sessions.
-        /// </summary>
-        /// <returns>Audio sessions currently active</returns>
-        std::vector<AudioSessionContainer>* GetSessions();
-        /// <summary>
-        /// Newly created sessions. Call in loop to get all the new sessions.
-        /// </summary>
-        /// <param name="handler"></param>
-        /// <returns></returns>
+        /**
+         * @brief Enumerates current audio sessions.
+         * @return Audio sessions currently active
+        */
+        std::vector<AudioSession*>* GetSessions();
+        /**
+         * @brief Newly created sessions. Call in loop to get all the new sessions.
+         * @return 
+        */
         AudioSession* NewSession();
+        /**
+         * @brief 
+         * @return 
+        */
         MainAudioEndpoint* GetMainAudioEndpoint();
 
     private:
@@ -56,8 +57,7 @@ namespace Audio
         IAudioSessionManager2Ptr audioSessionManager{ nullptr };
         IMMDeviceEnumeratorPtr deviceEnumerator{ nullptr };
         IAudioSessionEnumeratorPtr audioSessionEnumerator{ nullptr };
-        bool ignoreNotification = false;
-        std::stack<AudioSessionContainer> newSessions{};
+        std::stack<AudioSession*> newSessions{};
         bool isRegistered = false;
 
         winrt::event<winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>> e_sessionAdded{};

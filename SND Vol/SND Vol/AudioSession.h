@@ -7,7 +7,7 @@ namespace Audio
     class AudioSession : private IAudioSessionEvents, public IComEventImplementation
     {
     public:
-        AudioSession(IAudioSessionControl2* audioSessionControl, GUID globalAudioSessionID, uint32_t channel);
+        AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId, uint32_t channel);
 
         uint32_t Channel();
         GUID GroupingParam();
@@ -19,6 +19,10 @@ namespace Audio
          * @return The name of the session
         */
         winrt::hstring Name();
+        /**
+         * @brief State of the session (active, inactive, expired).
+         * @return AudioSessionState
+        */
         AudioSessionState State() const;
         /**
          * @brief Sets the volume of the session.
@@ -30,7 +34,7 @@ namespace Audio
          * @param desiredVolume 
          * @return True if the fonction succeeded
         */
-        bool Volume(float const& desiredVolume);
+        void Volume(float const& desiredVolume);
 
         /**
          * @brief State changed event subscriber.
@@ -47,14 +51,26 @@ namespace Audio
         winrt::event_token VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float> const& handler);
         void VolumeChanged(winrt::event_token const& eventToken);
 
+        /**
+         * @brief Registers the audio session to system notifications.
+         * @return true if successful
+        */
         bool Register();
+        /**
+         * @brief Unregisters the audio session to system notifications.
+         * @return true if successful
+        */
         bool Unregister();
         /**
          * @brief Sets the session audio level to mute if state == true.
          * @param state 
          * @return True if the audio session has been muted.
         */
-        bool SetMute(bool const& state);
+        bool SetMute(bool const& mute);
+        /**
+         * @brief Get the normalized peak PCM value for this audio session.
+         * @return float between 0 and 1
+        */
         float GetPeak() const;
 
         // IUnknown
@@ -65,25 +81,26 @@ namespace Audio
     private:
         IAudioSessionControl2Ptr audioSessionControl{ nullptr };
         IAudioMeterInformationPtr audioMeter{ nullptr };
-        GUID globalAudioSessionID;
+        ISimpleAudioVolumePtr simpleAudioVolume{ nullptr };
+        GUID eventContextId;
         GUID groupingParam;
         GUID id;
         bool isRegistered = false;
         bool isSystemSoundSession = false;
         bool muted;
         DWORD processPID = 0;
-        LONG refCount = 1;
+        ::winrt::impl::atomic_ref_count refCount{ 1 };
         winrt::hstring sessionName{};
         uint32_t channel;
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float>> e_volumeChanged{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t>> e_stateChanged{};
 
-        /// <summary>
-        /// Gets the process name from the audio session's PID.
-        /// </summary>
-        /// <param name="pid">PID to get the name from</param>
-        /// <returns>The name of the process</returns>
+        /**
+         * @brief Gets the process name from the audio session's PID.
+         * @param pid PID to get the name from
+         * @return The name of the process
+        */
         winrt::hstring GetProcessName(DWORD const& pid);
 
         // IAudioSessionEvents

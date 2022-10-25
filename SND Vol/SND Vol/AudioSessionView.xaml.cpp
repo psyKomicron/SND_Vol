@@ -6,7 +6,6 @@
 
 #include <math.h>
 #include <limits>
-using namespace winrt::Windows::UI;
 
 using namespace winrt;
 
@@ -15,6 +14,7 @@ using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
 using namespace winrt::Microsoft::UI::Xaml::Media;
 
 using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::UI;
 
 
 namespace winrt::SND_Vol::implementation
@@ -131,35 +131,32 @@ namespace winrt::SND_Vol::implementation
     #pragma endregion
 
 
-    void AudioSessionView::SetStatus(const AudioSessionState& state)
+    void AudioSessionView::SetState(const AudioSessionState& state)
     {
         auto resources = Application::Current().Resources();
         switch (state)
         {
             case AudioSessionState::Active:
                 isActive = true;
-                StatusEllipse().Fill(::Media::SolidColorBrush(Windows::UI::Colors::Green()));
-                StatusEllipse().Stroke(::Media::SolidColorBrush(Windows::UI::Colors::Green()));
+                VolumeFontIcon().Foreground(::Media::SolidColorBrush(Windows::UI::Colors::Green()));
                 break;
 
             case AudioSessionState::Expired:
             case AudioSessionState::Inactive:
             default:
                 isActive = false;
-                StatusEllipse().Fill(::Media::SolidColorBrush(Windows::UI::Colors::Transparent()));
-                StatusEllipse().Stroke(::Media::SolidColorBrush(Windows::UI::Colors::Orange()));
+                VolumeFontIcon().Foreground(::Media::SolidColorBrush(Windows::UI::Colors::White()));
                 break;
         }
     }
 
     void AudioSessionView::SetPeak(float peak)
     {
-        if (!isActive) return;
+        /*if (!isActive) return;
 
         if (peak > 0.9f)
         {
             StatusEllipse().Fill(SolidColorBrush(Colors::LimeGreen()));
-            //StatusEllipse().Stroke(SolidColorBrush(Colors::Transparent()));
         }
         else if (peak > 0.5f)
         {
@@ -168,13 +165,11 @@ namespace winrt::SND_Vol::implementation
         else if (peak > 0.2f)
         {
             StatusEllipse().Fill(SolidColorBrush(Colors::DarkGreen()));
-            //StatusEllipse().Stroke(SolidColorBrush(Colors::Transparent()));
         }
-        else //if (peak > 0.1f)
+        else
         {
             StatusEllipse().Fill(SolidColorBrush(Colors::Transparent()));
-            //StatusEllipse().Stroke(SolidColorBrush(Colors::Green()));
-        }
+        }*/
     }
 
 
@@ -193,7 +188,8 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const& e)
     {
-        if (MuteToggleButton().IsChecked().GetBoolean())
+        _muted = !_muted;
+        if (_muted)
         {
             _volumeGlyph = L"\ue74f";
         }
@@ -203,7 +199,7 @@ namespace winrt::SND_Vol::implementation
         }
 
         e_propertyChanged(*this, PropertyChangedEventArgs(L"VolumeGlyph"));
-        e_volumeStateChanged(*this, MuteToggleButton().IsChecked().GetBoolean());
+        e_volumeStateChanged(*this, _muted);
     }
 
     void AudioSessionView::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)

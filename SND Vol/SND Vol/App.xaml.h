@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "App.xaml.g.h"
+#include "KeyIcon.h"
+#include "LetterKeyIcon.h"
 
 namespace winrt::SND_Vol::implementation
 {

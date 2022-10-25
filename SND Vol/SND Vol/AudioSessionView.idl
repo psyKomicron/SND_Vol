@@ -24,7 +24,7 @@ namespace SND_Vol
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs> VolumeChanged;
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Boolean> VolumeStateChanged;
 
-        void SetStatus(AudioSessionState state);
+        void SetState(AudioSessionState state);
         void SetPeak(Single peak);
     }
 }

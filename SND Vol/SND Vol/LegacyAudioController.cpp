@@ -96,22 +96,24 @@ namespace Audio
     }
     #pragma endregion
 
-    vector<AudioSessionContainer>* LegacyAudioController::GetSessions()
+    vector<AudioSession*>* LegacyAudioController::GetSessions()
     {
-        vector<AudioSessionContainer>* sessions = new vector<AudioSessionContainer>();
+        vector<AudioSession*>* sessions = new vector<AudioSession*>();
         int sessionCount;
         if (SUCCEEDED(audioSessionEnumerator->GetCount(&sessionCount)))
         {
             for (int i = 0; i < sessionCount; i++)
             {
                 GUID groupingParam{};
+
                 IAudioSessionControlPtr control;
                 IAudioSessionControl2* control2 = nullptr;
+
                 if (SUCCEEDED(audioSessionEnumerator->GetSession(i, &control)) &&
                     SUCCEEDED(control->GetGroupingParam(&groupingParam)) &&
                     SUCCEEDED(control->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
                 {
-                    sessions->push_back(make_unique<AudioSession>(control2, audioSessionID, i));
+                    sessions->push_back(new AudioSession(control2, audioSessionID, i));
                 }
             }
         }
@@ -127,7 +129,9 @@ namespace Audio
         }
         else
         {
-            return newSessions.top().release();
+            AudioSession* ptr = newSessions.top();
+            newSessions.pop();
+            return ptr;
         }
     }
 
@@ -142,19 +146,19 @@ namespace Audio
 
     STDMETHODIMP LegacyAudioController::OnSessionCreated(IAudioSessionControl* NewSession) noexcept
     {
+        static bool ignoreNotification = true;
+
         // HACK: Audio session creation notifications are sent in double. Once we receive one, we will ignore the next. This can cause non doubled events to be ignored.
         if (!ignoreNotification)
         {
             IAudioSessionControl2* control2 = nullptr;
             if (SUCCEEDED(NewSession->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
             {
-                int count = 0;
-                audioSessionEnumerator->GetCount(&count);
-                if (count > 0)
-                {
-                    count--;
-                }
-                newSessions.push(AudioSessionContainer(new AudioSession(control2, audioSessionID, count)));
+                // TODO: Insure thread safety.
+                OutputDebugHString(L"New session created");
+
+                // TODO: Remove channel count.
+                newSessions.push(new AudioSession(control2, audioSessionID, 0));
 
                 e_sessionAdded(winrt::Windows::Foundation::IInspectable(), winrt::Windows::Foundation::IInspectable());
             }
@@ -183,7 +187,7 @@ namespace Audio
         return S_OK;
     }
 
-    STDMETHODIMP LegacyAudioController::OnDeviceStateChanged(__in LPCWSTR pwstrDeviceId, __in DWORD /*dwNewState*/) noexcept
+    STDMETHODIMP LegacyAudioController::OnDeviceStateChanged(__in LPCWSTR /*pwstrDeviceId*/, __in DWORD /*dwNewState*/) noexcept
     {
         return S_OK;
     }
