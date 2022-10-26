@@ -162,9 +162,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="MainWindow.xaml" />
-    <Page Include="ResourceDictionary1.xaml">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-    </Page>
     <Page Include="SecondWindow.xaml">
       <SubType>Designer</SubType>
     </Page>

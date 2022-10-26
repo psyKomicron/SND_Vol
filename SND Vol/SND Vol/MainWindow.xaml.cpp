@@ -43,8 +43,9 @@ namespace winrt::SND_Vol::implementation
         InitWindow();
         SetBackground();
 
-#ifdef DEBUG
-        Application::Current().UnhandledException([&](IInspectable const&/*sender*/, UnhandledExceptionEventArgs const&e)
+        #ifdef DEBUG
+
+        Application::Current().UnhandledException([&](IInspectable const&/*sender*/, UnhandledExceptionEventArgs const& e)
         {
             TextBlock block{};
             block.TextWrapping(TextWrapping::Wrap);
@@ -52,8 +53,12 @@ namespace winrt::SND_Vol::implementation
             WindowInfoBar().Content(block);
             WindowInfoBar().IsOpen(true);
         });
-#endif // DEBUG
 
+        #else
+
+        HotKeySettingsMenuFlyoutItem().IsEnabled(false);
+
+        #endif // DEBUG
     }
 
     void MainWindow::OnLoaded(IInspectable const&, RoutedEventArgs const&)
@@ -627,6 +632,22 @@ namespace winrt::SND_Vol::implementation
         appWindow.TitleBar().SetDragRectangles(vector<RectInt32>{ dragRectangle });
     }
 
+    void MainWindow::SaveAudioLevels()
+    {
+        ApplicationDataContainer audioLevels = ApplicationData::Current().LocalSettings().CreateContainer(L"AudioLevels", 
+            ApplicationData::Current().LocalSettings().Containers().HasKey(L"AudioLevels") ? ApplicationDataCreateDisposition::Existing : ApplicationDataCreateDisposition::Always
+        );
+
+        // TODO: Check if i need to take the mutex or not.
+        for (size_t i = 0; i < audioSessions->size(); i++)
+        {
+            ApplicationDataCompositeValue compositeValue{};
+            compositeValue.Insert(L"Muted", box_value(audioSessions->at(i)->Muted()));
+            compositeValue.Insert(L"Level", box_value(audioSessions->at(i)->Volume()));
+            audioLevels.Values().Insert(audioSessions->at(i)->Name(), compositeValue);
+        }
+    }
+
     void MainWindow::UpdatePeakMeters(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
     {
         if (!loaded) return;
@@ -682,6 +703,8 @@ namespace winrt::SND_Vol::implementation
         // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
         {
             unique_lock lock{ audioSessionsMutex };
+
+            SaveAudioLevels();
 
             for (size_t i = 0; i < audioSessions->size(); i++)
             {

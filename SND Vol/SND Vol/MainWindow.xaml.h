@@ -78,6 +78,7 @@ namespace winrt::SND_Vol::implementation
         void LoadContent();
         void CreateAudioView(Audio::AudioSession* audioSession, bool enabled);
         void SetDragRectangles();
+        void SaveAudioLevels();
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
         void UpdatePeakMeters(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
         void MainAudioEndpoint_VolumeChanged(winrt::Windows::Foundation::IInspectable /*sender*/, const float& newVolume);

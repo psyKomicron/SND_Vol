@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="RootGrid" Background="{ThemeResource SolidBackgroundFillColorSecondary}" Loaded="Grid_Loaded" RowSpacing="7" PreviewKeyDown="HotKeysViewerGrid_PreviewKeyUp" KeyUp="RootGrid_KeyUp">
+    <Grid x:Name="RootGrid" Background="{ThemeResource SolidBackgroundFillColorSecondary}" Loaded="Grid_Loaded" RowSpacing="7">
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>
@@ -63,60 +63,7 @@
 
             <Border Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="1"/>
 
-            <ListView Grid.Row="2">
-
-                <Grid Padding="13,10" CornerRadius="{StaticResource ControlCornerRadius}" ColumnSpacing="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="Test control" VerticalAlignment="Center"/>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <ToggleButton x:Name="ControlToggleButton" Content="Control" CornerRadius="5,0,0,5"/>
-                        <ToggleButton x:Name="AltToggleButton" Content="Alt" CornerRadius="0" IsChecked="True"/>
-                        <ToggleButton x:Name="WindowsToggleButton" Content="Windows" CornerRadius="0"/>
-                        <ToggleButton x:Name="ShiftToggleButton" Content="Shift" CornerRadius="0,5,5,0"/>
-                    </StackPanel>
-
-                    <ContentControl x:Name="IconContentControl" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Grid Style="{StaticResource KeyIconGridStyle}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <Viewbox Margin="0,2,0,2" Height="{StaticResource FontIconViewBoxHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <FontIcon Glyph="&#xf08d;"/>
-                            </Viewbox>
-                        </Grid>
-                    </ContentControl>
-
-                    <ToggleSwitch IsOn="True" Grid.Column="3" Style="{StaticResource SettingToggleSwitchStyle}" HorizontalAlignment="Right"/>
-                </Grid>
-
-                <ListViewHeaderItem/>
-
-                <w:HotKeyView
-                    x:Name="SwitchStateHotKey"
-                    HotKeyName="Mute/unmute all tracks"/>
-                
-                <w:HotKeyView
-                    x:Name="SystemVolumeUpHotKey"
-                    HotKeyName="System volume up"/>
-                
-                <w:HotKeyView
-                    x:Name="SystemVolumeDownHotKey"
-                    HotKeyName="System volume down"/>
-
-                <!--
-                <w:HotKeyView
-                    Modifiers="None"
-                    Key=""
-                -->
-
-            </ListView>
+            <ListView Grid.Row="2" SelectionMode="None" ItemsSource="{x:Bind HotKeys}"/>
         </Grid>
 
         <Grid

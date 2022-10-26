@@ -1,8 +1,12 @@
+import "HotKeyView.idl";
+
 namespace SND_Vol
 {
     [default_interface]
     runtimeclass SecondWindow : Microsoft.UI.Xaml.Window
     {
         SecondWindow();
+
+    IObservableVector<HotKeyView> HotKeys{ get; };
     }
 }

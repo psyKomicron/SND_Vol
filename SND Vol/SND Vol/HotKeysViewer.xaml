@@ -68,7 +68,7 @@
                         <Border x:Name="EscKey" Margin="0,0,10,0"/>
 
                         <StackPanel Grid.Column="1">
-                            <Border x:Name="F1Key" Background="{StaticResource AccentFillColorDefaultBrush}"/>
+                            <Border x:Name="F1Key"/>
                             <Border x:Name="F2Key"/>
                             <Border x:Name="F3Key"/>
                             <Border x:Name="F4Key"/>
@@ -183,7 +183,7 @@
                             <Style TargetType="Border">
                                 <Setter Property="Height" Value="30" />
                                 <Setter Property="Width" Value="40" />
-                                <Setter Property="Background" Value="{ThemeResource ApplicationForegroundThemeBrush}" />
+                                <Setter Property="Background" Value="DimGray" />
                                 <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
                                 <Setter Property="HorizontalAlignment" Value="Left" />
                             </Style>
@@ -232,10 +232,10 @@
                             <RowDefinition/>
                         </Grid.RowDefinitions>
 
-                        <Border Grid.Column="1"/>
-                        <Border Grid.Row="1"/>
-                        <Border Grid.Row="1" Grid.Column="1"/>
-                        <Border Grid.Row="1" Grid.Column="2"/>
+                        <Border x:Name="UpKey" Grid.Column="1"/>
+                        <Border x:Name="RightKey" Grid.Row="1"/>
+                        <Border x:Name="DownKey" Grid.Row="1" Grid.Column="1"/>
+                        <Border x:Name="LeftKey" Grid.Row="1" Grid.Column="2"/>
                     </Grid>
                 </Grid>
 

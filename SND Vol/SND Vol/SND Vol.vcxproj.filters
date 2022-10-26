@@ -9,7 +9,6 @@
     <Page Include="SecondWindow.xaml" />
     <Page Include="HotKeyView.xaml" />
     <Page Include="Themes\Generic.xaml" />
-    <Page Include="ResourceDictionary1.xaml" />
     <Page Include="HotKeysViewer.xaml">
       <Filter>Controls</Filter>
     </Page>

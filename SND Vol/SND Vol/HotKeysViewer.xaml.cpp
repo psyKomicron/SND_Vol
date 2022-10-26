@@ -94,12 +94,16 @@ namespace winrt::SND_Vol::implementation
                 case VirtualKey::Home:
                     break;
                 case VirtualKey::Left:
+                    LeftKey().Background(GetActiveBrush());
                     break;
                 case VirtualKey::Up:
+                    UpKey().Background(GetActiveBrush());
                     break;
                 case VirtualKey::Right:
+                    RightKey().Background(GetActiveBrush());
                     break;
                 case VirtualKey::Down:
+                    DownKey().Background(GetActiveBrush());
                     break;
                 case VirtualKey::Select:
                     break;

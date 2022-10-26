@@ -102,7 +102,7 @@
 
                         <MenuFlyoutSeparator/>
 
-                        <MenuFlyoutItem Text="Hotkeys settings" Click="HotKeySettingsMenuFlyoutItem_Click"/>
+                        <MenuFlyoutItem x:Name="HotKeySettingsMenuFlyoutItem" Text="Hotkeys settings" Click="HotKeySettingsMenuFlyoutItem_Click"/>
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
