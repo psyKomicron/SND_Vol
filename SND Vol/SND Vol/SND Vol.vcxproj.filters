@@ -4,18 +4,30 @@
     <ApplicationDefinition Include="App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="MainWindow.xaml" />
-    <Page Include="AudioSessionView.xaml" />
-    <Page Include="SecondWindow.xaml" />
-    <Page Include="HotKeyView.xaml" />
     <Page Include="Themes\Generic.xaml" />
     <Page Include="HotKeysViewer.xaml">
       <Filter>Controls</Filter>
+    </Page>
+    <Page Include="MessageBar.xaml">
+      <Filter>Controls</Filter>
+    </Page>
+    <Page Include="HotKeyView.xaml">
+      <Filter>Controls</Filter>
+    </Page>
+    <Page Include="AudioSessionView.xaml">
+      <Filter>Controls</Filter>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <Filter>Windows</Filter>
+    </Page>
+    <Page Include="SecondWindow.xaml">
+      <Filter>Windows</Filter>
     </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
+    <Midl Include="HotKeyViewModel.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -53,7 +65,6 @@
     <ClInclude Include="MainAudioEndpoint.h">
       <Filter>Audio</Filter>
     </ClInclude>
-    <ClInclude Include="IComEventImplementation.h" />
     <ClInclude Include="HotKeyManager.h">
       <Filter>System</Filter>
     </ClInclude>
@@ -61,6 +72,9 @@
       <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="IComEventImplementation.h">
+      <Filter>System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -77,6 +91,9 @@
     </Filter>
     <Filter Include="Controls">
       <UniqueIdentifier>{575436b8-e91e-46a3-8497-892f793ad9b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{43654ea6-5b0c-4f61-a9d9-61d4cf2a7a65}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

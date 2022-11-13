@@ -4,21 +4,22 @@
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Version.lib")
 
-#include <windows.h>
-#include <unknwn.h>
-#include <restrictederrorinfo.h>
-#include <hstring.h>
-#include <mmdeviceapi.h>
-#include <endpointvolume.h>
 #include <Audiopolicy.h>
+#include <chrono>
 #include <comdef.h>
 #include <comip.h>
-#include <Psapi.h>
 #include <dispatcherqueue.h>
-#include <rpc.h>
-#include <chrono>
-#include <mutex>
+#include <endpointvolume.h>
+#include <hstring.h>
 #include <math.h>
+#include <mmdeviceapi.h>
+#include <mutex>
+#include <Psapi.h>
+#include <restrictederrorinfo.h>
+#include <rpc.h>
+#include <Shobjidl.h>
+#include <unknwn.h>
+#include <windows.h>
 
 
 #ifdef _DEBUG

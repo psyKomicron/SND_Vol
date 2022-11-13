@@ -22,3 +22,9 @@
 #define __in _SAL_VERSION_CHECK(__in)
 #define __in_opt _SAL1_Source_(__in_opt, (), _In_opt_)
 #define __in_opt _SAL_VERSION_CHECK(__in_opt)
+#define VK_UP
+#define VK_DOWN
+#define VK_NAVIGATION_UP
+#define VK_NAVIGATION_DOWN
+#define VK_PRIOR
+#define VK_NEXT
