@@ -29,13 +29,22 @@ namespace winrt::SND_Vol::implementation
         void VolumeChanged(winrt::event_token const& token);
         winrt::event_token VolumeStateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, bool> const& handler);
         void VolumeStateChanged(winrt::event_token const& token);
+        winrt::event_token Hidden(winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, winrt::Windows::Foundation::IInspectable> const& handler);
+        void Hidden(winrt::event_token const& token);
 
         void SetState(const winrt::SND_Vol::AudioSessionState& state);
         void SetPeak(float peak);
+        void SetPeak(const float& peak1, const float& peak2);
 
-        void Slider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
-        void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void Grid_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
+        void Slider_ValueChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
+        void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void Grid_SizeChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
+        void UserControl_Loaded(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void RootGrid_PointerEntered(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const&);
+        void RootGrid_PointerExited(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const&);
+        void RootGrid_RightTapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::RightTappedRoutedEventArgs const& e);
+        void LockMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void HideMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
         double _volume = 50.0;
@@ -44,16 +53,16 @@ namespace winrt::SND_Vol::implementation
         winrt::guid _id{};
         bool _muted = false;
         float lastPeak = 0;
-        bool isActive;
+        bool isActive = false;
+        bool isLocked = false;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs>>
             e_volumeChanged;
         winrt::event< winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, bool> > e_volumeStateChanged;
+        winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, winrt::Windows::Foundation::IInspectable>> e_hidden;
 
         void SetGlyph();
-    public:
-        void UserControl_Loaded(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 

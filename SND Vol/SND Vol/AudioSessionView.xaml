@@ -18,20 +18,138 @@
     Loaded="UserControl_Loaded">
 
     <Grid
+        x:Name="RootGrid"
         Padding="0,5,0,3"
         RowSpacing="4"
         HorizontalAlignment="Stretch"
         Background="{x:Bind Background, Mode=OneWay}"
         CornerRadius="{x:Bind CornerRadius, Mode=OneWay}"
-        SizeChanged="Grid_SizeChanged">
+        BorderThickness="1"
+        BorderBrush="Transparent"
+        SizeChanged="Grid_SizeChanged"
+        PointerEntered="RootGrid_PointerEntered"
+        PointerExited="RootGrid_PointerExited">
+        <Grid.BackgroundTransition>
+            <BrushTransition Duration="0:0:0.083"/>
+        </Grid.BackgroundTransition>
+        <Grid.Resources>
+            <Storyboard x:Name="LeftPeakStoryboard">
+                <DoubleAnimation 
+                    x:Name="LeftPeakAnimation"
+                    Storyboard.TargetName="BorderClippingLeftCompositeTransform"
+                    Storyboard.TargetProperty="ScaleY"
+                    To="0"
+                    Duration="{StaticResource AudioMeterAnimationDuration}"/>
+            </Storyboard>
+
+            <Storyboard x:Name="RightPeakStoryboard">
+                <DoubleAnimation 
+                    x:Name="RightPeakAnimation"
+                    Storyboard.TargetName="BorderClippingRightCompositeTransform"
+                    Storyboard.TargetProperty="ScaleY"
+                    To="0"
+                    Duration="{StaticResource AudioMeterAnimationDuration}"/>
+            </Storyboard>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition x:Name="CenterRow" Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <Grid.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem IsEnabled="False" Text="{x:Bind Header, Mode=OneWay}"/>
+                <MenuFlyoutItem Text="Lock" Click="LockMenuFlyoutItem_Click"/>
+                <MenuFlyoutItem Text="Hide" Click="HideMenuFlyoutItem_Click"/>
+            </MenuFlyout>
+        </Grid.ContextFlyout>
 
-        <TextBlock 
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Normal"/>
+
+                <VisualState x:Name="PointerOver">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
+                        </ObjectAnimationUsingKeyFrames>
+
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlElevationBorderBrush}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+
+            <VisualStateGroup>
+                <VisualState x:Name="Unlocked"/>
+
+                <VisualState x:Name="Locked">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlFillColorDisabledBrush}" />
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+
+                    <VisualState.Setters>
+                        <Setter Target="VolumeSlider.IsEnabled" Value="False"/>
+                        <Setter Target="HeaderTextBlock.Foreground" Value="{ThemeResource ControlFillColorDisabled}"/>
+                        <Setter Target="MuteToggleButton.IsHitTestVisible" Value="False"/>
+                        <Setter Target="LockIcon.Visibility" Value="Visible"/>
+                        <Setter Target="LockIconBackground.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <Border
+            x:Name="VolumePeakBorderLeft"
+            Background="{StaticResource AudioMeterBackground}"
+            Opacity="0.5"
+            CornerRadius="0"
+            Height="171"
+            Width="7"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Margin="0,-5,0,-3"
+            Grid.RowSpan="4"
+            Translation="-6,-5,0">
+
+            <Border.Clip>
+                <RectangleGeometry x:Name="BorderClippingLeft" Rect="0 0 10 171">
+                    <RectangleGeometry.Transform>
+                        <CompositeTransform x:Name="BorderClippingLeftCompositeTransform" ScaleY="0" Rotation="180" TranslateY="171" TranslateX="10"/>
+                    </RectangleGeometry.Transform>
+                </RectangleGeometry>
+            </Border.Clip>
+        </Border>
+
+        <Border
+            x:Name="VolumePeakBorderRight"
+            Background="{StaticResource AudioMeterBackground}"
+            Opacity="0.5"
+            CornerRadius="0"
+            Height="171"
+            Width="7"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Margin="0,-5,0,-3"
+            Grid.RowSpan="4"
+            Translation="7,-5,0">
+
+            <Border.Clip>
+                <RectangleGeometry x:Name="BorderClippingRight" Rect="0 0 10 171">
+                    <RectangleGeometry.Transform>
+                        <CompositeTransform x:Name="BorderClippingRightCompositeTransform" ScaleY="0" Rotation="180" TranslateY="171" TranslateX="10"/>
+                    </RectangleGeometry.Transform>
+                </RectangleGeometry>
+            </Border.Clip>
+        </Border>
+        
+
+        <TextBlock
+            x:Name="HeaderTextBlock"
             Text="{x:Bind Header, Mode=OneWay}"
             FontSize="14"
             Margin="3,0,3,0"
@@ -44,6 +162,7 @@
             Grid.Row="0"/>
 
         <Slider
+            x:Name="VolumeSlider"
             Value="{x:Bind Volume, Mode=OneWay}"
             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
             Maximum="100"
@@ -80,5 +199,24 @@
             VerticalAlignment="Top">
         </Ellipse>-->
 
+        <Border
+            x:Name="LockIconBackground"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Grid.Row="2" 
+            Height="36" 
+            Width="36"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            Opacity="0.97"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            Visibility="Collapsed"/>
+        <FontIcon 
+            x:Name="LockIcon"
+            Glyph="&#xe72e;"
+            HorizontalAlignment="Center" 
+            VerticalAlignment="Center"
+            Grid.Row="2"
+            Visibility="Collapsed" 
+            Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"/>
     </Grid>
 </UserControl>

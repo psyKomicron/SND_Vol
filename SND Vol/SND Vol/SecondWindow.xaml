@@ -31,62 +31,12 @@
                 Margin="7,0,0,2"/>
         </Grid>
 
-        <Grid x:Name="ContentGrid" Grid.Row="1" RowSpacing="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="1"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <Grid Background="{ThemeResource ExpanderBackground}" Padding="13,10" CornerRadius="{StaticResource ControlCornerRadius}" ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Text="First keybind" VerticalAlignment="Center"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <ToggleButton Content="Control" CornerRadius="5,0,0,5"/>
-                    <ToggleButton Content="Alt" CornerRadius="0"/>
-                    <ToggleButton Content="Windows" CornerRadius="0"/>
-                    <ToggleButton Content="Shift" CornerRadius="0,5,5,0"/>
-                </StackPanel>
-
-                <TextBox PlaceholderText="Key" Grid.Column="2" MaxHeight="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-
-                <Button Grid.Column="4" Style="{StaticResource AccentButtonStyle}" Click="Button_Click">
-                    <FontIcon Glyph="&#xe710;"/>
-                </Button>
-            </Grid>
-
-            <Border Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="1"/>
-
-            <ListView Grid.Row="2" SelectionMode="None" ItemsSource="{x:Bind HotKeys}"/>
-        </Grid>
-
         <Grid
             x:Name="HotKeysViewerGrid"
             Grid.Row="1" 
-            Padding="15,50,15,15"
+            Padding="15,15,15,15"
             RowSpacing="5"
-            Visibility="Collapsed">
-            <Grid.Background>
-                <SolidColorBrush Opacity="0.95" Color="{ThemeResource SolidBackgroundFillColorSecondary}"/>
-            </Grid.Background>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <Button 
-                Style="{StaticResource MuteButtonStyle}" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Center"
-                Click="CloseHotKeysViewerButton_Click">
-                <FontIcon Glyph="&#xe711;" Height="{StaticResource FontIconHeight}"/>
-            </Button>
+            Visibility="Visible">
 
             <w:HotKeysViewer x:Name="HotKeysViewer" Grid.Row="1"/>
         </Grid>

@@ -39,6 +39,8 @@ namespace Audio
 
 	void MainAudioEndpoint::Volume(const float& value)
 	{
+		if (value < 0.) return;
+
 		winrt::check_hresult(audioEndpointVolume->SetMasterVolumeLevelScalar(value, &eventContextId));
 	}
 
@@ -84,6 +86,11 @@ namespace Audio
 	void MainAudioEndpoint::SetMute(const bool& mute)
 	{
 		winrt::check_hresult(audioEndpointVolume->SetMute(mute, &eventContextId));
+	}
+
+	void MainAudioEndpoint::SetVolume(const float& newVolume)
+	{
+		check_hresult(audioEndpointVolume->SetMasterVolumeLevelScalar(newVolume, nullptr));
 	}
 
     #pragma region  IUnknown

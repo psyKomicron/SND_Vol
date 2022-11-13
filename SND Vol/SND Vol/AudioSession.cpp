@@ -75,6 +75,7 @@ namespace Audio
     }
 
 
+    #pragma region Properties
     uint32_t AudioSession::Channel()
     {
         return channel;
@@ -123,43 +124,8 @@ namespace Audio
         check_hresult(audioSessionControl->GetState(&state));
         return state;
     }
+    #pragma endregion
 
-
-    bool AudioSession::SetMute(bool const& state)
-    {
-        ISimpleAudioVolumePtr volume;
-        if (SUCCEEDED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)))
-        {
-            HRESULT hResult = volume->SetMute(state, &eventContextId);
-            return SUCCEEDED(hResult);
-        }
-        return false;
-    }
-
-    float AudioSession::GetPeak() const
-    {
-        float peak = 0.f;
-        audioMeter->GetPeakValue(&peak);
-        return peak;
-    }
-
-    bool AudioSession::Register()
-    {
-        if (!isRegistered)
-        {
-            isRegistered =  SUCCEEDED(audioSessionControl->RegisterAudioSessionNotification(this));
-        }
-        return isRegistered;
-    }
-
-    bool AudioSession::Unregister()
-    {
-        if (isRegistered)
-        {
-            return SUCCEEDED(audioSessionControl->UnregisterAudioSessionNotification(this));
-        }
-        return true;
-    }
 
     #pragma region Events
     winrt::event_token AudioSession::StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t> const& handler)
@@ -182,6 +148,59 @@ namespace Audio
         e_volumeChanged.remove(eventToken);
     }
     #pragma endregion
+
+
+    bool AudioSession::SetMute(bool const& state)
+    {
+        ISimpleAudioVolumePtr volume;
+        if (SUCCEEDED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)))
+        {
+            HRESULT hResult = volume->SetMute(state, &eventContextId);
+            return SUCCEEDED(hResult);
+        }
+        return false;
+    }
+
+    float AudioSession::GetPeak() const
+    {
+        float peak = 0.f;
+        audioMeter->GetPeakValue(&peak);
+        return peak;
+    }
+
+    pair<float, float> Audio::AudioSession::GetChannelsPeak() const
+    {
+        // TODO: Channel count
+        pair<float, float> peaks{};
+
+        UINT meteringChannelCount = 0;
+        if (SUCCEEDED(audioMeter->GetMeteringChannelCount(&meteringChannelCount)) && meteringChannelCount == 2) 
+        {
+            float channelsPeak[2](0);
+            check_hresult(audioMeter->GetChannelsPeakValues(2, channelsPeak));
+            peaks.first = channelsPeak[0];
+            peaks.second = channelsPeak[1];
+        }
+        return peaks;
+    }
+
+    bool AudioSession::Register()
+    {
+        if (!isRegistered)
+        {
+            isRegistered =  SUCCEEDED(audioSessionControl->RegisterAudioSessionNotification(this));
+        }
+        return isRegistered;
+    }
+
+    bool AudioSession::Unregister()
+    {
+        if (isRegistered)
+        {
+            return SUCCEEDED(audioSessionControl->UnregisterAudioSessionNotification(this));
+        }
+        return true;
+    }
 
     #pragma region IUnknown
     IFACEMETHODIMP_(ULONG)AudioSession::AddRef()
