@@ -68,10 +68,15 @@ namespace Audio
         */
         bool SetMute(bool const& mute);
         /**
-         * @brief Get the normalized peak PCM value for this audio session.
+         * @brief Gets the normalized peak PCM value for this audio session.
          * @return float between 0 and 1
         */
         float GetPeak() const;
+        /**
+         * @brief Gets the normalized peak PCM values for the channels in this audio session.
+         * @return pair of float between 0 and 1
+        */
+        std::pair<float, float> GetChannelsPeak() const;
 
         // IUnknown
         IFACEMETHODIMP_(ULONG) AddRef();
