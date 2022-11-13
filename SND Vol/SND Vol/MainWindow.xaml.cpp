@@ -67,9 +67,12 @@ namespace winrt::SND_Vol::implementation
         loaded = true;
 
     #if USE_TIMER
-        audioSessionsPeakTimer.Start();
-        mainAudioEndpointPeakTimer.Start();
-        VolumeStoryboard().Begin();
+        if (audioSessions.get())
+        {
+            audioSessionsPeakTimer.Start();
+            mainAudioEndpointPeakTimer.Start();
+            VolumeStoryboard().Begin();
+        }
     #endif // USE_TIMER
 
         // Generate size changed event to get correct clipping rectangle size
@@ -905,6 +908,7 @@ namespace winrt::SND_Vol::implementation
         }
 
         // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
+        if (audioSessions.get())
         {
             unique_lock lock{ audioSessionsMutex };
 
