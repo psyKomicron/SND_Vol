@@ -70,6 +70,7 @@ namespace winrt::SND_Vol::implementation
         // UI related attributes
         bool loaded = false;
         bool compact = false;
+        bool usingCustomTitleBar = false;
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
         winrt::event_token appWindowClosingEventToken;
         BackdropController backdropController = nullptr;

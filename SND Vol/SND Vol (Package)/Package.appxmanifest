@@ -9,7 +9,7 @@
   <Identity
     Name="d638911b-ba40-4581-8fed-b7f8d0093ef9"
     Publisher="CN=psyKomicron"
-    Version="2.9.5.0" />
+    Version="2.9.7.0" />
 
   <Properties>
     <DisplayName>Croak (Package)</DisplayName>

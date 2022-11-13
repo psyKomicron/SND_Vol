@@ -132,7 +132,10 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        SetDragRectangles();
+        if (usingCustomTitleBar)
+        {
+            SetDragRectangles();
+        }
 
         if (appWindow.Size().Width < 210 && !compact)
         {
@@ -533,6 +536,8 @@ namespace winrt::SND_Vol::implementation
 
             if (appWindow.TitleBar().IsCustomizationSupported())
             {
+                usingCustomTitleBar = true;
+
                 appWindow.TitleBar().ExtendsContentIntoTitleBar(true);
                 appWindow.TitleBar().IconShowOptions(IconShowOptions::ShowIconAndSystemMenu);
 
@@ -628,10 +633,10 @@ namespace winrt::SND_Vol::implementation
                     mainAudioEndpointStateChangedToken = mainAudioEndpoint->StateChanged([this](IInspectable, bool muted)
                     {
                         DispatcherQueue().TryEnqueue([this, muted]()
-                    {
-                        MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
-                    MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
-                    });
+                        {
+                            MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+                            MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
+                        });
                     });
                 }
 
