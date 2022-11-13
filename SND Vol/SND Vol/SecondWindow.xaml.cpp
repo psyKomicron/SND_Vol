@@ -5,6 +5,7 @@
 #endif
 
 #include <winrt/Windows.UI.Core.h>
+#include "HotKeyViewModel.h"
 
 using namespace winrt::Windows::Graphics;
 
@@ -43,38 +44,20 @@ namespace winrt::SND_Vol::implementation
 
     void SecondWindow::Grid_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
-        HotKeyView key{};
-        key.HotKeyName(L"System volume up.");
-        key.Key(VirtualKey::Up);
-        key.Modifiers(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift);
-        hotKeyViews.Append(key);
+        HotKeysViewer().AddActiveKey({ L"System volume up", true, VirtualKey::Up, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        HotKeysViewer().AddActiveKey({ L"System volume down", true, VirtualKey::Down, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        HotKeysViewer().AddActiveKey({ L"System volume fast up", true, VirtualKey::PageUp, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        HotKeysViewer().AddActiveKey({ L"System volume fast down", true, VirtualKey::PageDown, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        HotKeysViewer().AddActiveKey({ L"Mute/unmute system volume", true, VirtualKey::M, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
     }
 
     void SecondWindow::CloseHotKeysViewerButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        HotKeysViewerGrid().IsHitTestVisible(false);
-        HotKeysViewerGrid().Visibility(Visibility::Collapsed);
-
-        ContentGrid().Visibility(Visibility::Visible);
-        ContentGrid().IsHitTestVisible(true);
     }
 
     void SecondWindow::Button_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        IVector<VirtualKey> activeKeys{ single_threaded_vector<VirtualKey>() };
-        for (const HotKeyView view : HotKeys())
-        {
-            activeKeys.Append(view.Key());
-        }
-
-        this->HotKeysViewer().SetActiveKeys(activeKeys);
-
-
-        ContentGrid().IsHitTestVisible(false);
-        ContentGrid().Visibility(Visibility::Collapsed);
-
-        HotKeysViewerGrid().Visibility(Visibility::Visible);
-        HotKeysViewerGrid().IsHitTestVisible(true);
+        
     }
 
 
@@ -96,11 +79,11 @@ namespace winrt::SND_Vol::implementation
             
             int32_t width = unbox_value_or(
                 settings.Values().TryLookup(L"WindowWidth"),
-                Application::Current().Resources().Lookup(box_value(L"WindowWidth")).as<int32_t>()
+                Application::Current().Resources().Lookup(box_value(L"SecondWindowHeight")).as<int32_t>()
             );
             int32_t height = unbox_value_or(
                 settings.Values().TryLookup(L"WindowHeight"),
-                Application::Current().Resources().Lookup(box_value(L"WindowHeight")).as<int32_t>()
+                Application::Current().Resources().Lookup(box_value(L"SecondWindowHeight")).as<int32_t>()
             );
 
             int32_t lastX = unbox_value_or(settings.Values().TryLookup(L"WindowPosX"), 0);
