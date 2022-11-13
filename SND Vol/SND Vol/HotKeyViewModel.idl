@@ -1,0 +1,15 @@
+namespace SND_Vol
+{
+    [bindable]
+    [default_interface]
+    runtimeclass HotKeyViewModel 
+    {
+        HotKeyViewModel();
+        HotKeyViewModel(String hotKeyName, Boolean enabled, Windows.System.VirtualKey key, Windows.System.VirtualKeyModifiers modifiers);
+
+        String HotKeyName{ get; set; };
+        Windows.System.VirtualKeyModifiers Modifiers{ get; set; };
+        Windows.System.VirtualKey Key{ get; set; };
+        Boolean IsHotKeyEnabled{ get; set; };
+    }
+}

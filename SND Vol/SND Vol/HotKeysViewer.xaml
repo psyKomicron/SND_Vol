@@ -8,9 +8,9 @@
     xmlns:local="using:SND_Vol"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" PreviewKeyDown="Grid_KeyDown">
+    mc:Ignorable="d">
 
-    <Grid Loaded="Grid_Loaded" Unloaded="Grid_Unloaded" >
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="1*"/>
@@ -19,9 +19,7 @@
         <Viewbox Grid.Row="1">
             <Grid 
                 HorizontalAlignment="Center" 
-                VerticalAlignment="Center" 
-                CornerRadius="{StaticResource ControlCornerRadius}" 
-                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                VerticalAlignment="Center"
                 Padding="15" 
                 ColumnSpacing="20"
                 RowSpacing="20">
@@ -280,8 +278,8 @@
         </Viewbox>
 
         <Viewbox 
-            MaxHeight="150" 
-            MaxWidth="150"
+            MaxHeight="250" 
+            MaxWidth="250"
             Grid.Row="1" 
             Grid.Column="1" 
             HorizontalAlignment="Center" 
@@ -295,7 +293,7 @@
                     Background="{ThemeResource ApplicationForegroundThemeBrush}" 
                     Width="4" 
                     Height="6" 
-                    Translation="3.,-5.8,0"
+                    Translation="3.1,-5.8,0"
                     CornerRadius="0,3,0,0"/>
 
                 <Border 
@@ -303,7 +301,7 @@
                     Background="{ThemeResource ApplicationForegroundThemeBrush}" 
                     Width="4" 
                     Height="6" 
-                    Translation="-4.2,-5.8,0"
+                    Translation="-4.3,-5.8,0"
                     CornerRadius="3,0,0,0"/>
 
                 <Border 
@@ -319,7 +317,7 @@
                     Background="{ThemeResource ApplicationForegroundThemeBrush}" 
                     Width="1" 
                     Height="5" 
-                    Translation="-8.5,-4.5,0"
+                    Translation="-8.4,-4.5,0"
                     CornerRadius="2,0,0,2"/>
 
                 <Border 
@@ -327,7 +325,7 @@
                     Background="{ThemeResource ApplicationForegroundThemeBrush}" 
                     Width="1" 
                     Height="5" 
-                    Translation="-8.5,1.7,0"
+                    Translation="-8.4,1.3,0"
                     CornerRadius="2,0,0,2"/>
             </Grid>
         </Viewbox>
