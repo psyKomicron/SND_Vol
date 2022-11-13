@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "IComEventImplementation.h"
 
@@ -61,10 +61,31 @@ namespace Audio
 		IFACEMETHODIMP_(ULONG) AddRef();
 		IFACEMETHODIMP_(ULONG) Release();
 		IFACEMETHODIMP QueryInterface(REFIID riid, VOID** ppvInterface);
+		/**
+		 * @brief 
+		 * @return 
+		*/
 		bool Register();
+		/**
+		 * @brief 
+		 * @return 
+		*/
 		bool Unregister();
-		void SetMute(const bool& mute);
+		/**
+		 * @brief Gets the current peak PCM value for the audio endpoint.
+		 * @return the current peak PCM value ∈ [0, 1]
+		*/
 		float GetPeak() const;
+		/**
+		 * @brief Sets the audio endpoint muted or unmuted.
+		 * @param mute true to mute, false to unmute
+		*/
+		void SetMute(const bool& mute);
+		/**
+		 * @brief Sets the new volume for the audio endpoint without using the "ignore notifications" GUID.
+		 * @param newVolume new volume ∈ [0, 1]
+		*/
+		void SetVolume(const float& newVolume);
 
 	private:
 		::winrt::impl::atomic_ref_count refCount{ 1 };
