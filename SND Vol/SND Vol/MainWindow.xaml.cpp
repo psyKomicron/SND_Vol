@@ -44,17 +44,17 @@ namespace winrt::SND_Vol::implementation
         LoadHotKeys();
         SetBackground();
 
-    #ifdef DEBUG
+        #ifdef DEBUG
         Application::Current().UnhandledException([&](IInspectable const&/*sender*/, UnhandledExceptionEventArgs const& e)
         {
             TextBlock block{};
-            block.TextWrapping(TextWrapping::Wrap);
-            block.Text(e.Message());
-            WindowMessageBar().EnqueueMessage(e.Message());
+        block.TextWrapping(TextWrapping::Wrap);
+        block.Text(e.Message());
+        WindowMessageBar().EnqueueMessage(e.Message());
         });
-    #else
+        #else
         HotKeySettingsMenuFlyoutItem().IsEnabled(false);
-    #endif // DEBUG
+        #endif // DEBUG
     }
 
     MainWindow::~MainWindow()
@@ -66,19 +66,20 @@ namespace winrt::SND_Vol::implementation
     {
         loaded = true;
 
-    #if USE_TIMER
-        audioSessionsPeakTimer.Start();
-        mainAudioEndpointPeakTimer.Start();
-        VolumeStoryboard().Begin();
-    #endif // USE_TIMER
+        #if USE_TIMER
+        if (audioSessions.get())
+        {
+            audioSessionsPeakTimer.Start();
+            mainAudioEndpointPeakTimer.Start();
+            VolumeStoryboard().Begin();
+
+            WindowMessageBar().EnqueueMessage(L"Sessions loaded.");
+        }
+        #endif // USE_TIMER
 
         // Generate size changed event to get correct clipping rectangle size
         SystemVolumeActivityBorder_SizeChanged(nullptr, nullptr);
         Grid_SizeChanged(nullptr, nullptr);
-
-        //hotKeyManager.RegisterHotKey(System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, static_cast<uint32_t>(VirtualKey::X)));
-
-        WindowMessageBar().EnqueueMessage(L"Sessions loaded.");
 
         // Teaching tips
         SettingsButtonTeachingTip().Target(SettingsButton());
@@ -131,7 +132,10 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        SetDragRectangles();
+        if (usingCustomTitleBar)
+        {
+            SetDragRectangles();
+        }
 
         if (appWindow.Size().Width < 210 && !compact)
         {
@@ -167,7 +171,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const&)
     {
-    #if DEACTIVATE_TIMER
+        #if DEACTIVATE_TIMER
         if (args.WindowActivationState() == WindowActivationState::Deactivated && audioSessionsPeakTimer.IsRunning())
         {
             audioSessionsPeakTimer.Stop();
@@ -176,8 +180,8 @@ namespace winrt::SND_Vol::implementation
         {
             audioSessionsPeakTimer.Start();
         }
-    #endif
-}
+        #endif
+    }
 
     void MainWindow::SystemVolumeActivityBorder_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
@@ -193,9 +197,10 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::RestartMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
+        // TODO: Restart app with restart API
         if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(L"") != AppRestartFailureReason::RestartPending)
         {
-            // I18N: RestartMenuFlyoutItem_Click -> Could not restart. Close the window.
+            // I18N:
             WindowMessageBar().EnqueueMessage(L"Could not restart. Close the window.");
         }
     }
@@ -296,7 +301,7 @@ namespace winrt::SND_Vol::implementation
             mainAudioEndpointPeakTimer.Stop();
         }
 
-        // I18N: ReloadMenuFlyoutItem_Click -> Reloading audio sessions...
+        // I18N:
         WindowMessageBar().EnqueueMessage(L"Reloading audio sessions...");
 
         audioSessionViews.Clear();
@@ -347,12 +352,13 @@ namespace winrt::SND_Vol::implementation
             }
             else
             {
-                // I18N: ReloadMenuFlyoutItem_Click -> Audio sessions notifications unavailable.
+                // I18N:
                 // ------------------------------------------------------------------------------------------------------------------------------------
+
                 /*WindowInfoBar().Title(L"Audio sessions notifications unavailable");
                 WindowInfoBar().Severity(Controls::InfoBarSeverity::Warning);
                 WindowInfoBar().IsOpen(true);*/
-                WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable.");
+                WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable");
             }
 
 
@@ -372,18 +378,18 @@ namespace winrt::SND_Vol::implementation
                 CreateAudioView(audioSessions->at(i), true);
             }
 
-            // I18N: ReloadMenuFlyoutItem_Click -> Reloaded.
+            // I18N:
             // ------------------------------------------------------------------------------------------------------------------------------------
 
             /*WindowInfoBar().Content(nullptr);
             WindowInfoBar().Title(L"Reloaded");
             WindowInfoBar().IsClosable(true);*/
-            WindowMessageBar().EnqueueMessage(L"Reloaded.");
+            WindowMessageBar().EnqueueMessage(L"Reloaded");
         }
         else
         {
-            // I18N: ReloadMenuFlyoutItem_Click -> Hard failure, app needs to restart.
-            // ------------------------------------------------------------------------------------------------------------------------------------
+            // I18N:
+        // ------------------------------------------------------------------------------------------------------------------------------------
 
             /*WindowInfoBar().Title(L"Hard failure, app needs to restart.");
             WindowInfoBar().IsOpen(true);*/
@@ -400,7 +406,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::HotKeySettingsMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        if (!secondWindow) 
+        if (!secondWindow)
         {
             secondWindow = make<SecondWindow>();
             secondWindow.Closed([this](auto, auto)
@@ -515,7 +521,7 @@ namespace winrt::SND_Vol::implementation
 
             appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>());
 
-            appWindowClosingEventToken = appWindow.Closing({this, &MainWindow::AppWindow_Closing});
+            appWindowClosingEventToken = appWindow.Closing({ this, &MainWindow::AppWindow_Closing });
             appWindow.Changed([this](auto&& sender, winrt::Microsoft::UI::Windowing::AppWindowChangedEventArgs args)
             {
                 if (args.DidSizeChange())
@@ -528,14 +534,15 @@ namespace winrt::SND_Vol::implementation
                 }
             });
 
-            // TODO: Try to display better title bar when running on Windows 10 or when title bar customization is not supported.
             if (appWindow.TitleBar().IsCustomizationSupported())
             {
+                usingCustomTitleBar = true;
+
                 appWindow.TitleBar().ExtendsContentIntoTitleBar(true);
                 appWindow.TitleBar().IconShowOptions(IconShowOptions::ShowIconAndSystemMenu);
 
                 LeftPaddingColumn().Width(GridLengthHelper::FromPixels(static_cast<double>(appWindow.TitleBar().LeftInset())));
-                
+
                 appWindow.TitleBar().ButtonBackgroundColor(Colors::Transparent());
                 appWindow.TitleBar().ButtonForegroundColor(Colors::White());
                 appWindow.TitleBar().ButtonInactiveBackgroundColor(Colors::Transparent());
@@ -602,36 +609,10 @@ namespace winrt::SND_Vol::implementation
         GUID appID{};
         if (SUCCEEDED(UuidCreate(&appID)))
         {
-            // Create and setup peak meters timers
-            audioSessionsPeakTimer = DispatcherQueue().CreateTimer();
-            mainAudioEndpointPeakTimer = DispatcherQueue().CreateTimer();
-
-            audioSessionsPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(166)));
-            audioSessionsPeakTimer.Tick({ this, &MainWindow::UpdatePeakMeters });
-            
-            mainAudioEndpointPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(83)));
-            mainAudioEndpointPeakTimer.Tick([&](auto, auto)
+            try
             {
-                if (!loaded)
-                {
-                    return;
-                }
-
-                try
-                {
-                    float volume = mainAudioEndpoint->GetPeak();
-                    VolumeAnimation().To(static_cast<double>(volume));
-                    VolumeStoryboard().Begin();
-                }
-                catch (const hresult_error&)
-                {
-                    // TODO: Handle error.
-                }
-            });
-
-
-            // Create and setup audio interfaces.
-            audioController = new LegacyAudioController(appID);
+                // Create and setup audio interfaces.
+                audioController = new LegacyAudioController(appID);
 
                 if (audioController->Register())
                 {
@@ -640,24 +621,30 @@ namespace winrt::SND_Vol::implementation
                 }
                 else
                 {
-                    // I18N: LoadContent -> Audio sessions notifications unavailable.
+                    // I18N
                     WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable.");
                 }
 
 
-            mainAudioEndpoint = audioController->GetMainAudioEndpoint();
-            if (mainAudioEndpoint->Register())
-            {
-                mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
-                mainAudioEndpointStateChangedToken = mainAudioEndpoint->StateChanged([this](IInspectable, bool muted)
+                mainAudioEndpoint = audioController->GetMainAudioEndpoint();
+                if (mainAudioEndpoint->Register())
                 {
-                    DispatcherQueue().TryEnqueue([this, muted]()
+                    mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
+                    mainAudioEndpointStateChangedToken = mainAudioEndpoint->StateChanged([this](IInspectable, bool muted)
                     {
-                        MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
-                        MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
+                        DispatcherQueue().TryEnqueue([this, muted]()
+                        {
+                            MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+                            MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
+                        });
                     });
-                });
-            }
+                }
+
+                audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
+                for (size_t i = 0; i < audioSessions->size(); i++)
+                {
+                    CreateAudioView(audioSessions->at(i), true);
+                }
 
 
                 // Create and setup peak meters timers
@@ -675,16 +662,16 @@ namespace winrt::SND_Vol::implementation
                         return;
                     }
 
-                try
-                {
-                    float volume = mainAudioEndpoint->GetPeak();
-                    VolumeAnimation().To(static_cast<double>(volume));
-                    VolumeStoryboard().Begin();
-                }
-                catch (const hresult_error&)
-                {
-                    // TODO: Handle error.
-                }
+                    try
+                    {
+                        float volume = mainAudioEndpoint->GetPeak();
+                        VolumeAnimation().To(static_cast<double>(volume));
+                        VolumeStoryboard().Begin();
+                    }
+                    catch (const hresult_error&)
+                    {
+                        // TODO: Handle error.
+                    }
                 });
 
                 MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
@@ -699,7 +686,7 @@ namespace winrt::SND_Vol::implementation
         }
         else
         {
-            // I18N: LoadContent -> Hard failure, app needs to restart.
+            // I18N
             WindowMessageBar().EnqueueMessage(L"Hard failure, app needs to restart.");
         }
     }
@@ -754,7 +741,7 @@ namespace winrt::SND_Vol::implementation
                         {
                             audioSessionViews.RemoveAt(indexOf);
                         }
-                        
+
                         return;
                     }
                 }
@@ -778,7 +765,8 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::SaveAudioLevels()
     {
-        ApplicationDataContainer audioLevels = ApplicationData::Current().LocalSettings().CreateContainer(L"AudioLevels", 
+        ApplicationDataContainer audioLevels = ApplicationData::Current().LocalSettings().CreateContainer(
+            L"AudioLevels",
             ApplicationData::Current().LocalSettings().Containers().HasKey(L"AudioLevels") ? ApplicationDataCreateDisposition::Existing : ApplicationDataCreateDisposition::Always
         );
 
@@ -803,10 +791,10 @@ namespace winrt::SND_Vol::implementation
         *  - Alt/Menu + Shift + M : system volume mute/unmute
         */
 
-    #if ENABLE_HOTKEYS
-    #pragma warning(push)
-    #pragma warning(disable:4305)
-    #pragma warning(disable:4244)
+        #if ENABLE_HOTKEYS
+        #pragma warning(push)
+        #pragma warning(disable:4305)
+        #pragma warning(disable:4244)
 
         volumeUpHotKeyPtr.Fired([this](auto, auto)
         {
@@ -862,7 +850,7 @@ namespace winrt::SND_Vol::implementation
                 DispatcherQueue().TryEnqueue([this]()
                 {
                     MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
-                    MuteToggleButton().IsChecked(IReference(mainAudioEndpoint->Muted()));
+                MuteToggleButton().IsChecked(IReference(mainAudioEndpoint->Muted()));
                 });
             }
             catch (...)
@@ -870,8 +858,8 @@ namespace winrt::SND_Vol::implementation
             }
         });
 
-    #pragma warning(pop)  
-    #endif // DEBUG
+        #pragma warning(pop)  
+        #endif // DEBUG
 
     }
 
@@ -930,6 +918,7 @@ namespace winrt::SND_Vol::implementation
         }
 
         // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
+        if (audioSessions.get())
         {
             unique_lock lock{ audioSessionsMutex };
 
@@ -951,9 +940,6 @@ namespace winrt::SND_Vol::implementation
         settings.Insert(L"WindowPosY", box_value(appWindow.Position().Y));
         settings.Insert(L"IsAlwaysOnTop", box_value(appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop()));
         settings.Insert(L"Layout", box_value(0));
-
-        Release();
-        //Release();
     }
 
     void MainWindow::MainAudioEndpoint_VolumeChanged(winrt::Windows::Foundation::IInspectable, const float& newVolume)
@@ -972,7 +958,7 @@ namespace winrt::SND_Vol::implementation
 
         DispatcherQueue().TryEnqueue([this, id, newVolume]()
         {
-            for (auto const&view : audioSessionViews)
+            for (auto const& view : audioSessionViews)
             {
                 if (view.Id() == id)
                 {
@@ -1052,15 +1038,15 @@ namespace winrt::SND_Vol::implementation
         DispatcherQueue().TryEnqueue([this]()
         {
             audioSessionsPeakTimer.Stop();
-            while (AudioSession* newSession = audioController->NewSession())
+        while (AudioSession* newSession = audioController->NewSession())
+        {
             {
-                {
-                    unique_lock lock{ audioSessionsMutex };
-                    audioSessions->push_back(newSession);
-                }
-                CreateAudioView(newSession, true);
+                unique_lock lock{ audioSessionsMutex };
+                audioSessions->push_back(newSession);
             }
-            audioSessionsPeakTimer.Start();
+            CreateAudioView(newSession, true);
+        }
+        audioSessionsPeakTimer.Start();
         });
     }
 
@@ -1080,8 +1066,7 @@ namespace winrt::SND_Vol::implementation
                 DispatcherQueue().TryEnqueue([this, muted]()
                 {
                     MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
-                    MuteToggleButtonFontIcon().Glyph(
-                        muted ? L"\ue74f" : L"\ue767");
+                    MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
                 });
             });
         }
