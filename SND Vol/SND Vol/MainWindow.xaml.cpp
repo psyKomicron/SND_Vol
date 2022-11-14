@@ -67,18 +67,19 @@ namespace winrt::SND_Vol::implementation
         loaded = true;
 
     #if USE_TIMER
-        audioSessionsPeakTimer.Start();
-        mainAudioEndpointPeakTimer.Start();
-        VolumeStoryboard().Begin();
+        if (audioSessions.get())
+        {
+            audioSessionsPeakTimer.Start();
+            mainAudioEndpointPeakTimer.Start();
+            VolumeStoryboard().Begin();
+
+            WindowMessageBar().EnqueueMessage(L"Sessions loaded.");
+        }
     #endif // USE_TIMER
 
         // Generate size changed event to get correct clipping rectangle size
         SystemVolumeActivityBorder_SizeChanged(nullptr, nullptr);
         Grid_SizeChanged(nullptr, nullptr);
-
-        //hotKeyManager.RegisterHotKey(System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, static_cast<uint32_t>(VirtualKey::X)));
-
-        WindowMessageBar().EnqueueMessage(L"Sessions loaded.");
 
         // Teaching tips
         SettingsButtonTeachingTip().Target(SettingsButton());
@@ -131,7 +132,10 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        SetDragRectangles();
+        if (usingCustomTitleBar)
+        {
+            SetDragRectangles();
+        }
 
         if (appWindow.Size().Width < 210 && !compact)
         {
@@ -532,6 +536,8 @@ namespace winrt::SND_Vol::implementation
 
             if (appWindow.TitleBar().IsCustomizationSupported())
             {
+                usingCustomTitleBar = true;
+
                 appWindow.TitleBar().ExtendsContentIntoTitleBar(true);
                 appWindow.TitleBar().IconShowOptions(IconShowOptions::ShowIconAndSystemMenu);
 
@@ -603,20 +609,58 @@ namespace winrt::SND_Vol::implementation
         GUID appID{};
         if (SUCCEEDED(UuidCreate(&appID)))
         {
-            // Create and setup peak meters timers
-            audioSessionsPeakTimer = DispatcherQueue().CreateTimer();
-            mainAudioEndpointPeakTimer = DispatcherQueue().CreateTimer();
-
-            audioSessionsPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(166)));
-            audioSessionsPeakTimer.Tick({ this, &MainWindow::UpdatePeakMeters });
-            
-            mainAudioEndpointPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(83)));
-            mainAudioEndpointPeakTimer.Tick([&](auto, auto)
+            try
             {
-                if (!loaded)
+                // Create and setup audio interfaces.
+                audioController = new LegacyAudioController(appID);
+
+                if (audioController->Register())
                 {
-                    return;
+                    audioController->SessionAdded({ this, &MainWindow::AudioController_SessionAdded });
+                    audioController->EndpointChanged({ this, &MainWindow::AudioController_EndpointChanged });
                 }
+                else
+                {
+                    // I18N
+                    WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable.");
+                }
+
+
+                mainAudioEndpoint = audioController->GetMainAudioEndpoint();
+                if (mainAudioEndpoint->Register())
+                {
+                    mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
+                    mainAudioEndpointStateChangedToken = mainAudioEndpoint->StateChanged([this](IInspectable, bool muted)
+                    {
+                        DispatcherQueue().TryEnqueue([this, muted]()
+                        {
+                            MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+                            MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
+                        });
+                    });
+                }
+
+                audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
+                for (size_t i = 0; i < audioSessions->size(); i++)
+                {
+                    CreateAudioView(audioSessions->at(i), true);
+                }
+
+
+                // Create and setup peak meters timers
+                audioSessionsPeakTimer = DispatcherQueue().CreateTimer();
+                mainAudioEndpointPeakTimer = DispatcherQueue().CreateTimer();
+
+                audioSessionsPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(166)));
+                audioSessionsPeakTimer.Tick({ this, &MainWindow::UpdatePeakMeters });
+
+                mainAudioEndpointPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(83)));
+                mainAudioEndpointPeakTimer.Tick([&](auto, auto)
+                {
+                    if (!loaded)
+                    {
+                        return;
+                    }
 
                 try
                 {
@@ -628,48 +672,16 @@ namespace winrt::SND_Vol::implementation
                 {
                     // TODO: Handle error.
                 }
-            });
-
-
-            // Create and setup audio interfaces.
-            audioController = new LegacyAudioController(appID);
-
-            if (audioController->Register())
-            {
-                audioController->SessionAdded({this, &MainWindow::AudioController_SessionAdded });
-                audioController->EndpointChanged({this, &MainWindow::AudioController_EndpointChanged });
-            }
-            else
-            {
-                // I18N
-                WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable.");
-            }
-            
-
-            mainAudioEndpoint = audioController->GetMainAudioEndpoint();
-            if (mainAudioEndpoint->Register())
-            {
-                mainAudioEndpointVolumeChangedToken = mainAudioEndpoint->VolumeChanged({ this, &MainWindow::MainAudioEndpoint_VolumeChanged });
-                mainAudioEndpointStateChangedToken = mainAudioEndpoint->StateChanged([this](IInspectable, bool muted)
-                {
-                    DispatcherQueue().TryEnqueue([this, muted]()
-                    {
-                        MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
-                        MuteToggleButtonFontIcon().Glyph(muted ? L"\ue74f" : L"\ue767");
-                    });
                 });
+
+                MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
+                SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
+                MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+                MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
             }
-
-            MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
-            SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
-            MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
-            MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
-
-
-            audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
-            for (size_t i = 0; i < audioSessions->size(); i++)
+            catch (const hresult_error& ex)
             {
-                CreateAudioView(audioSessions->at(i), true);
+                WindowMessageBar().EnqueueMessage(L"Fatal error : " + ex.message());
             }
         }
         else
@@ -905,6 +917,7 @@ namespace winrt::SND_Vol::implementation
         }
 
         // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
+        if (audioSessions.get())
         {
             unique_lock lock{ audioSessionsMutex };
 
@@ -926,9 +939,6 @@ namespace winrt::SND_Vol::implementation
         settings.Insert(L"WindowPosY", box_value(appWindow.Position().Y));
         settings.Insert(L"IsAlwaysOnTop", box_value(appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop()));
         settings.Insert(L"Layout", box_value(0));
-
-        Release();
-        //Release();
     }
 
     void MainWindow::MainAudioEndpoint_VolumeChanged(winrt::Windows::Foundation::IInspectable, const float& newVolume)

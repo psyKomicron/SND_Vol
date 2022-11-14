@@ -45,6 +45,7 @@ namespace winrt::SND_Vol::implementation
         void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void DisableAnimationsToggleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SwitchPresenterStyleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void ViewHotKeysHyperlinkButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
@@ -69,6 +70,7 @@ namespace winrt::SND_Vol::implementation
         // UI related attributes
         bool loaded = false;
         bool compact = false;
+        bool usingCustomTitleBar = false;
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
         winrt::event_token appWindowClosingEventToken;
         BackdropController backdropController = nullptr;
@@ -99,8 +101,6 @@ namespace winrt::SND_Vol::implementation
         void AudioSession_StateChanged(const winrt::guid& sender, const uint32_t& state);
         void AudioController_SessionAdded(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
         void AudioController_EndpointChanged(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
-    public:
-        void ViewHotKeysHyperlinkButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 
