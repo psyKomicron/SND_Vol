@@ -427,7 +427,7 @@ namespace winrt::SND_Vol::implementation
                 break;
 
             case VirtualKey::Clear:
-                // TODO:
+                // TODO: Clear key
                 break;
 
             case VirtualKey::Enter:
@@ -469,16 +469,16 @@ namespace winrt::SND_Vol::implementation
                 break;
 
             case VirtualKey::PageUp:
-                // TODO:
+                // TODO: PageUp key
                 break;
             case VirtualKey::PageDown:
-                // TODO:
+                // TODO: PageDown key
                 break;
             case VirtualKey::End:
-                // TODO:
+                // TODO: End key
                 break;
             case VirtualKey::Home:
-                // TODO:
+                // TODO: Home key
                 break;
 
             case VirtualKey::Left:
@@ -502,24 +502,24 @@ namespace winrt::SND_Vol::implementation
                 break;
 
             case VirtualKey::Select:
-                // TODO:
+                // TODO: Select key.
                 break;
             case VirtualKey::Print:
-                // TODO:
+                // TODO: Print key.
                 break;
             case VirtualKey::Execute:
-                // TODO:
+                // TODO: Execute key.
                 break;
             case VirtualKey::Snapshot:
                 break;
             case VirtualKey::Insert:
-                // TODO:
+                // TODO: Insert key.
                 break;
             case VirtualKey::Delete:
-                // TODO:
+                // TODO: Delete key.
                 break;
             case VirtualKey::Help:
-                // TODO:
+                // TODO: Help key.
                 break;
 
             case VirtualKey::Number0:

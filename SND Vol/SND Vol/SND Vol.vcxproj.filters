@@ -113,5 +113,8 @@
     <PRIResource Include="Resources.lang-en-us.resw">
       <Filter>Translations</Filter>
     </PRIResource>
+    <PRIResource Include="Resources.lang-fr-fr.resw">
+      <Filter>Translations</Filter>
+    </PRIResource>
   </ItemGroup>
 </Project>

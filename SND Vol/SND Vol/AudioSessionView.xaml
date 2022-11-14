@@ -60,8 +60,8 @@
         <Grid.ContextFlyout>
             <MenuFlyout>
                 <MenuFlyoutItem IsEnabled="False" Text="{x:Bind Header, Mode=OneWay}"/>
-                <MenuFlyoutItem Text="Lock" Click="LockMenuFlyoutItem_Click"/>
-                <MenuFlyoutItem Text="Hide" Click="HideMenuFlyoutItem_Click"/>
+                <MenuFlyoutItem x:Uid="AudioSessionViewLockMenuFlyoutItem" Click="LockMenuFlyoutItem_Click"/>
+                <MenuFlyoutItem x:Uid="AudioSessionViewHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click"/>
             </MenuFlyout>
         </Grid.ContextFlyout>
 

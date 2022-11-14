@@ -72,13 +72,13 @@
 
                 <Button.Flyout>
                     <MenuFlyout ShowMode="Transient">
-                        <MenuFlyoutItem Text="Hide" Click="HideMenuFlyoutItem_Click">
+                        <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
                             <MenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Key="H" Modifiers="Control"/>
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
 
-                        <MenuFlyoutItem Text="Restart" Click="RestartMenuFlyoutItem_Click">
+                        <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
                             <MenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
                             </MenuFlyoutItem.KeyboardAccelerators>
@@ -86,13 +86,13 @@
 
                         <MenuFlyoutSeparator/>
 
-                        <MenuFlyoutItem Text="Mute/&#10;unmute all" Click="SwitchStateMenuFlyoutItem_Click">
+                        <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
                             <MenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Key="M" Modifiers="Control"/>
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
 
-                        <MenuFlyoutItem Text="Reload" Click="ReloadMenuFlyoutItem_Click">
+                        <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
                             <MenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Key="R" Modifiers="Control"/>
                             </MenuFlyoutItem.KeyboardAccelerators>
@@ -100,30 +100,30 @@
 
                         <MenuFlyoutSeparator/>
 
-                        <MenuFlyoutSubItem Text="Layout">
-                            <MenuFlyoutItem Text="Horizontal" Click="HorizontalViewMenuFlyoutItem_Click"/>
-                            <MenuFlyoutItem Text="Vertical" Click="VerticalViewMenuFlyoutItem_Click"/>
-                            <MenuFlyoutItem Text="Auto" Click="AutoViewMenuFlyoutItem_Click"/>
+                        <MenuFlyoutSubItem x:Uid="MainWindowLayoutMenuFlyoutItem">
+                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemHorizontal" Click="HorizontalViewMenuFlyoutItem_Click"/>
+                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemVertical" Click="VerticalViewMenuFlyoutItem_Click"/>
+                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
                         </MenuFlyoutSubItem>
 
-                        <MenuFlyoutSubItem Text="Display">
+                        <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
                             <ToggleMenuFlyoutItem
+                                x:Uid="MainWindowKeepOnTopToggleMenuFlyoutItem"
                                 x:Name="KeepOnTopToggleMenuFlyoutItem"
-                                Text="Keep on top"
                                 Click="KeepOnTopToggleMenuFlyoutItem_Click"/>
                             <ToggleMenuFlyoutItem 
+                                x:Uid="MainWindowDisableAnimationsMenuFlyoutItem"
                                 x:Name="DisableAnimationsMenuFlyoutItem"
-                                Text="Disable animations"
                                 Click="DisableAnimationsToggleMenuFlyoutItem_Click"/>
                             <ToggleMenuFlyoutItem 
+                                x:Uid="MainWindowSwitchPresenterStyleMenuFlyoutItem"
                                 x:Name="SwitchPresenterStyleMenuFlyoutItem"
-                                Text="Show additional&#10;window buttons"
                                 Click="SwitchPresenterStyleMenuFlyoutItem_Click"/>
                         </MenuFlyoutSubItem>
 
                         <MenuFlyoutSeparator/>
 
-                        <MenuFlyoutItem x:Name="HotKeySettingsMenuFlyoutItem" Text="Hotkeys settings" Click="HotKeySettingsMenuFlyoutItem_Click"/>
+                        <MenuFlyoutItem x:Uid="MainWindowHotkeysMenuFlyoutItem" x:Name="HotKeySettingsMenuFlyoutItem" Click="HotKeySettingsMenuFlyoutItem_Click"/>
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
@@ -225,8 +225,6 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <!--<Border Background="DarkRed"/>
-                <TextBlock Text="St James Park station, cart empty."/>-->
                 <ScrollViewer 
                     x:Name="AudioSessionsScrollViewer"
                     Padding="3,0,0,0" 

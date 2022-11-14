@@ -193,10 +193,9 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::RestartMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
-        // TODO: Restart app with restart API
         if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(L"") != AppRestartFailureReason::RestartPending)
         {
-            // I18N:
+            // I18N: RestartMenuFlyoutItem_Click -> Could not restart. Close the window.
             WindowMessageBar().EnqueueMessage(L"Could not restart. Close the window.");
         }
     }
@@ -297,7 +296,7 @@ namespace winrt::SND_Vol::implementation
             mainAudioEndpointPeakTimer.Stop();
         }
 
-        // I18N:
+        // I18N: ReloadMenuFlyoutItem_Click -> Reloading audio sessions...
         WindowMessageBar().EnqueueMessage(L"Reloading audio sessions...");
 
         audioSessionViews.Clear();
@@ -348,13 +347,12 @@ namespace winrt::SND_Vol::implementation
             }
             else
             {
-                // I18N:
+                // I18N: ReloadMenuFlyoutItem_Click -> Audio sessions notifications unavailable.
                 // ------------------------------------------------------------------------------------------------------------------------------------
-
                 /*WindowInfoBar().Title(L"Audio sessions notifications unavailable");
                 WindowInfoBar().Severity(Controls::InfoBarSeverity::Warning);
                 WindowInfoBar().IsOpen(true);*/
-                WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable");
+                WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable.");
             }
 
 
@@ -374,18 +372,18 @@ namespace winrt::SND_Vol::implementation
                 CreateAudioView(audioSessions->at(i), true);
             }
 
-            // I18N:
+            // I18N: ReloadMenuFlyoutItem_Click -> Reloaded.
             // ------------------------------------------------------------------------------------------------------------------------------------
 
             /*WindowInfoBar().Content(nullptr);
             WindowInfoBar().Title(L"Reloaded");
             WindowInfoBar().IsClosable(true);*/
-            WindowMessageBar().EnqueueMessage(L"Reloaded");
+            WindowMessageBar().EnqueueMessage(L"Reloaded.");
         }
         else
         {
-            // I18N:
-        // ------------------------------------------------------------------------------------------------------------------------------------
+            // I18N: ReloadMenuFlyoutItem_Click -> Hard failure, app needs to restart.
+            // ------------------------------------------------------------------------------------------------------------------------------------
 
             /*WindowInfoBar().Title(L"Hard failure, app needs to restart.");
             WindowInfoBar().IsOpen(true);*/
@@ -530,6 +528,7 @@ namespace winrt::SND_Vol::implementation
                 }
             });
 
+            // TODO: Try to display better title bar when running on Windows 10 or when title bar customization is not supported.
             if (appWindow.TitleBar().IsCustomizationSupported())
             {
                 appWindow.TitleBar().ExtendsContentIntoTitleBar(true);
@@ -634,17 +633,17 @@ namespace winrt::SND_Vol::implementation
             // Create and setup audio interfaces.
             audioController = new LegacyAudioController(appID);
 
-            if (audioController->Register())
-            {
-                audioController->SessionAdded({this, &MainWindow::AudioController_SessionAdded });
-                audioController->EndpointChanged({this, &MainWindow::AudioController_EndpointChanged });
-            }
-            else
-            {
-                // I18N
-                WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable.");
-            }
-            
+                if (audioController->Register())
+                {
+                    audioController->SessionAdded({ this, &MainWindow::AudioController_SessionAdded });
+                    audioController->EndpointChanged({ this, &MainWindow::AudioController_EndpointChanged });
+                }
+                else
+                {
+                    // I18N: LoadContent -> Audio sessions notifications unavailable.
+                    WindowMessageBar().EnqueueMessage(L"Audio sessions notifications unavailable.");
+                }
+
 
             mainAudioEndpoint = audioController->GetMainAudioEndpoint();
             if (mainAudioEndpoint->Register())
@@ -660,21 +659,47 @@ namespace winrt::SND_Vol::implementation
                 });
             }
 
-            MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
-            SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
-            MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
-            MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
 
+                // Create and setup peak meters timers
+                audioSessionsPeakTimer = DispatcherQueue().CreateTimer();
+                mainAudioEndpointPeakTimer = DispatcherQueue().CreateTimer();
 
-            audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
-            for (size_t i = 0; i < audioSessions->size(); i++)
+                audioSessionsPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(166)));
+                audioSessionsPeakTimer.Tick({ this, &MainWindow::UpdatePeakMeters });
+
+                mainAudioEndpointPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(83)));
+                mainAudioEndpointPeakTimer.Tick([&](auto, auto)
+                {
+                    if (!loaded)
+                    {
+                        return;
+                    }
+
+                try
+                {
+                    float volume = mainAudioEndpoint->GetPeak();
+                    VolumeAnimation().To(static_cast<double>(volume));
+                    VolumeStoryboard().Begin();
+                }
+                catch (const hresult_error&)
+                {
+                    // TODO: Handle error.
+                }
+                });
+
+                MainEndpointNameTextBlock().Text(mainAudioEndpoint->Name());
+                SystemVolumeSlider().Value(static_cast<double>(mainAudioEndpoint->Volume()) * 100.);
+                MuteToggleButton().IsChecked(mainAudioEndpoint->Muted());
+                MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
+            }
+            catch (const hresult_error& ex)
             {
-                CreateAudioView(audioSessions->at(i), true);
+                WindowMessageBar().EnqueueMessage(L"Fatal error : " + ex.message());
             }
         }
         else
         {
-            // I18N
+            // I18N: LoadContent -> Hard failure, app needs to restart.
             WindowMessageBar().EnqueueMessage(L"Hard failure, app needs to restart.");
         }
     }

@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AudioSessionViewHideMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Hide</value>
+    <value>Cacher</value>
   </data>
   <data name="AudioSessionViewLockMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Lock</value>
+    <value>Verrouiller</value>
   </data>
   <data name="ErrorLoadingAudioObjects" xml:space="preserve">
     <value />
@@ -130,22 +130,23 @@
     <value />
   </data>
   <data name="MainWindowDisableAnimationsMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Disable animations</value>
+    <value>Désactiver les animations</value>
   </data>
   <data name="MainWindowDisplayMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Display</value>
+    <value>Affichage</value>
   </data>
   <data name="MainWindowHideMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Hide</value>
+    <value>Cacher</value>
   </data>
   <data name="MainWindowHotkeysMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Hotkeys settings</value>
+    <value>Paramètres
+hotkeys</value>
   </data>
   <data name="MainWindowKeepOnTopToggleMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Keep on top</value>
+    <value>Garder au dessus</value>
   </data>
   <data name="MainWindowLayoutMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Layout</value>
+    <value>Disposition</value>
   </data>
   <data name="MainWindowLayoutMenuFlyoutItemAuto.Text" xml:space="preserve">
     <value>Auto</value>
@@ -157,26 +158,26 @@
     <value>Vertical</value>
   </data>
   <data name="MainWindowReloadMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Reload</value>
+    <value>Recharger</value>
   </data>
   <data name="MainWindowRestartMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Restart</value>
+    <value>Redémarrer</value>
   </data>
   <data name="MainWindowSwitchPresenterStyleMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Show additional
-window buttons</value>
+    <value>Afficher les
+boutons additionels</value>
   </data>
   <data name="MainWindowSwitchStateMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Mute
-unmute all</value>
+    <value>Couper/rétablir
+le son</value>
   </data>
   <data name="MainWindowTeachingTipViewHotkeysHyperlinkButton.Content" xml:space="preserve">
-    <value>View hot keys here.</value>
+    <value>Voir les raccourcis claviers.</value>
   </data>
   <data name="MainWindowTeachingTipViewHotkeysTextBlock.Text" xml:space="preserve">
-    <value>- Mute/unmute, lower or increase system volume using hot keys (shortcuts).</value>
+    <value>- Couper/rétablir le son, diminuer ou augmenter le volume du système à l'aide de touches de raccourci (shortcuts).</value>
   </data>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
-    <value>- View settings, app actions, change items layout customize display.</value>
+    <value>- Afficher les paramètres, les fonctions de l'application, modifier la disposition des éléments et personnaliser l'affichage.</value>
   </data>
 </root>
