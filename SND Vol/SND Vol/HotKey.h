@@ -19,6 +19,15 @@ namespace System
 			return key;
 		};
 
+		inline bool Enabled()
+		{
+			return keyEnabled.load();
+		};
+		inline void Enabled(const bool& enabled)
+		{
+			keyEnabled.exchange(enabled);
+		};
+
 		inline winrt::event_token Fired(const winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, winrt::guid>& handler)
 		{
 			return e_fired.add(handler);
@@ -42,6 +51,7 @@ namespace System
 		int32_t hotKeyId = 0;
 		std::thread* notificationThread = nullptr;
 		std::atomic_bool threadRunning = false;
+		std::atomic_bool keyEnabled = true;
 		DWORD threadId;
 
 		winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, winrt::guid>> e_fired{};

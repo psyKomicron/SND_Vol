@@ -23,6 +23,9 @@
     <Page Include="SecondWindow.xaml">
       <Filter>Windows</Filter>
     </Page>
+    <Page Include="SplashScreen.xaml">
+      <Filter>Controls</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />

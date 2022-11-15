@@ -100,12 +100,6 @@
 
                         <MenuFlyoutSeparator/>
 
-                        <MenuFlyoutSubItem x:Uid="MainWindowLayoutMenuFlyoutItem">
-                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemHorizontal" Click="HorizontalViewMenuFlyoutItem_Click"/>
-                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemVertical" Click="VerticalViewMenuFlyoutItem_Click"/>
-                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
-                        </MenuFlyoutSubItem>
-
                         <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
                             <ToggleMenuFlyoutItem
                                 x:Uid="MainWindowKeepOnTopToggleMenuFlyoutItem"
@@ -119,11 +113,23 @@
                                 x:Uid="MainWindowSwitchPresenterStyleMenuFlyoutItem"
                                 x:Name="SwitchPresenterStyleMenuFlyoutItem"
                                 Click="SwitchPresenterStyleMenuFlyoutItem_Click"/>
+                            <ToggleMenuFlyoutItem
+                                x:Uid="MainWindowShowAppBarMenuFlyoutItem"
+                                x:Name="ShowAppBarMenuFlyoutItem"
+                                Click="ShowAppBarMenuFlyoutItem_Click"/>
                         </MenuFlyoutSubItem>
+
+                        <MenuFlyoutSubItem x:Uid="MainWindowLayoutMenuFlyoutItem">
+                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemHorizontal" Click="HorizontalViewMenuFlyoutItem_Click"/>
+                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemVertical" Click="VerticalViewMenuFlyoutItem_Click"/>
+                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
+                        </MenuFlyoutSubItem>
+
 
                         <MenuFlyoutSeparator/>
 
                         <MenuFlyoutItem x:Uid="MainWindowHotkeysMenuFlyoutItem" x:Name="HotKeySettingsMenuFlyoutItem" Click="HotKeySettingsMenuFlyoutItem_Click"/>
+                        <MenuFlyoutItem x:Name="DisableHotKeysMenuFlyoutItem" Text="Disable hotkeys" Click="DisableHotKeysMenuFlyoutItem_Click"/>
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
@@ -145,8 +151,9 @@
             </TextBlock>
         </Grid>
 
-        <Grid Grid.Row="2" RowSpacing="2" Margin="0,-3,0,0">
+        <Grid x:Name="ContentGrid" Grid.Row="2" Margin="0,-3,0,0" Visibility="Collapsed">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="1"/>
                 <RowDefinition Height="*"/>
@@ -189,7 +196,7 @@
                     Translation="0,-6,0"
                     SizeChanged="SystemVolumeActivityBorder_SizeChanged">
                     <Border.Clip>
-                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClipping" Rect="0 0 0 0">
+                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClipping">
                             <RectangleGeometry.Transform>
                                 <CompositeTransform x:Name="BorderClippingCompositeTransform" ScaleX="0"/>
                             </RectangleGeometry.Transform>
@@ -218,9 +225,50 @@
                     FontWeight="SemiBold"/>
             </Grid>
 
-            <Border Height="1" Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="1"/>
+            <Border
+                Grid.Row="1"
+                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                Margin="0,0"/>
+            <Grid
+                x:Name="AppBarGrid"
+                Grid.Row="1"
+                ColumnSpacing="10"
+                Padding="5,4"
+                MaxWidth="400"
+                Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}"/>
+                    <Style TargetType="FontIcon">
+                        <Setter Property="FontSize" Value="13"/>
+                    </Style>
+                </Grid.Resources>
 
-            <Grid Grid.Row="2">
+                <Button>
+                    <FontIcon Glyph="&#xe72c;"/>
+                </Button>
+
+                <Button Grid.Column="1">
+                    <FontIcon Glyph="&#xe74f;"/>
+                </Button>
+
+                <Button Grid.Column="2">
+                    <FontIcon Glyph="&#xe7b3;"/>
+                </Button>
+
+                <Button Grid.Column="3">
+                    <FontIcon Glyph="&#xf4a5;"/>
+                </Button>
+            </Grid>
+            
+            <Border Height="1" Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="2"/>
+
+            <Grid Grid.Row="3" Margin="0,5,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
@@ -246,15 +294,58 @@
                     </GridView>
                 </ScrollViewer>
 
-                <snd_vol:MessageBar x:Name="WindowMessageBar" Grid.Row="0" VerticalAlignment="Top"/>
+                <snd_vol:MessageBar
+                    x:Name="WindowMessageBar"
+                    Grid.Row="0" 
+                    VerticalAlignment="Top"
+                    Visibility="Collapsed"
+                    Margin="5,3"/>
             </Grid>
         </Grid>
 
+        <snd_vol:SplashScreen
+            x:Name="WindowSplashScreen"
+            Grid.Row="2"
+            OnScreenTimeSpan="0:0:02"
+            Dismissed="SplashScreen_Dismissed">
+            <snd_vol:SplashScreen.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="0.6" ColorInterpolationMode="SRgbLinearInterpolation" MappingMode="RelativeToBoundingBox" SpreadMethod="Pad">
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStop Color="{ThemeResource SolidBackgroundFillColorSecondary}" Offset="0.2"/>
+                        <GradientStop Color="{ThemeResource SystemAccentColorDark1}" Offset="2.5"/>
+                    </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+            </snd_vol:SplashScreen.Background>
+            
+            <snd_vol:SplashScreen.TopContent>
+                <Grid VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Croak" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ApplicationVersionTextBlock" Style="{StaticResource TitleTextBlockStyle}" Grid.Column="1" VerticalAlignment="Center"/>
+                </Grid>
+            </snd_vol:SplashScreen.TopContent>
+
+            <snd_vol:SplashScreen.MainContent>
+                <Viewbox MaxHeight="100" MaxWidth="100">
+                    <FontIcon Glyph="&#xe767;"/>
+                </Viewbox>
+            </snd_vol:SplashScreen.MainContent>
+
+            <snd_vol:SplashScreen.BottomContent>
+                <TextBlock Text="by psykomicron 🐢" FontStretch="UltraExpanded" Opacity="0.6"/>
+            </snd_vol:SplashScreen.BottomContent>
+        </snd_vol:SplashScreen>
 
         <TeachingTip
+            x:Uid="MainWindowSettingsButtonTeachingTip"
             x:Name="SettingsButtonTeachingTip" 
-            Title="Settings"
-            IsLightDismissEnabled="True">
+            PlacementMargin="0"
+            PreferredPlacement="Auto"
+            IsLightDismissEnabled="False">
 
             <TeachingTip.Content>
                 <Grid RowSpacing="15" Padding="0,10,0,0">
@@ -262,13 +353,13 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    
-                    <TextBlock Text="- View settings, app actions, change items layout customize display." TextWrapping="Wrap"/>
+
+                    <TextBlock x:Uid="MainWindowTeachingTipViewSettingsTextBlock" TextWrapping="Wrap"/>
 
                     <StackPanel Grid.Row="1" Spacing="10">
-                        <TextBlock Text="- Mute/unmute, lower or increase system volume using hot keys (shortcuts)." TextWrapping="Wrap"/>
+                        <TextBlock x:Uid="MainWindowTeachingTipViewHotkeysTextBlock" TextWrapping="Wrap"/>
 
-                        <HyperlinkButton Content="View hot keys here." Click="ViewHotKeysHyperlinkButton_Click"/>
+                        <HyperlinkButton x:Uid="MainWindowTeachingTipViewHotkeysHyperlinkButton" Click="ViewHotKeysHyperlinkButton_Click"/>
                     </StackPanel>
                 </Grid>
             </TeachingTip.Content>

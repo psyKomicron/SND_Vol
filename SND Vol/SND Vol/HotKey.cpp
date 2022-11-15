@@ -96,7 +96,10 @@ namespace System
 					{
 						OutputDebugHString(L"Hotkey (id: " + winrt::to_hstring(static_cast<uint64_t>(hotKeyId)) + L") > Hotkey pressed.");
 
-						e_fired(winrt::Windows::Foundation::IInspectable(), winrt::guid());
+						if (keyEnabled.load())
+						{
+							e_fired(winrt::Windows::Foundation::IInspectable(), winrt::guid());
+						}
 					}
 				}
 				else

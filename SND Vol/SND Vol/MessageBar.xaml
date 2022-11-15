@@ -9,8 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Loaded="UserControl_Loaded"
-    Padding="3">
+    Loaded="UserControl_Loaded">
     <UserControl.Transitions>
         <TransitionCollection>
             <RepositionThemeTransition/>
@@ -22,42 +21,53 @@
         Padding="5"
         ColumnSpacing="5"
         CornerRadius="{StaticResource ControlCornerRadius}"
-        BorderBrush="{ThemeResource AccentControlElevationBorderBrush}">
+        BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
+        MinHeight="55">
         <Grid.Background>
             <AcrylicBrush
                 FallbackColor="{ThemeResource SolidBackgroundFillColorTertiary}"
-                TintColor="{ThemeResource SystemFillColorSolidNeutralBackground}"
-                TintOpacity="0.4"
-                TintLuminosityOpacity="0.8"
-                Opacity="0.95"/>
+                TintColor="{ThemeResource SystemAccentColorDark3}"
+                TintOpacity="0.55"
+                TintLuminosityOpacity="0.5"
+                Opacity="1"/>
         </Grid.Background>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <FontIcon x:Name="StatusFontIcon" Grid.Column="0" Glyph="&#xe946;" FontSize="14" Grid.RowSpan="2"/>
+        <Grid ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+            <FontIcon 
+                x:Name="StatusFontIcon"
+                Grid.Column="0"
+                Grid.RowSpan="2"
+                Glyph="&#xe946;"
+                FontSize="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"/>
 
-            <TextBlock x:Name="MainContentTextBlock"/>
+            <Grid Grid.Column="1" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="MainContentTextBlock" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </Grid>
+
+            <Button
+                x:Name="CloseButton"
+                Click="CloseButton_Click"
+                Visibility="Collapsed"/>
+
         </Grid>
 
-        <Button
-            x:Name="CloseButton"
-            Click="CloseButton_Click"
-            Visibility="Collapsed"/>
-
-
-        <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" ColumnSpacing="5">
+        <Grid Grid.Row="1" ColumnSpacing="5" Margin="-4,0,-9,-6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -79,14 +89,14 @@
                 </Style>
             </Grid.Resources>
 
-            <Border x:Name="BackgroundTimerBorder" Grid.Column="0" Background="Black"/>
+            <Border x:Name="BackgroundTimerBorder" Grid.Column="0" Background="{ThemeResource SubtleFillColorTertiaryBrush}"/>
 
             <Border
                 x:Name="TimerProgressBar"
                 Background="{ThemeResource AccentAAFillColorDefaultBrush}"
                 SizeChanged="TimerProgressBar_SizeChanged"
                 Grid.Column="0">
-                
+
                 <Border.Clip>
                     <RectangleGeometry x:Name="TimerProgressBarClipping" Rect="0 0 0 0">
                         <RectangleGeometry.Transform>
@@ -96,7 +106,7 @@
                 </Border.Clip>
             </Border>
 
-            <TextBlock
+            <!--<TextBlock
                 Text="Next"
                 FontSize="12"
                 Grid.Column="1"
@@ -104,7 +114,7 @@
                 VerticalAlignment="Center"
                 TextDecorations="Underline"
                 Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"
-                TextWrapping="Wrap"/>
+                TextWrapping="Wrap"/>-->
         </Grid>
     </Grid>
 </UserControl>

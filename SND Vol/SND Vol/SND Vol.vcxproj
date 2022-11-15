@@ -89,6 +89,9 @@
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp20</LanguageStandard>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">Fast</FloatingPointModel>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Fast</FloatingPointModel>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">DebugFastLink</GenerateDebugInformation>
@@ -100,6 +103,9 @@
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpp20</LanguageStandard>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">Fast</FloatingPointModel>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Fast</FloatingPointModel>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -157,6 +163,10 @@
       <DependentUpon>SecondWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="SplashScreen.xaml.h">
+      <DependentUpon>SplashScreen.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -174,6 +184,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="SecondWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SplashScreen.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Generic.xaml">
@@ -226,6 +239,10 @@
       <DependentUpon>SecondWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="SplashScreen.xaml.cpp">
+      <DependentUpon>SplashScreen.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -265,6 +282,10 @@
     </Midl>
     <Midl Include="SecondWindow.idl">
       <DependentUpon>SecondWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="SplashScreen.idl">
+      <DependentUpon>SplashScreen.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
   </ItemGroup>

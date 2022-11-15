@@ -117,16 +117,40 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AudioObjectsLoaded" xml:space="preserve">
+    <value>Sessions audio chargées</value>
+  </data>
   <data name="AudioSessionViewHideMenuFlyoutItem.Text" xml:space="preserve">
     <value>Cacher</value>
   </data>
   <data name="AudioSessionViewLockMenuFlyoutItem.Text" xml:space="preserve">
     <value>Verrouiller</value>
   </data>
+  <data name="ErrorAppFailedRestart" xml:space="preserve">
+    <value>L'application n'a pas pu être redémarrée</value>
+  </data>
+  <data name="ErrorAudioSessionsUnavailable" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ErrorFatalFailure" xml:space="preserve">
+    <value>Oh oh... Une erreur est survenue, essayez de redémarrer l'application</value>
+  </data>
   <data name="ErrorLoadingAudioObjects" xml:space="preserve">
     <value />
   </data>
   <data name="ErrorUuidCreateFailed" xml:space="preserve">
+    <value />
+  </data>
+  <data name="InfoAudioSessionsReloaded" xml:space="preserve">
+    <value>Sessions audio chargées</value>
+  </data>
+  <data name="InfoHotKeysDisabled" xml:space="preserve">
+    <value>Hot keys désactivées</value>
+  </data>
+  <data name="InfoHotKeysEnabled" xml:space="preserve">
+    <value>Hot keys activées</value>
+  </data>
+  <data name="InfoReloadingAudioSessions" xml:space="preserve">
     <value />
   </data>
   <data name="MainWindowDisableAnimationsMenuFlyoutItem.Text" xml:space="preserve">
@@ -163,6 +187,12 @@ hotkeys</value>
   <data name="MainWindowRestartMenuFlyoutItem.Text" xml:space="preserve">
     <value>Redémarrer</value>
   </data>
+  <data name="MainWindowSettingsButtonTeachingTip.Title" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="MainWindowShowAppBarMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Afficher le menu</value>
+  </data>
   <data name="MainWindowSwitchPresenterStyleMenuFlyoutItem.Text" xml:space="preserve">
     <value>Afficher les
 boutons additionels</value>
@@ -179,5 +209,23 @@ le son</value>
   </data>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
     <value>- Afficher les paramètres, les fonctions de l'application, modifier la disposition des éléments et personnaliser l'affichage.</value>
+  </data>
+  <data name="SystemAudioSessionName" xml:space="preserve">
+    <value>Système</value>
+  </data>
+  <data name="SystemVolumeDownHotKeyName" xml:space="preserve">
+    <value>Volume système - 2</value>
+  </data>
+  <data name="SystemVolumePageDownHotKeyName" xml:space="preserve">
+    <value>Volume système - 7</value>
+  </data>
+  <data name="SystemVolumePageUpHotKeyName" xml:space="preserve">
+    <value>Volume système + 7</value>
+  </data>
+  <data name="SystemVolumeSwitchStateHotKeyName" xml:space="preserve">
+    <value>Couper/rétablir le son</value>
+  </data>
+  <data name="SystemVolumeUpHotKeyName" xml:space="preserve">
+    <value>Volume système +2</value>
   </data>
 </root>

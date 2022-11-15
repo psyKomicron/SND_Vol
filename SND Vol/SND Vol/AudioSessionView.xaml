@@ -182,9 +182,7 @@
             Grid.Row="3"
             Click="MuteToggleButton_Click">
 
-            <Viewbox Height="{StaticResource FontIconHeight}">
-                <FontIcon x:Name="VolumeFontIcon" Glyph="{x:Bind VolumeGlyph, Mode=OneWay}"/>
-            </Viewbox>
+            <FontIcon x:Name="VolumeFontIcon" FontSize="{StaticResource FontIconHeight}" Glyph="{x:Bind VolumeGlyph, Mode=OneWay}"/>
         </Button>
 
         <!--<Ellipse 

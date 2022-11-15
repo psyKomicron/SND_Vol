@@ -48,9 +48,9 @@
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <AppxPackageDir>C:\Users\julie\Documents\</AppxPackageDir>
+    <AppxPackageDir>E:\julie\Documents\Code\Packages\</AppxPackageDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
     <AppxBundle>Always</AppxBundle>

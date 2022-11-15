@@ -50,6 +50,7 @@
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Microsoft.Windows.AppLifecycle.h>
 
+#include <winrt/Windows.ApplicationModel.Resources.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>

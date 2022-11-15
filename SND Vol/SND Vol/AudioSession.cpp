@@ -25,7 +25,8 @@ namespace Audio
 
         if (audioSessionControl->IsSystemSoundsSession() == S_OK)
         {
-            sessionName = L"System";
+            winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+            sessionName = loader.GetString(L"SystemAudioSessionName");
             isSystemSoundSession = true;
         }
         else

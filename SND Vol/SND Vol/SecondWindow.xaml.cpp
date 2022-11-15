@@ -44,20 +44,16 @@ namespace winrt::SND_Vol::implementation
 
     void SecondWindow::Grid_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
-        HotKeysViewer().AddActiveKey({ L"System volume up", true, VirtualKey::Up, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ L"System volume down", true, VirtualKey::Down, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ L"System volume fast up", true, VirtualKey::PageUp, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ L"System volume fast down", true, VirtualKey::PageDown, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ L"Mute/unmute system volume", true, VirtualKey::M, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeUpHotKeyName"), true, VirtualKey::Up, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift});
+        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeDownHotKeyName"), true, VirtualKey::Down, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumePageUpHotKeyName"), true, VirtualKey::PageUp, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumePageDownHotKeyName"), true, VirtualKey::PageDown, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeSwitchStateHotKeyName"), true, VirtualKey::M, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
     }
 
     void SecondWindow::CloseHotKeysViewerButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-    }
-
-    void SecondWindow::Button_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        
     }
 
 
@@ -79,26 +75,45 @@ namespace winrt::SND_Vol::implementation
             
             int32_t width = unbox_value_or(
                 settings.Values().TryLookup(L"WindowWidth"),
-                Application::Current().Resources().Lookup(box_value(L"SecondWindowHeight")).as<int32_t>()
+                Application::Current().Resources().Lookup(box_value(L"SecondWindowWidth")).as<int32_t>()
             );
             int32_t height = unbox_value_or(
                 settings.Values().TryLookup(L"WindowHeight"),
                 Application::Current().Resources().Lookup(box_value(L"SecondWindowHeight")).as<int32_t>()
             );
 
-            int32_t lastX = unbox_value_or(settings.Values().TryLookup(L"WindowPosX"), 0);
-            int32_t lastY = unbox_value_or(settings.Values().TryLookup(L"WindowPosY"), 0);
-            PointInt32 lastPosition{ lastX, lastY };
+            PointInt32 lastPosition{};
+            lastPosition.X = unbox_value_or(settings.Values().TryLookup(L"WindowPosX"), -1);
+            lastPosition.Y = unbox_value_or(settings.Values().TryLookup(L"WindowPosY"), -1);
 
-            DisplayArea display = DisplayArea::GetFromPoint(lastPosition, DisplayAreaFallback::None);
-            if (!display)
+            if (lastPosition.X > 0 && lastPosition.Y > 0) 
             {
-                lastPosition.X = display.WorkArea().Width - width;
-                lastPosition.Y = display.WorkArea().Height - height;
+                // Check if the current window position is out of bounds
+                DisplayArea display = DisplayArea::GetFromPoint(lastPosition, DisplayAreaFallback::None);
+                if (!display)
+                {
+                    display = DisplayArea::GetFromPoint(PointInt32(0), DisplayAreaFallback::Primary);
+                    lastPosition.X = (display.WorkArea().Width - width) / 2;
+                    lastPosition.Y = (display.WorkArea().Height - height) / 2;
+                }
+            }
+            else // Center window on current screen (where the main window is)
+            {
+                winrt::Windows::Graphics::RectInt32 mainWindowDisplayRect = MainWindow::Current().DisplayRect();
+                DisplayArea display = DisplayArea::GetFromPoint(PointInt32(mainWindowDisplayRect.X, mainWindowDisplayRect.Y), DisplayAreaFallback::None);
+                
+                // There should always be a display, but in the case that for some reason the main window is not inside screen bounds.
+                if (!display)
+                {
+                    display = DisplayArea::GetFromPoint(PointInt32(0), DisplayAreaFallback::Primary);
+                }
+
+                lastPosition.X = (display.WorkArea().Width - width) / 2;
+                lastPosition.Y = (display.WorkArea().Height - height) / 2;
             }
 
             appWindow.MoveAndResize(RectInt32(lastPosition.X, lastPosition.Y, width, height));
-            appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>() + L" settings");
+            appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>() + L"(hotkeys)");
 
             appWindowClosingEventToken = appWindow.Closing({ this, &SecondWindow::AppWindow_Closing });
 
@@ -172,7 +187,5 @@ namespace winrt::SND_Vol::implementation
         settings.Values().Insert(L"WindowWidth", box_value(appWindow.Size().Width));
         settings.Values().Insert(L"WindowPosX", box_value(appWindow.Position().X));
         settings.Values().Insert(L"WindowPosY", box_value(appWindow.Position().Y));
-        settings.Values().Insert(L"IsAlwaysOnTop", box_value(appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop()));
-        settings.Values().Insert(L"Layout", box_value(0));
     }
 }

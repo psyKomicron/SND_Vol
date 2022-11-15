@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+namespace SND_Vol
+{
+    [default_interface]
+    runtimeclass SplashScreen : Microsoft.UI.Xaml.Controls.UserControl, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        SplashScreen();
+
+        IInspectable TopContent{ get; set; };
+        IInspectable BottomContent{ get; set; };
+        IInspectable MainContent{ get; set; };
+        Windows.Foundation.TimeSpan OnScreenTimeSpan{ get; set; };
+
+        event Windows.Foundation.TypedEventHandler<SplashScreen, IInspectable> Dismissed;
+
+
+    }
+}
