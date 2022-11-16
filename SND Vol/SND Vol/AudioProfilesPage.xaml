@@ -1,0 +1,73 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Page
+    x:Class="SND_Vol.AudioProfilesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:s="using:SND_Vol"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="15,15,15,15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid RowSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Add new profile" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" MaxWidth="550"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="NewProfileNameTextBox" Grid.Column="0" TextChanged="NewProfileNameTextBox_TextChanged"/>
+
+                <Button
+                    Style="{StaticResource AccentButtonStyle}"
+                    Grid.Column="1"
+                    Padding="8,6"
+                    HorizontalAlignment="Right"
+                    Click="AddProfileButton_Click">
+                    <SymbolIcon Symbol="Add"/>
+                </Button>
+            </Grid>
+
+            <TextBlock x:Name="ErrorTextBlock" Grid.Row="2" Visibility="Collapsed" Foreground="{ThemeResource SystemFillColorCritical}"/>
+        </Grid>
+
+        <Border Background="{ThemeResource MenuFlyoutSeparatorThemeBrush}" Grid.Row="1" Height="1" Margin="5,20"/>
+
+        <ListView x:Name="ProfilesListView" Grid.Row="2" ItemsSource="{x:Bind AudioProfiles}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="s:AudioProfile">
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{x:Bind ProfileName}" Grid.Column="0" VerticalAlignment="Center"/>
+
+                        <Ellipse Height="20" Width="20" Visibility="{x:Bind IsDefaultProfile}" Grid.Column="2" Fill="{ThemeResource SystemColorControlAccentColor}"/>
+
+                        <Button Tag="{x:Bind ProfileName}" Content="Delete" Grid.Column="3" Click="DeleteProfileButton_Click"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

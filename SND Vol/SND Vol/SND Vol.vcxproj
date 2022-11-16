@@ -117,6 +117,14 @@
     <Manifest Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioProfile.h">
+      <DependentUpon>AudioProfile.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="AudioProfilesPage.xaml.h">
+      <DependentUpon>AudioProfilesPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="AudioSession.h" />
     <ClInclude Include="AudioSessionView.xaml.h">
       <DependentUpon>AudioSessionView.xaml</DependentUpon>
@@ -124,6 +132,10 @@
     </ClInclude>
     <ClInclude Include="HotKey.h" />
     <ClInclude Include="HotKeyManager.h" />
+    <ClInclude Include="HotKeysPage.xaml.h">
+      <DependentUpon>HotKeysPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="HotKeysViewer.xaml.h">
       <DependentUpon>HotKeysViewer.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -163,6 +175,10 @@
       <DependentUpon>SecondWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="SettingsPage.xaml.h">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="SplashScreen.xaml.h">
       <DependentUpon>SplashScreen.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -170,7 +186,13 @@
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
+    <Page Include="AudioProfilesPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="AudioSessionView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="HotKeysPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="HotKeysViewer.xaml">
@@ -186,6 +208,9 @@
     <Page Include="SecondWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="SettingsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SplashScreen.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -194,6 +219,14 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AudioProfile.cpp">
+      <DependentUpon>AudioProfile.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="AudioProfilesPage.xaml.cpp">
+      <DependentUpon>AudioProfilesPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="AudioSession.cpp" />
     <ClCompile Include="AudioSessionView.xaml.cpp">
       <DependentUpon>AudioSessionView.xaml</DependentUpon>
@@ -201,6 +234,10 @@
     </ClCompile>
     <ClCompile Include="HotKey.cpp" />
     <ClCompile Include="HotKeyManager.cpp" />
+    <ClCompile Include="HotKeysPage.xaml.cpp">
+      <DependentUpon>HotKeysPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="HotKeysViewer.xaml.cpp">
       <DependentUpon>HotKeysViewer.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -239,6 +276,10 @@
       <DependentUpon>SecondWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="SettingsPage.xaml.cpp">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="SplashScreen.xaml.cpp">
       <DependentUpon>SplashScreen.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -249,8 +290,19 @@
       <SubType>Code</SubType>
       <DependentUpon>App.xaml</DependentUpon>
     </Midl>
+    <Midl Include="AudioProfile.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="AudioProfilesPage.idl">
+      <DependentUpon>AudioProfilesPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
     <Midl Include="AudioSessionView.idl">
       <DependentUpon>AudioSessionView.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="HotKeysPage.idl">
+      <DependentUpon>HotKeysPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="HotKeysViewer.idl">
@@ -282,6 +334,10 @@
     </Midl>
     <Midl Include="SecondWindow.idl">
       <DependentUpon>SecondWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="SettingsPage.idl">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="SplashScreen.idl">

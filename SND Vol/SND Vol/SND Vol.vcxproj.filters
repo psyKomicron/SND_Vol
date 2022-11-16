@@ -26,11 +26,21 @@
     <Page Include="SplashScreen.xaml">
       <Filter>Controls</Filter>
     </Page>
+    <Page Include="HotKeysPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
+    <Page Include="AudioProfilesPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
+    <Page Include="SettingsPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
     <Midl Include="HotKeyViewModel.idl" />
+    <Midl Include="AudioProfile.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -97,6 +107,9 @@
     </Filter>
     <Filter Include="Windows">
       <UniqueIdentifier>{43654ea6-5b0c-4f61-a9d9-61d4cf2a7a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pages">
+      <UniqueIdentifier>{4d4d00c7-80d1-4bd4-a866-c7b1fba101b8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

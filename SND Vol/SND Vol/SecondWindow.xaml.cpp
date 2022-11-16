@@ -7,10 +7,8 @@
 #include <winrt/Windows.UI.Core.h>
 #include "HotKeyViewModel.h"
 
-using namespace winrt::Windows::Graphics;
 
 using namespace winrt;
-
 using namespace winrt::Microsoft::UI;
 using namespace winrt::Microsoft::UI::Composition;
 using namespace winrt::Microsoft::UI::Composition::SystemBackdrops;
@@ -18,13 +16,14 @@ using namespace winrt::Microsoft::UI::Input;
 using namespace winrt::Microsoft::UI::Windowing;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
-using namespace winrt::Microsoft::UI::Xaml::Media;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
-
+using namespace winrt::Microsoft::UI::Xaml::Media;
+using namespace winrt::Microsoft::UI::Xaml::Navigation;
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::ApplicationModel::Core;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
+using namespace winrt::Windows::Graphics;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::System;
 
@@ -34,30 +33,49 @@ namespace winrt::SND_Vol::implementation
     SecondWindow::SecondWindow()
     {
         InitializeComponent();
+        InitializeWindow();
 
-        InitWindow();
-        SetBackground();
-        
         TitleTextBlock().Text(appWindow.Title());
+
+        NavigationBreadcrumbBar().ItemsSource(breadCrumbs);
     }
 
 
     void SecondWindow::Grid_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
-        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeUpHotKeyName"), true, VirtualKey::Up, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift});
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeDownHotKeyName"), true, VirtualKey::Down, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumePageUpHotKeyName"), true, VirtualKey::PageUp, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumePageDownHotKeyName"), true, VirtualKey::PageDown, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeSwitchStateHotKeyName"), true, VirtualKey::M, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        NavigationFrame().Navigate(xaml_typename<SettingsPage>());
     }
 
-    void SecondWindow::CloseHotKeysViewerButton_Click(IInspectable const&, RoutedEventArgs const&)
+    void SecondWindow::NavigationFrame_Navigated(IInspectable const&, NavigationEventArgs const& e)
     {
+        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+
+        auto typeName = e.SourcePageType();
+        std::wstring view = typeName.Name.data();
+        for (size_t i = 0; i < view.size(); i++)
+        {
+            if (view[i] == L'.')
+            {
+                view[i] = L'/';
+            }
+        }
+        hstring pageName = loader.GetString(view);
+        breadCrumbs.Append(pageName);
+    }
+
+    void SecondWindow::NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar const&, BreadcrumbBarItemClickedEventArgs const& e)
+    {
+        for (int i = breadCrumbs.Size() - 1; i >= e.Index(); i--)
+        {
+            breadCrumbs.RemoveAt(i);
+        }
+
+        winrt::Windows::UI::Xaml::Interop::TypeName typeName{ L"SND_Vol.HotKeysPage", winrt::Windows::UI::Xaml::Interop::TypeKind::Custom };
+        NavigationFrame().Navigate(typeName);
     }
 
 
-    void SecondWindow::InitWindow()
+    void SecondWindow::InitializeWindow()
     {
         auto nativeWindow{ this->try_as<::IWindowNative>() };
         check_bool(nativeWindow);
@@ -136,6 +154,8 @@ namespace winrt::SND_Vol::implementation
                 appWindow.TitleBar().ButtonPressedForegroundColor(Colors::White());
             }
         }
+
+        SetBackground();
     }
 
     void SecondWindow::SetBackground()

@@ -1,4 +1,5 @@
 import "HotKeyView.idl";
+import "AudioProfile.idl";
 
 namespace SND_Vol
 {
@@ -7,6 +8,6 @@ namespace SND_Vol
     {
         SecondWindow();
 
-    IObservableVector<HotKeyView> HotKeys{ get; };
+        IObservableVector<HotKeyView> HotKeys{ get; };
     }
 }

@@ -15,7 +15,8 @@ namespace winrt::SND_Vol::implementation
         };
 
         void Grid_Loaded(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void CloseHotKeysViewerButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void NavigationFrame_Navigated(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e);
+        void NavigationBreadcrumbBar_ItemClicked(winrt::Microsoft::UI::Xaml::Controls::BreadcrumbBar const& sender, winrt::Microsoft::UI::Xaml::Controls::BreadcrumbBarItemClickedEventArgs const& args);
 
     private:
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
@@ -27,9 +28,13 @@ namespace winrt::SND_Vol::implementation
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::HotKeyView> hotKeyViews
         {
             single_threaded_observable_vector<winrt::SND_Vol::HotKeyView>()
+        }; 
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::hstring> breadCrumbs
+        {
+            single_threaded_observable_vector<winrt::hstring>()
         };
 
-        void InitWindow();
+        void InitializeWindow();
         void SetBackground();
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
     };

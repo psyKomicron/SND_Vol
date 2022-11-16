@@ -209,6 +209,15 @@ unmute all</value>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
     <value>- View settings, app actions, change items layout customize display.</value>
   </data>
+  <data name="SND_Vol.AudioProfilesPage" xml:space="preserve">
+    <value>Audio profiles</value>
+  </data>
+  <data name="SND_Vol.HotKeysPage" xml:space="preserve">
+    <value>Hot keys</value>
+  </data>
+  <data name="SND_Vol.SettingsPage" xml:space="preserve">
+    <value>Settings</value>
+  </data>
   <data name="SystemAudioSessionName" xml:space="preserve">
     <value>System</value>
   </data>

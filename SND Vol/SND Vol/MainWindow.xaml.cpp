@@ -10,7 +10,7 @@
 #define USE_TIMER 1
 #define DEACTIVATE_TIMER 0
 #define ENABLE_HOTKEYS 1
-#define FORCE_SHOW_SPLASH_SCREEN 1
+#define FORCE_SHOW_SPLASH_SCREEN 0
 
 using namespace Audio;
 
@@ -912,7 +912,7 @@ namespace winrt::SND_Vol::implementation
         ));
         presenter.IsAlwaysOnTop(alwaysOnTop);
 
-        int32_t layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 1);
+        layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 1);
         switch (layout)
         {
             case 1:

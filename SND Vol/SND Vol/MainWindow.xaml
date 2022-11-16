@@ -72,33 +72,6 @@
 
                 <Button.Flyout>
                     <MenuFlyout ShowMode="Transient">
-                        <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="H" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutSeparator/>
-
-                        <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="M" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="R" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutSeparator/>
 
                         <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
                             <ToggleMenuFlyoutItem
@@ -125,8 +98,34 @@
                             <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
                         </MenuFlyoutSubItem>
 
+                        <MenuFlyoutSeparator/>
+
+                        <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="H" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="M" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="R" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
 
                         <MenuFlyoutSeparator/>
+
 
                         <MenuFlyoutItem x:Uid="MainWindowHotkeysMenuFlyoutItem" x:Name="HotKeySettingsMenuFlyoutItem" Click="HotKeySettingsMenuFlyoutItem_Click"/>
                         <MenuFlyoutItem x:Name="DisableHotKeysMenuFlyoutItem" Text="Disable hotkeys" Click="DisableHotKeysMenuFlyoutItem_Click"/>

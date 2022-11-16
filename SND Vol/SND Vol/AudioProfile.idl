@@ -1,0 +1,14 @@
+namespace SND_Vol
+{
+    [bindable]
+    [default_interface]
+    runtimeclass AudioProfile 
+    {
+        AudioProfile();
+
+        String ProfileName{ get; set; };
+        Windows.Foundation.Collections.IMap<String, Single> AudioLevels{ get; set; };
+        Windows.Foundation.Collections.IMap<String, Boolean> AudioStates{ get; set; };
+        Boolean IsDefaultProfile{ get; set; };
+    }
+}
