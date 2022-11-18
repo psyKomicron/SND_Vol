@@ -124,11 +124,11 @@
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
 
+                        <MenuFlyoutItem x:Name="DisableHotKeysMenuFlyoutItem" Text="Disable hotkeys" Click="DisableHotKeysMenuFlyoutItem_Click"/>
+
                         <MenuFlyoutSeparator/>
 
-
-                        <MenuFlyoutItem x:Uid="MainWindowHotkeysMenuFlyoutItem" x:Name="HotKeySettingsMenuFlyoutItem" Click="HotKeySettingsMenuFlyoutItem_Click"/>
-                        <MenuFlyoutItem x:Name="DisableHotKeysMenuFlyoutItem" Text="Disable hotkeys" Click="DisableHotKeysMenuFlyoutItem_Click"/>
+                        <MenuFlyoutItem x:Uid="MainWindowSettingsMenuFlyoutItem" x:Name="SettingsMenuFlyoutItem" Click="SettingsMenuFlyoutItem_Click"/>
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
@@ -305,7 +305,7 @@
         <snd_vol:SplashScreen
             x:Name="WindowSplashScreen"
             Grid.Row="2"
-            OnScreenTimeSpan="0:0:02"
+            OnScreenTimeSpan="0:0:01"
             Dismissed="SplashScreen_Dismissed">
             <snd_vol:SplashScreen.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="0.6" ColorInterpolationMode="SRgbLinearInterpolation" MappingMode="RelativeToBoundingBox" SpreadMethod="Pad">

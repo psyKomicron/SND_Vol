@@ -1,8 +1,7 @@
 namespace SND_Vol
 {
-    [bindable]
     [default_interface]
-    runtimeclass AudioProfile 
+    runtimeclass AudioProfile : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         AudioProfile();
 

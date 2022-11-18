@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "SecondWindow.g.h"
+#include "NavigationBreadcrumbBarItem.h"
 
 namespace winrt::SND_Vol::implementation
 {
@@ -29,14 +30,16 @@ namespace winrt::SND_Vol::implementation
         {
             single_threaded_observable_vector<winrt::SND_Vol::HotKeyView>()
         }; 
-        winrt::Windows::Foundation::Collections::IObservableVector<winrt::hstring> breadCrumbs
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::NavigationBreadcrumbBarItem> breadCrumbs
         {
-            single_threaded_observable_vector<winrt::hstring>()
+            single_threaded_observable_vector<winrt::SND_Vol::NavigationBreadcrumbBarItem>()
         };
 
         void InitializeWindow();
         void SetBackground();
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
+    public:
+        void NavigationFrame_NavigationFailed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Navigation::NavigationFailedEventArgs const& e);
     };
 }
 

@@ -39,8 +39,15 @@
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
-    <Midl Include="HotKeyViewModel.idl" />
-    <Midl Include="AudioProfile.idl" />
+    <Midl Include="HotKeyViewModel.idl">
+      <Filter>ViewModels</Filter>
+    </Midl>
+    <Midl Include="AudioProfile.idl">
+      <Filter>ViewModels</Filter>
+    </Midl>
+    <Midl Include="NavigationBreadcrumbBarItem.idl">
+      <Filter>ViewModels</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -110,6 +117,9 @@
     </Filter>
     <Filter Include="Pages">
       <UniqueIdentifier>{4d4d00c7-80d1-4bd4-a866-c7b1fba101b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ViewModels">
+      <UniqueIdentifier>{f8e93d22-f71a-4f6a-9fc1-3d01674f92d4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

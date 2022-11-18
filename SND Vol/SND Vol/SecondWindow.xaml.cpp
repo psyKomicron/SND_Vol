@@ -59,19 +59,31 @@ namespace winrt::SND_Vol::implementation
                 view[i] = L'/';
             }
         }
+
         hstring pageName = loader.GetString(view);
-        breadCrumbs.Append(pageName);
+        if (pageName.empty())
+        {
+            pageName = typeName.Name;
+        }
+
+        breadCrumbs.Append(winrt::SND_Vol::NavigationBreadcrumbBarItem(pageName, typeName));
     }
 
     void SecondWindow::NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar const&, BreadcrumbBarItemClickedEventArgs const& e)
     {
+        winrt::SND_Vol::NavigationBreadcrumbBarItem item = breadCrumbs.GetAt(e.Index());
+
         for (int i = breadCrumbs.Size() - 1; i >= e.Index(); i--)
         {
             breadCrumbs.RemoveAt(i);
         }
 
-        winrt::Windows::UI::Xaml::Interop::TypeName typeName{ L"SND_Vol.HotKeysPage", winrt::Windows::UI::Xaml::Interop::TypeKind::Custom };
-        NavigationFrame().Navigate(typeName);
+        NavigationFrame().Navigate(item.ItemTypeName());
+    }
+
+    void SecondWindow::NavigationFrame_NavigationFailed(IInspectable const&, NavigationFailedEventArgs const&)
+    {
+        ErrorMessageBar().EnqueueMessage(L"Navigation failed");
     }
 
 

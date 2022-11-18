@@ -56,8 +56,6 @@ namespace winrt::SND_Vol::implementation
             block.Text(e.Message());
             WindowMessageBar().EnqueueMessage(e.Message());
         });
-    #else
-        HotKeySettingsMenuFlyoutItem().IsEnabled(false);
     #endif // DEBUG
 
     #if FORCE_SHOW_SPLASH_SCREEN & defined DEBUG
@@ -380,7 +378,7 @@ namespace winrt::SND_Vol::implementation
         ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
     }
 
-    void MainWindow::HotKeySettingsMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
+    void MainWindow::SettingsMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
     {
         if (!secondWindow)
         {
@@ -391,8 +389,6 @@ namespace winrt::SND_Vol::implementation
             });
         }
         secondWindow.Activate();
-
-        SettingsButtonTeachingTip().IsOpen(true);
     }
 
     void MainWindow::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
@@ -444,7 +440,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::ViewHotKeysHyperlinkButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        HotKeySettingsMenuFlyoutItem_Click(nullptr, nullptr);
+        SettingsMenuFlyoutItem_Click(nullptr, nullptr);
     }
 
     void MainWindow::SplashScreen_Dismissed(winrt::SND_Vol::SplashScreen const&, IInspectable const&)
@@ -912,7 +908,7 @@ namespace winrt::SND_Vol::implementation
         ));
         presenter.IsAlwaysOnTop(alwaysOnTop);
 
-        layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 1);
+        layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 0);
         switch (layout)
         {
             case 1:

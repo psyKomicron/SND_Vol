@@ -36,7 +36,7 @@
                 Margin="7,0,0,2"/>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" RowSpacing="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -315,9 +315,22 @@
 
             </Grid.Resources>
 
-            <BreadcrumbBar x:Name="NavigationBreadcrumbBar" Margin="10,0" ItemClicked="NavigationBreadcrumbBar_ItemClicked"/>
+            <BreadcrumbBar x:Name="NavigationBreadcrumbBar" Margin="10,0" ItemClicked="NavigationBreadcrumbBar_ItemClicked">
+                <BreadcrumbBar.ItemTemplate>
+                    <DataTemplate x:DataType="s:NavigationBreadcrumbBarItem">
+                        <TextBlock Text="{x:Bind DisplayName}"/>
+                    </DataTemplate>
+                </BreadcrumbBar.ItemTemplate>
+            </BreadcrumbBar>
 
-            <Frame x:Name="NavigationFrame" Grid.Row="1" Loaded="Grid_Loaded" Navigated="NavigationFrame_Navigated"/>
+            <Frame
+                x:Name="NavigationFrame"
+                Grid.Row="1"
+                Loaded="Grid_Loaded"
+                Navigated="NavigationFrame_Navigated"
+                NavigationFailed="NavigationFrame_NavigationFailed"/>
+
+            <s:MessageBar x:Name="ErrorMessageBar" Grid.Row="1" VerticalAlignment="Top" Visibility="Collapsed"/>
         </Grid>
     </Grid>
 </Window>

@@ -10,6 +10,10 @@ namespace winrt::SND_Vol::implementation
     struct SettingsPage : SettingsPageT<SettingsPage>
     {
         SettingsPage();
+
+        void OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args);
+        void AudioProfilesButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void HotKeysButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 
