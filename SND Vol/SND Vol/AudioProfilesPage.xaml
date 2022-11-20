@@ -36,7 +36,7 @@
 
                 <TextBox x:Name="NewProfileNameTextBox" Grid.Column="0" TextChanged="NewProfileNameTextBox_TextChanged"/>
 
-                <CheckBox x:Name="DefaultProfileSwitch" Content="Default" Grid.Column="1" Margin="20,0,0,0"/>
+                <CheckBox x:Name="DefaultProfileSwitch" Content="Default" Grid.Column="1" Margin="20,0,0,0" Visibility="Collapsed"/>
 
                 <Button
                     Style="{StaticResource AccentButtonStyle}"
@@ -65,11 +65,12 @@
             <ListView.Resources>
                 <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
                     <Setter Property="Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                    <Setter Property="Padding" Value="7,2,3,-3" />
                 </Style>
             </ListView.Resources>
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel HorizontalAlignment="Stretch"/>
+                    <ItemsStackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
 
@@ -77,17 +78,16 @@
                 <DataTemplate x:DataType="s:AudioProfile">
                     <Grid 
                         ColumnSpacing="15" 
-                        Padding="7,5"
+                        Padding="7,7"
                         Margin="0,0,0,5"
-                        CornerRadius="{StaticResource ControlCornerRadius}"
-                        HorizontalAlignment="Stretch">
+                        CornerRadius="{StaticResource ControlCornerRadius}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="1*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Grid Translation="15,2,0">
+                        <Grid Translation="15,2,0" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -113,7 +113,7 @@
                             Grid.Column="1"
                             VerticalAlignment="Center"/>
 
-                        <StackPanel Grid.Column="2" HorizontalAlignment="Center" Orientation="Horizontal">
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
                             <AppBarButton
                                 Tag="{x:Bind ProfileName, Mode=OneWay}" 
                                 Icon="Delete"
