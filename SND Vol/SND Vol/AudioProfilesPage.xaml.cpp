@@ -143,26 +143,21 @@ namespace winrt::SND_Vol::implementation
                 // TODO: Copy the profile values to the new one.
 
                 AudioProfile profile{};
-                hstring profileName = audioProfiles.GetAt(i).ProfileName() + L" (Copy";
+                hstring profileName = audioProfiles.GetAt(i).ProfileName();
 
-                uint32_t count = 0;
+                uint32_t count = 1u;
                 for (size_t j = 0; j < audioProfiles.Size(); j++)
                 {
-                    if (audioProfiles.GetAt(i).ProfileName() == profileName)
+                    hstring test = audioProfiles.GetAt(j).ProfileName();
+                    if (test == profileName)
                     {
-                        count++;
+                        profileName = audioProfiles.GetAt(i).ProfileName() + L" (" + to_hstring(count) + L")";
                     }
                 }
 
-                if (count > 0)
-                {
-                    profile.ProfileName(profileName + L" " + to_hstring(count) + L")");
-                }
-                else
-                {
-                    profile.ProfileName(profileName + L")");
-                }
+                profile.ProfileName(profileName);
                 profile.IsDefaultProfile(false);
+
                 audioProfiles.Append(profile);
 
                 break;
