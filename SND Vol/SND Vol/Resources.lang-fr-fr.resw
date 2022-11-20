@@ -201,7 +201,7 @@ boutons additionels</value>
 le son</value>
   </data>
   <data name="MainWindowTeachingTipViewHotkeysHyperlinkButton.Content" xml:space="preserve">
-    <value>Voir les raccourcis claviers.</value>
+    <value>Open settings</value>
   </data>
   <data name="MainWindowTeachingTipViewHotkeysTextBlock.Text" xml:space="preserve">
     <value>- Couper/rétablir le son, diminuer ou augmenter le volume du système à l'aide de touches de raccourci (shortcuts).</value>

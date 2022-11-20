@@ -201,7 +201,7 @@ window buttons</value>
 unmute all</value>
   </data>
   <data name="MainWindowTeachingTipViewHotkeysHyperlinkButton.Content" xml:space="preserve">
-    <value>View hot keys here.</value>
+    <value>Open settings</value>
   </data>
   <data name="MainWindowTeachingTipViewHotkeysTextBlock.Text" xml:space="preserve">
     <value>- Mute/unmute, lower or increase system volume using hot keys (shortcuts).</value>
