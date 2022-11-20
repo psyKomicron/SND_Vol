@@ -47,7 +47,7 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <Grid x:Name="TitleBarGrid" MinHeight="30">
+        <Grid x:Name="TitleBarGrid" MinHeight="32">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
                 <ColumnDefinition x:Name="SettingsButtonColumn" Width="Auto"/>
@@ -62,7 +62,7 @@
                 BorderThickness="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                Padding="9,8"
+                Padding="8,7"
                 Margin="3,4"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center">
