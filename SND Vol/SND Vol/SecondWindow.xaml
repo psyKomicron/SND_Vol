@@ -325,6 +325,7 @@
 
             <Frame
                 x:Name="NavigationFrame"
+                IsNavigationStackEnabled="True"
                 Grid.Row="1"
                 Loaded="Grid_Loaded"
                 Navigated="NavigationFrame_Navigated"

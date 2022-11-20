@@ -8,7 +8,8 @@
     xmlns:s="using:SND_Vol"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    NavigationCacheMode="Enabled">
 
     <Grid Padding="15,15,15,15">
         <Grid.RowDefinitions>
@@ -58,13 +59,28 @@
             CanReorderItems="True" 
             AllowDrop="True"
             ReorderMode="Enabled"
-            CanDrag="True">
+            CanDrag="True"
+            HorizontalContentAlignment="Stretch"
+            HorizontalAlignment="Stretch">
+            <ListView.Resources>
+                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                    <Setter Property="Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                </Style>
+            </ListView.Resources>
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel HorizontalAlignment="Stretch"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="s:AudioProfile">
                     <Grid 
                         ColumnSpacing="15" 
                         Padding="7,5"
-                        CornerRadius="{StaticResource ControlCornerRadius}">
+                        Margin="0,0,0,5"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="1*"/>

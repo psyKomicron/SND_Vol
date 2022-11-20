@@ -43,30 +43,37 @@ namespace winrt::SND_Vol::implementation
 
     void SecondWindow::Grid_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
-        NavigationFrame().Navigate(xaml_typename<SettingsPage>());
+        NavigationFrame().Navigate(xaml_typename<SettingsPage>(), box_value(L"SettingsPage"));
     }
 
     void SecondWindow::NavigationFrame_Navigated(IInspectable const&, NavigationEventArgs const& e)
     {
         winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
-
-        auto typeName = e.SourcePageType();
-        std::wstring view = typeName.Name.data();
-        for (size_t i = 0; i < view.size(); i++)
+        
+        if (e.NavigationMode() == NavigationMode::New)
         {
-            if (view[i] == L'.')
+            auto typeName = e.SourcePageType();
+            std::wstring view = typeName.Name.data();
+            for (size_t i = 0; i < view.size(); i++)
             {
-                view[i] = L'/';
+                if (view[i] == L'.')
+                {
+                    view[i] = L'/';
+                }
             }
-        }
 
-        hstring pageName = loader.GetString(view);
-        if (pageName.empty())
+            hstring pageName = loader.GetString(view);
+            if (pageName.empty())
+            {
+                pageName = typeName.Name;
+            }
+
+            breadCrumbs.Append(winrt::SND_Vol::NavigationBreadcrumbBarItem(pageName, typeName));
+        }
+        else if (e.NavigationMode() == NavigationMode::Back)
         {
-            pageName = typeName.Name;
+            breadCrumbs.RemoveAtEnd();
         }
-
-        breadCrumbs.Append(winrt::SND_Vol::NavigationBreadcrumbBarItem(pageName, typeName));
     }
 
     void SecondWindow::NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar const&, BreadcrumbBarItemClickedEventArgs const& e)
@@ -196,11 +203,13 @@ namespace winrt::SND_Vol::implementation
                 systemBackdropConfiguration.IsInputActive(true);
                 systemBackdropConfiguration.Theme((SystemBackdropTheme)RootGrid().ActualTheme());
 
-                backdropController = DesktopAcrylicController();
-                backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
-                backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
-                backdropController.TintOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropTintOpacity")).as<double>()));
-                backdropController.LuminosityOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropLuminosityOpacity")).as<double>()));
+                backdropController = MicaController();
+                backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorSecondary")).as<Windows::UI::Color>());
+                backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorSecondary")).as<Windows::UI::Color>());
+                backdropController.TintOpacity(
+                    static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropSecondaryTintOpacity")).as<double>()));
+                backdropController.LuminosityOpacity(
+                    static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropSecondaryLuminosityOpacity")).as<double>()));
                 backdropController.SetSystemBackdropConfiguration(systemBackdropConfiguration);
                 backdropController.AddSystemBackdropTarget(supportsBackdrop);
             }

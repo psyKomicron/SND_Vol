@@ -16,6 +16,13 @@
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     Loaded="UserControl_Loaded">
+    <UserControl.ContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem IsEnabled="False" Text="{x:Bind Header, Mode=OneWay}"/>
+            <MenuFlyoutItem x:Uid="AudioSessionViewLockMenuFlyoutItem" Click="LockMenuFlyoutItem_Click"/>
+            <MenuFlyoutItem x:Uid="AudioSessionViewHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click"/>
+        </MenuFlyout>
+    </UserControl.ContextFlyout>
 
     <Grid
         x:Name="RootGrid"
@@ -57,13 +64,7 @@
             <RowDefinition x:Name="CenterRow" Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid.ContextFlyout>
-            <MenuFlyout>
-                <MenuFlyoutItem IsEnabled="False" Text="{x:Bind Header, Mode=OneWay}"/>
-                <MenuFlyoutItem x:Uid="AudioSessionViewLockMenuFlyoutItem" Click="LockMenuFlyoutItem_Click"/>
-                <MenuFlyoutItem x:Uid="AudioSessionViewHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click"/>
-            </MenuFlyout>
-        </Grid.ContextFlyout>
+        
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

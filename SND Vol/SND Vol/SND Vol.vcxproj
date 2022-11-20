@@ -122,6 +122,10 @@
       <DependentUpon>AudioProfile.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="AudioProfileEditPage.xaml.h">
+      <DependentUpon>AudioProfileEditPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="AudioProfilesPage.xaml.h">
       <DependentUpon>AudioProfilesPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -191,6 +195,9 @@
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
+    <Page Include="AudioProfileEditPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="AudioProfilesPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -226,6 +233,10 @@
   <ItemGroup>
     <ClCompile Include="AudioProfile.cpp">
       <DependentUpon>AudioProfile.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="AudioProfileEditPage.xaml.cpp">
+      <DependentUpon>AudioProfileEditPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="AudioProfilesPage.xaml.cpp">
@@ -301,6 +312,10 @@
     </Midl>
     <Midl Include="AudioProfile.idl">
       <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="AudioProfileEditPage.idl">
+      <DependentUpon>AudioProfileEditPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
     </Midl>
     <Midl Include="AudioProfilesPage.idl">
       <DependentUpon>AudioProfilesPage.xaml</DependentUpon>

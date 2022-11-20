@@ -19,7 +19,6 @@ namespace winrt::SND_Vol::implementation
     AudioProfilesPage::AudioProfilesPage()
     {
         InitializeComponent();
-        return;
 
         AudioProfile profile{};
         profile.ProfileName(L"Youtube profile");
@@ -57,6 +56,8 @@ namespace winrt::SND_Vol::implementation
                 reordering = false;
             }
         });
+
+        ProfilesListView().ItemsSource(audioProfiles);
     }
 
 
@@ -119,49 +120,17 @@ namespace winrt::SND_Vol::implementation
     IAsyncAction AudioProfilesPage::EditProfileButton_Click(IInspectable const& sender, RoutedEventArgs const&)
     {
         hstring tag = sender.as<Button>().Tag().as<hstring>();
-        ProfileNameEditTextBox().Text(tag);
-
-        audioSessions = MainWindow::Current().AudioSessions().GetView();
-        for (auto audioSession : audioSessions)
+        for (size_t i = 0; i < audioProfiles.Size(); i++)
         {
-            AudioSessionView copy{};
-            copy.Header(audioSession.Header());
-            copy.Volume(audioSession.Volume());
-            copy.Muted(audioSession.Muted());
-
-            AudioSessionsGridView().Items().Append(copy);
-        }
-
-        if (co_await ProfileCreationContentDialog().ShowAsync() == ContentDialogResult::Primary)
-        {
-            // Edit audio profile
-            for (size_t i = 0; i < audioProfiles.Size(); i++)
+            if (audioProfiles.GetAt(i).ProfileName() == tag)
             {
-                if (audioProfiles.GetAt(i).ProfileName() == tag)
-                {
-                    AudioProfile editedProfile = audioProfiles.GetAt(i);
-                    editedProfile.ProfileName(ProfileNameEditTextBox().Text());
-                    editedProfile.AudioLevels().Clear();
-                    editedProfile.AudioStates().Clear();
-                    
-                    for (auto&& item : AudioSessionsGridView().Items())
-                    {
-                        if (AudioSessionView view = item.try_as<AudioSessionView>())
-                        {
-                            hstring header = view.Header();
-                            bool isMuted = view.Muted();
-                            float volume = static_cast<float>(view.Volume()); // Cast should be safe.
-
-                            editedProfile.AudioLevels().Insert(header, volume);
-                            editedProfile.AudioStates().Insert(header, isMuted);
-                        }
-                    }
-
-                    break;
-                }
+                AudioProfile editedProfile = audioProfiles.GetAt(i);
+                Frame().Navigate(xaml_typename<AudioProfileEditPage>(), editedProfile, ::Media::Animation::DrillInNavigationTransitionInfo());
+                break;
             }
-
         }
+
+        co_return;
     }
 
     void AudioProfilesPage::DuplicateProfileButton_Click(IInspectable const& sender, RoutedEventArgs const&)

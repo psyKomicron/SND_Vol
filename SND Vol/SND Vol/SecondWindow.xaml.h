@@ -22,7 +22,7 @@ namespace winrt::SND_Vol::implementation
     private:
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
         winrt::event_token appWindowClosingEventToken;
-        winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController backdropController = nullptr;
+        winrt::Microsoft::UI::Composition::SystemBackdrops::MicaController backdropController = nullptr;
         winrt::Windows::System::DispatcherQueueController dispatcherQueueController = nullptr;
         winrt::Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration systemBackdropConfiguration = nullptr;
         winrt::Microsoft::UI::Xaml::FrameworkElement::ActualThemeChanged_revoker themeChangedRevoker;
