@@ -31,16 +31,16 @@
 
     <x:Double x:Key="FontIconViewBoxHeight">16</x:Double>
     <x:Double x:Key="WindowPadding">30.0</x:Double>
-    <x:Double x:Key="BackdropTintOpacity">0.4</x:Double>
-    <x:Double x:Key="BackdropLuminosityOpacity">0.7</x:Double>
+    <x:Double x:Key="BackdropTintOpacity">0.2</x:Double>
+    <x:Double x:Key="BackdropLuminosityOpacity">0.8</x:Double>
     <x:Double x:Key="BackdropSecondaryTintOpacity">0.75</x:Double>
     <x:Double x:Key="BackdropSecondaryLuminosityOpacity">0.95</x:Double>
     <x:Double x:Key="AudioSessionViewMinHeight">245</x:Double>
     <x:Double x:Key="AudioSessionViewMaxHeight">260</x:Double>
     <x:Double x:Key="FontIconHeight">15</x:Double>
-    <x:Double x:Key="SettingHostControlMinHeight">66</x:Double>
-    <x:Int32 x:Key="WindowWidth">450</x:Int32>
-    <x:Int32 x:Key="WindowHeight">400</x:Int32>
+    <x:Double x:Key="SettingHostControlMinHeight">70</x:Double>
+    <x:Int32 x:Key="WindowWidth">300</x:Int32>
+    <x:Int32 x:Key="WindowHeight">500</x:Int32>
     <x:Int32 x:Key="SecondWindowWidth">850</x:Int32>
     <x:Int32 x:Key="SecondWindowHeight">600</x:Int32>
     <x:String x:Key="AppTitle">Croak</x:String>
@@ -1595,5 +1595,9 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="SmallTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+        <Setter Property="Opacity" Value="0.6" />
     </Style>
 </ResourceDictionary>
