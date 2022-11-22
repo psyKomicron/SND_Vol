@@ -28,6 +28,7 @@
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
             Margin="0,0,0,5"
+            MinHeight="70"
             Click="AudioProfilesButton_Click">
             
             <TextBlock Text="Audio profiles" VerticalAlignment="Center"/>
@@ -36,6 +37,7 @@
             Style="{StaticResource SettingsButtonStyle}"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
+            MinHeight="70"
             Click="HotKeysButton_Click">
             <TextBlock Text="Hot keys" VerticalAlignment="Center"/>
         </Button>

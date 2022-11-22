@@ -19,6 +19,10 @@ namespace winrt::SND_Vol::implementation
 
     void SettingsPage::OnNavigatedTo(NavigationEventArgs const& args)
     {
+        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+        SecondWindow::Current().Breadcrumbs().Append(
+            NavigationBreadcrumbBarItem{ loader.GetString(L"SettingsPageDisplayName"), xaml_typename<winrt::SND_Vol::SettingsPage>() }
+        );
     }
 
     void SettingsPage::AudioProfilesButton_Click(IInspectable const&, RoutedEventArgs const&)
@@ -29,5 +33,10 @@ namespace winrt::SND_Vol::implementation
     void SettingsPage::HotKeysButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
         Frame().Navigate(xaml_typename<HotKeysPage>());
+
+        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+        SecondWindow::Current().Breadcrumbs().Append(
+            winrt::SND_Vol::NavigationBreadcrumbBarItem{ loader.GetString(L"HotKeysPageDisplayName"), xaml_typename<winrt::SND_Vol::HotKeysPage>() }
+        );
     }
 }
