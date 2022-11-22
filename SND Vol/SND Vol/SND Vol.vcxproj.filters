@@ -109,9 +109,6 @@
     <Filter Include="System">
       <UniqueIdentifier>{78036dd1-e109-4116-9bae-3b56bedb73a6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Translations">
-      <UniqueIdentifier>{c7557cbd-8373-4959-8b08-70cb664c7dc1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Controls">
       <UniqueIdentifier>{575436b8-e91e-46a3-8497-892f793ad9b2}</UniqueIdentifier>
     </Filter>
@@ -123,6 +120,9 @@
     </Filter>
     <Filter Include="ViewModels">
       <UniqueIdentifier>{f8e93d22-f71a-4f6a-9fc1-3d01674f92d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Translations">
+      <UniqueIdentifier>{c7557cbd-8373-4959-8b08-70cb664c7dc1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -140,10 +140,10 @@
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Resources.lang-en-us.resw">
-      <Filter>Translations</Filter>
+      <Filter>Assets\Translations</Filter>
     </PRIResource>
     <PRIResource Include="Resources.lang-fr-fr.resw">
-      <Filter>Translations</Filter>
+      <Filter>Assets\Translations</Filter>
     </PRIResource>
   </ItemGroup>
 </Project>
