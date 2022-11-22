@@ -9,5 +9,15 @@ namespace SND_Vol
         Windows.Foundation.Collections.IMap<String, Single> AudioLevels{ get; set; };
         Windows.Foundation.Collections.IMap<String, Boolean> AudioStates{ get; set; };
         Boolean IsDefaultProfile{ get; set; };
+        Single SystemVolume{ get; set; };
+
+        Boolean DisableAnimations{ get; set; };
+        Boolean ShowAdditionalButtons{ get; set; };
+        Boolean KeepOnTop{ get; set; };
+        Boolean ShowMenu{ get; set; };
+        UInt32 Layout{ get; set; };
+
+        void Restore(Windows.Storage.ApplicationDataContainer container);
+        void Save(Windows.Storage.ApplicationDataContainer container);
     }
 }
