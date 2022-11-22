@@ -22,16 +22,21 @@ namespace winrt::SND_Vol::implementation
         };
 
         void OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args);
+        winrt::Windows::Foundation::IAsyncAction OnNavigatingFrom(winrt::Microsoft::UI::Xaml::Navigation::NavigatingCancelEventArgs const& args);
         void Page_Loading(winrt::Microsoft::UI::Xaml::FrameworkElement const& sender, winrt::Windows::Foundation::IInspectable const& args);
         void NextButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void CancelButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void ProfileNameEditTextBox_TextChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs const& e);
 
     private:
         winrt::SND_Vol::AudioProfile audioProfile{ nullptr };
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer timer{ nullptr };
         winrt::Windows::Foundation::Collections::IVectorView<winrt::SND_Vol::AudioSessionView> audioSessions;
+        bool navigationOutAllowed = false;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
+
+        void SaveProfile();
     };
 }
 

@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
 #include "pch.h"
 #include "AudioProfilesPage.xaml.h"
 #if __has_include("AudioProfilesPage.g.cpp")
@@ -12,6 +9,7 @@ using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
+using namespace winrt::Windows::Storage;
 
 
 namespace winrt::SND_Vol::implementation
@@ -19,16 +17,6 @@ namespace winrt::SND_Vol::implementation
     AudioProfilesPage::AudioProfilesPage()
     {
         InitializeComponent();
-
-        AudioProfile profile{};
-        profile.ProfileName(L"Youtube profile");
-        profile.IsDefaultProfile(true);
-        audioProfiles.Append(profile);
-
-        profile = AudioProfile();
-        profile.ProfileName(L"Game profile");
-        profile.IsDefaultProfile(false);
-        audioProfiles.Append(profile);
 
         audioProfiles.VectorChanged([this](auto sender, IVectorChangedEventArgs args)
         {
@@ -39,10 +27,16 @@ namespace winrt::SND_Vol::implementation
                 if (audioProfiles.Size() > 0)
                 {
                     audioProfiles.GetAt(0).IsDefaultProfile(true);
+                    // Save the new default profile.
+                    ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
+                    audioProfiles.GetAt(0).Save(audioProfilesContainer);
 
                     for (size_t i = 1; i < audioProfiles.Size(); i++)
                     {
                         audioProfiles.GetAt(i).IsDefaultProfile(false);
+                        // Save the newly edited profile.
+                        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
+                        audioProfiles.GetAt(i).Save(audioProfilesContainer);
                     }
                 }
             }
@@ -61,47 +55,111 @@ namespace winrt::SND_Vol::implementation
     }
 
 
-    void AudioProfilesPage::NewProfileNameTextBox_TextChanged(IInspectable const&, TextChangedEventArgs const&)
+    void AudioProfilesPage::Page_Loading(FrameworkElement const&, IInspectable const&)
     {
-        if (ErrorTextBlock().Visibility() == Visibility::Visible)
+        // Load profiles into the page
+        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
+        if (!audioProfilesContainer)
         {
-            ErrorTextBlock().Visibility(Visibility::Collapsed);
+            audioProfilesContainer = ApplicationData::Current().LocalSettings().CreateContainer(L"AudioProfiles", ApplicationDataCreateDisposition::Always);
+        }
+        else
+        {
+            for (auto&& profile : audioProfilesContainer.Containers())
+            {
+                try
+                {
+                    hstring key = profile.Key();
+                    AudioProfile audioProfile{};
+                    audioProfile.Restore(profile.Value());
+                    audioProfiles.Append(audioProfile);
+                }
+                catch (const hresult_error&)
+                {
+                }
+            }
+
+            if (audioProfiles.Size() == 1)
+            {
+                audioProfiles.GetAt(0).IsDefaultProfile(true);
+            }
+            else
+            {
+                for (size_t i = 0; i < audioProfiles.Size(); i++)
+                {
+                    if (audioProfiles.GetAt(i).IsDefaultProfile())
+                    {
+                        AudioProfile audioProfile = audioProfiles.GetAt(i);
+                        audioProfiles.RemoveAt(i);
+                        audioProfiles.InsertAt(0, audioProfile);
+                    }
+                }
+            }
+        }
+    }
+
+    void AudioProfilesPage::OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args)
+    {
+        if (args.NavigationMode() != ::Navigation::NavigationMode::Back && 
+            SecondWindow::Current().Breadcrumbs().GetAt(SecondWindow::Current().Breadcrumbs().Size() - 1).ItemTypeName().Name != xaml_typename<winrt::SND_Vol::AudioProfilesPage>().Name)
+        {
+            winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+            SecondWindow::Current().Breadcrumbs().Append(
+                NavigationBreadcrumbBarItem{ loader.GetString(L"AudioProfilesPageDisplayName"), xaml_typename<winrt::SND_Vol::AudioProfilesPage>() }
+            );
+        }
+
+        //AudioProfile profile = args.Parameter().try_as<AudioProfile>();
+
+        //if (profile)
+        //{
+        //    for (auto&& audioProfile : audioProfiles)
+        //    {
+        //        if (audioProfile.ProfileName() == profile.ProfileName())
+        //        {
+        //            // TODO: Show error that the profile already exist.
+        //            /*ErrorTextBlock().Text(L"Profile name already exists");
+        //            ErrorTextBlock().Visibility(Visibility::Visible);*/
+        //            return;
+        //        }
+        //    }
+
+        //    // If we reach here the profile name is unique.
+        //    audioProfiles.Append(profile);
+        //}
+    }
+
+    void AudioProfilesPage::Page_Loaded(IInspectable const&, RoutedEventArgs const&)
+    {
+        DefaultProfileTeachingTip().Target(ProfilesListView());
+
+        ApplicationDataContainer teachingTips = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"TeachingTips");
+        if (!teachingTips)
+        {
+            teachingTips = ApplicationData::Current().LocalSettings().CreateContainer(L"TeachingTips", ApplicationDataCreateDisposition::Always);
+        }
+        if (!teachingTips.Values().HasKey(L"ShowDefaultProfileTeachingTip"))
+        {
+            DefaultProfileTeachingTip().IsOpen(true);
+            teachingTips.Values().Insert(L"ShowDefaultProfileTeachingTip", IReference<bool>(false));
         }
     }
 
     void AudioProfilesPage::AddProfileButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        hstring name = NewProfileNameTextBox().Text();
-        bool defaultProfile = DefaultProfileSwitch().IsChecked().GetBoolean();
-
-        for (auto&& audioProfile : audioProfiles)
+        // I18N: Audio profile.
+        hstring profileName = L"Audio profile";
+        uint32_t count = 1u;
+        for (size_t j = 0; j < audioProfiles.Size(); j++)
         {
-            hstring audioProfileName = audioProfile.ProfileName();
-            if (audioProfileName == name)
+            hstring test = audioProfiles.GetAt(j).ProfileName();
+            if (test == profileName)
             {
-                ErrorTextBlock().Text(L"Profile name already exists");
-                ErrorTextBlock().Visibility(Visibility::Visible);
-                return;
-            }
-
-            if (defaultProfile && audioProfile.IsDefaultProfile())
-            {
-                audioProfile.IsDefaultProfile(false);
+                profileName = L"Audio profile (" + to_hstring(count++) + L")";
             }
         }
 
-        AudioProfile profile{};
-        profile.ProfileName(name);
-        profile.IsDefaultProfile(defaultProfile);
-
-        if (defaultProfile)
-        {
-            audioProfiles.InsertAt(0, profile);
-        }
-        else
-        {
-            audioProfiles.Append(profile);
-        }
+        Frame().Navigate(xaml_typename<AudioProfileEditPage>(), box_value(profileName), ::Media::Animation::DrillInNavigationTransitionInfo());
     }
 
     void AudioProfilesPage::DeleteProfileButton_Click(IInspectable const& sender, RoutedEventArgs const&)
@@ -151,7 +209,7 @@ namespace winrt::SND_Vol::implementation
                     hstring test = audioProfiles.GetAt(j).ProfileName();
                     if (test == profileName)
                     {
-                        profileName = audioProfiles.GetAt(i).ProfileName() + L" (" + to_hstring(count) + L")";
+                        profileName = audioProfiles.GetAt(i).ProfileName() + L" (" + to_hstring(count++) + L")";
                     }
                 }
 
@@ -163,9 +221,5 @@ namespace winrt::SND_Vol::implementation
                 break;
             }
         }
-    }
-
-    void AudioProfilesPage::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
-    {
     }
 }
