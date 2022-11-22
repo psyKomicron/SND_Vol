@@ -68,6 +68,7 @@ namespace winrt::SND_Vol::implementation
         void SplashScreen_Dismissed(winrt::SND_Vol::SplashScreen const& sender, winrt::Windows::Foundation::IInspectable const& args);
         void ShowAppBarMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void DisableHotKeysMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void ProfilesMenuFlyoutItem_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e);
 
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
@@ -122,6 +123,7 @@ namespace winrt::SND_Vol::implementation
         void LoadHotKeys();
         void LoadSettings();
         void SaveSettings();
+        void LoadProfile(const hstring& profileName);
 
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
         void UpdatePeakMeters(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
@@ -130,7 +132,9 @@ namespace winrt::SND_Vol::implementation
         void AudioSession_StateChanged(const winrt::guid& sender, const uint32_t& state);
         void AudioController_SessionAdded(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
         void AudioController_EndpointChanged(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
-    };
+    public:
+        void MenuFlyout_Opening(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Foundation::IInspectable const& e);
+};
 }
 
 namespace winrt::SND_Vol::factory_implementation

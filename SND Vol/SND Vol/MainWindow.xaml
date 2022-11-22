@@ -71,7 +71,13 @@
                 </Viewbox>
 
                 <Button.Flyout>
-                    <MenuFlyout ShowMode="Transient">
+                    <MenuFlyout ShowMode="Transient" Opening="MenuFlyout_Opening">
+
+                        <MenuFlyoutSubItem 
+                            x:Name="ProfilesMenuFlyoutItem" 
+                            Text="Profiles" 
+                            
+                            Tapped="ProfilesMenuFlyoutItem_Tapped"/>
 
                         <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
                             <ToggleMenuFlyoutItem
@@ -329,7 +335,7 @@
             </snd_vol:SplashScreen.TopContent>
 
             <snd_vol:SplashScreen.MainContent>
-                <Viewbox MaxHeight="100" MaxWidth="100">
+                <Viewbox MaxHeight="80" MaxWidth="80">
                     <FontIcon Glyph="&#xe767;"/>
                 </Viewbox>
             </snd_vol:SplashScreen.MainContent>
@@ -340,11 +346,10 @@
         </snd_vol:SplashScreen>
 
         <TeachingTip
-            x:Uid="MainWindowSettingsButtonTeachingTip"
             x:Name="SettingsButtonTeachingTip" 
-            PlacementMargin="0"
+            PlacementMargin="3"
             PreferredPlacement="Auto"
-            IsLightDismissEnabled="False">
+            IsLightDismissEnabled="True">
 
             <TeachingTip.Content>
                 <Grid RowSpacing="15" Padding="0,10,0,0">

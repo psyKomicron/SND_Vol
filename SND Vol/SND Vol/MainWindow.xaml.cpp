@@ -17,16 +17,15 @@ using namespace Audio;
 using namespace std;
 
 using namespace winrt;
-
 using namespace winrt::Microsoft::UI;
 using namespace winrt::Microsoft::UI::Composition;
 using namespace winrt::Microsoft::UI::Composition::SystemBackdrops;
 using namespace winrt::Microsoft::UI::Windowing;
 using namespace winrt::Microsoft::UI::Xaml;
+using namespace winrt::Microsoft::UI::Xaml::Input;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Media;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
-
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::ApplicationModel::Core;
 using namespace winrt::Windows::ApplicationModel::Resources;
@@ -108,9 +107,14 @@ namespace winrt::SND_Vol::implementation
 
         // Teaching tips
         SettingsButtonTeachingTip().Target(SettingsButton());
-        if (unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"ShowSettingsTeachingTip"), true))
+        ApplicationDataContainer teachingTips = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"TeachingTips");
+        if (!teachingTips)
         {
-            ApplicationData::Current().LocalSettings().Values().Insert(L"ShowSettingsTeachingTip", IReference(false));
+            teachingTips = ApplicationData::Current().LocalSettings().CreateContainer(L"TeachingTips", ApplicationDataCreateDisposition::Always);
+        }
+        if (!teachingTips.Values().HasKey(L"ShowSettingsTeachingTip"))
+        {
+            teachingTips.Values().Insert(L"ShowSettingsTeachingTip", IReference(false));
             SettingsButtonTeachingTip().IsOpen(true);
         }
     }
@@ -179,9 +183,9 @@ namespace winrt::SND_Vol::implementation
         for (size_t i = 0; i < audioSessions->size(); i++)
         {
             guid id = audioSessions->at(i)->Id();
-            if (id == sender.Id())
+            if (id == sender.Id() && audioSessions->at(i)->Muted() != args)
             {
-                audioSessions->at(i)->SetMute(args);
+                audioSessions->at(i)->Muted(args);
             }
         }
     }
@@ -276,7 +280,7 @@ namespace winrt::SND_Vol::implementation
             unique_lock lock{ audioSessionsMutex };
             for (AudioSession* session : *audioSessions)
             {
-                session->SetMute(setMute);
+                session->Muted(setMute);
             }
         }
 
@@ -470,6 +474,32 @@ namespace winrt::SND_Vol::implementation
         else
         {
             WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysDisabled"));
+        }
+    }
+
+    void MainWindow::ProfilesMenuFlyoutItem_Tapped(IInspectable const&, TappedRoutedEventArgs const& e)
+    {  
+    }
+
+    void MainWindow::MenuFlyout_Opening(IInspectable const&, IInspectable const&)
+    {
+        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
+        if (audioProfilesContainer)
+        {
+            for (auto&& profile : audioProfilesContainer.Containers())
+            {
+                hstring key = profile.Key();
+                MenuFlyoutItem item{};
+                item.Text(key);
+                item.Tag(box_value(key));
+                item.Click([this](const IInspectable& sender, RoutedEventArgs)
+                    {
+                        LoadProfile(sender.as<FrameworkElement>().Tag().as<hstring>());
+                    });
+
+                ProfilesMenuFlyoutItem().Items().Append(item);
+                OutputDebugHString(L"Added profile " + key);
+            }
         }
     }
     #pragma endregion
@@ -949,6 +979,108 @@ namespace winrt::SND_Vol::implementation
         settings.Insert(L"DisableAnimations", box_value(DisableAnimationsMenuFlyoutItem().IsChecked()));
         settings.Insert(L"SessionsLayout", IReference<int32_t>(layout));
         settings.Insert(L"ShowAppBar", box_value(ShowAppBarMenuFlyoutItem().IsChecked()));
+    }
+
+    void MainWindow::LoadProfile(const hstring& profileName)
+    {
+        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
+        if (audioProfilesContainer)
+        {
+            for (auto&& profile : audioProfilesContainer.Containers())
+            {
+                try
+                {
+                    hstring name = profile.Key();
+                    
+                    if (name == profileName)
+                    {
+                        AudioProfile audioProfile{};
+                        audioProfile.Restore(profile.Value()); // If the restore fails, the next instructions will not be ran.
+
+                        float systemVolume = audioProfile.SystemVolume();
+                        auto audioLevels = audioProfile.AudioLevels();
+                        auto audioStates = audioProfile.AudioStates();
+                        bool disableAnimations = audioProfile.DisableAnimations();
+                        bool showAdditionalButtons = audioProfile.ShowAdditionalButtons();
+                        bool keepOnTop = audioProfile.KeepOnTop();
+                        bool showMenu = audioProfile.ShowMenu();
+                        uint32_t windowLayout = audioProfile.Layout();
+
+                        // Set system volume.
+                        if (mainAudioEndpoint)
+                        {
+                            mainAudioEndpoint->SetVolume(systemVolume);
+                        }
+                        // Set audio sessions volume.
+                        {
+                            unique_lock lock{ audioSessionsMutex };
+
+                            for (auto pair : audioLevels)
+                            {
+                                for (size_t i = 0; i < audioSessions->size(); i++)
+                                {
+                                    if (audioSessions->at(i)->Name() == pair.Key())
+                                    {
+                                        audioSessions->at(i)->SetVolume(pair.Value());
+                                    }
+                                }
+                            }
+
+                            for (auto pair : audioStates)
+                            {
+                                for (size_t i = 0; i < audioSessions->size(); i++)
+                                {
+                                    if (audioSessions->at(i)->Name() == pair.Key())
+                                    {
+                                        audioSessions->at(i)->SetMute(pair.Value());
+                                    }
+                                }
+                            }
+                        }
+
+                        if (disableAnimations)
+                        {
+                            DisableAnimationsToggleMenuFlyoutItem_Click(nullptr, nullptr);
+                        }
+
+                        if (OverlappedPresenter presenter = appWindow.Presenter().try_as<OverlappedPresenter>())
+                        {
+                            presenter.IsAlwaysOnTop(keepOnTop);
+                            presenter.IsMinimizable(showAdditionalButtons);
+                            presenter.IsMinimizable(showAdditionalButtons);
+
+                            RightPaddingColumn().Width(GridLengthHelper::FromPixels(
+                                showAdditionalButtons ? 135 : 45
+                            ));
+                        }
+
+                        if (showMenu)
+                        {
+                            ShowAppBarMenuFlyoutItem_Click(nullptr, nullptr);
+                        }
+
+                        switch (windowLayout)
+                        {
+                        case 1:
+                            HorizontalViewMenuFlyoutItem_Click(nullptr, nullptr);
+                            break;
+                        case 2:
+                            VerticalViewMenuFlyoutItem_Click(nullptr, nullptr);
+                            break;
+                        case 0:
+                        default:
+                            AutoViewMenuFlyoutItem_Click(nullptr, nullptr);
+                            break;
+                        }
+                    }
+                }
+                catch (const hresult_error&)
+                {
+                    // I18N: Failed to load profile [profile name]
+                    WindowMessageBar().EnqueueMessage(L"Failed to load profile \"" + profileName + L"\"");
+                }
+            }
+        }
     }
 
     void MainWindow::UpdatePeakMeters(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
