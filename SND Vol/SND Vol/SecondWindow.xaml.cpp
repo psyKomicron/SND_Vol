@@ -30,14 +30,15 @@ using namespace winrt::Windows::System;
 
 namespace winrt::SND_Vol::implementation
 {
+    winrt::SND_Vol::SecondWindow SecondWindow::singleton{ nullptr };
+
     SecondWindow::SecondWindow()
     {
+        singleton = *this;
         InitializeComponent();
         InitializeWindow();
 
         TitleTextBlock().Text(appWindow.Title());
-
-        NavigationBreadcrumbBar().ItemsSource(breadCrumbs);
     }
 
 
@@ -48,41 +49,15 @@ namespace winrt::SND_Vol::implementation
 
     void SecondWindow::NavigationFrame_Navigated(IInspectable const&, NavigationEventArgs const& e)
     {
-        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
-        
-        if (e.NavigationMode() == NavigationMode::New)
-        {
-            auto typeName = e.SourcePageType();
-            std::wstring view = typeName.Name.data();
-            for (size_t i = 0; i < view.size(); i++)
-            {
-                if (view[i] == L'.')
-                {
-                    view[i] = L'/';
-                }
-            }
-
-            hstring pageName = loader.GetString(view);
-            if (pageName.empty())
-            {
-                pageName = typeName.Name;
-            }
-
-            breadCrumbs.Append(winrt::SND_Vol::NavigationBreadcrumbBarItem(pageName, typeName));
-        }
-        else if (e.NavigationMode() == NavigationMode::Back)
-        {
-            breadCrumbs.RemoveAtEnd();
-        }
     }
 
     void SecondWindow::NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar const&, BreadcrumbBarItemClickedEventArgs const& e)
     {
-        winrt::SND_Vol::NavigationBreadcrumbBarItem item = breadCrumbs.GetAt(e.Index());
+        winrt::SND_Vol::NavigationBreadcrumbBarItem item = breadcrumbs.GetAt(e.Index());
 
-        for (int i = breadCrumbs.Size() - 1; i >= e.Index(); i--)
+        for (int i = breadcrumbs.Size() - 1; i >= e.Index(); i--)
         {
-            breadCrumbs.RemoveAt(i);
+            breadcrumbs.RemoveAt(i);
         }
 
         NavigationFrame().Navigate(item.ItemTypeName());

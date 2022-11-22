@@ -315,7 +315,7 @@
 
             </Grid.Resources>
 
-            <BreadcrumbBar x:Name="NavigationBreadcrumbBar" Margin="10,0" ItemClicked="NavigationBreadcrumbBar_ItemClicked">
+            <BreadcrumbBar x:Name="NavigationBreadcrumbBar" Margin="10,0" ItemClicked="NavigationBreadcrumbBar_ItemClicked" ItemsSource="{x:Bind Breadcrumbs}">
                 <BreadcrumbBar.ItemTemplate>
                     <DataTemplate x:DataType="s:NavigationBreadcrumbBarItem">
                         <TextBlock Text="{x:Bind DisplayName}"/>
@@ -323,15 +323,15 @@
                 </BreadcrumbBar.ItemTemplate>
             </BreadcrumbBar>
 
+            <s:MessageBar x:Name="ErrorMessageBar" Grid.Row="1" VerticalAlignment="Top" Visibility="Collapsed" />
+
             <Frame
                 x:Name="NavigationFrame"
                 IsNavigationStackEnabled="True"
                 Grid.Row="1"
                 Loaded="Grid_Loaded"
                 Navigated="NavigationFrame_Navigated"
-                NavigationFailed="NavigationFrame_NavigationFailed"/>
-
-            <s:MessageBar x:Name="ErrorMessageBar" Grid.Row="1" VerticalAlignment="Top" Visibility="Collapsed"/>
+                NavigationFailed="NavigationFrame_NavigationFailed"></Frame>
         </Grid>
     </Grid>
 </Window>
