@@ -10,6 +10,8 @@ namespace SND_Vol
     {
         HotKeysViewer();
 
+        Boolean ShowMouseMap{ get; set; };
+
         void SetActiveKeys(IVector<Windows.System.VirtualKey> activeKeys);
         void AddActiveKey(HotKeyViewModel hotKeyViewModel);
     }

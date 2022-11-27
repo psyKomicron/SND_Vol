@@ -16,11 +16,15 @@ namespace winrt::SND_Vol::implementation
     public:
         HotKeysViewer();
 
+        bool ShowMouseMap()
+        {
+            return MouseMapViewBox().Visibility() == winrt::Microsoft::UI::Xaml::Visibility::Visible;
+        };
+
+        void ShowMouseMap(const bool& value);
+
         void SetActiveKeys(const winrt::Windows::Foundation::Collections::IVector<winrt::Windows::System::VirtualKey>& activeKeys);
         void AddActiveKey(const winrt::SND_Vol::HotKeyViewModel& hotKeyView);
-
-        void Grid_Loaded(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void Grid_KeyDown(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs const& e);
 
     private:
         std::vector<winrt::SND_Vol::HotKeyViewModel> hotKeys{};

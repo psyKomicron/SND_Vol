@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
 #include "pch.h"
 #include "HotKeysViewer.xaml.h"
 #if __has_include("HotKeysViewer.g.cpp")
@@ -25,6 +22,21 @@ namespace winrt::SND_Vol::implementation
     {
         InitializeComponent();
     }
+
+    void HotKeysViewer::ShowMouseMap(const bool& value)
+    {
+        if (value)
+        {
+            MouseMapColumn().Width(winrt::Microsoft::UI::Xaml::GridLengthHelper::FromValueAndType(1, winrt::Microsoft::UI::Xaml::GridUnitType::Star));
+        }
+        else
+        {
+            MouseMapColumn().Width(winrt::Microsoft::UI::Xaml::GridLengthHelper::FromPixels(0));
+        }
+
+        MouseMapViewBox().Visibility(value ? winrt::Microsoft::UI::Xaml::Visibility::Visible : winrt::Microsoft::UI::Xaml::Visibility::Collapsed);
+    }
+
 
     void HotKeysViewer::SetActiveKeys(const IVector<VirtualKey>& activeKeys)
     {
@@ -385,6 +397,23 @@ namespace winrt::SND_Vol::implementation
     {
         hotKeys.push_back(hotKeyView);
         DependencyObject tooltipHolder{ nullptr };
+
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Control))
+        {
+            LeftControlKey().Background(GetActiveBrush());
+        }
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Menu))
+        {
+            LeftAltKey().Background(GetActiveBrush());
+        }
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Shift))
+        {
+            LeftShiftKey().Background(GetActiveBrush());
+        }
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Windows))
+        {
+            LeftWindowsKey().Background(GetActiveBrush());
+        }
 
         switch (hotKeyView.Key())
         {
