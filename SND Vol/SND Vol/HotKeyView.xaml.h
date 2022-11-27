@@ -69,6 +69,8 @@ namespace winrt::SND_Vol::implementation
             e_propertyChanged.remove(token);
         };
 
+        void OnKeyDown(const winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs& args);
+
     private:
         winrt::Windows::System::VirtualKeyModifiers _modifiers = winrt::Windows::System::VirtualKeyModifiers::None;
         winrt::Windows::System::VirtualKey _key = winrt::Windows::System::VirtualKey::None;
