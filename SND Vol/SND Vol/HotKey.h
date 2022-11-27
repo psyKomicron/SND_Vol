@@ -36,6 +36,7 @@ namespace System
 		{
 			return keyEnabled.load();
 		};
+
 		/**
 		 * @brief If the key is not enabled, Fired event will not be fired when the hotkey is pressed.
 		 * @param enabled set to true to disable events
