@@ -91,7 +91,7 @@ namespace winrt::SND_Vol::implementation
         System::HotKey volumeDownHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_DOWN };
         System::HotKey volumePageUpHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_PRIOR };
         System::HotKey volumePageDownHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_NEXT };
-        System::HotKey muteHotKeyPtr{ VirtualKeyModifiers::Menu | VirtualKeyModifiers::Shift, static_cast<uint32_t>('M') };
+        System::HotKey muteHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, static_cast<uint32_t>('M') };
         // UI related attributes.
         bool loaded = false;
         bool compact = false;

@@ -854,7 +854,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::LoadHotKeys()
     {
-        System::HotKeyManager manager = System::HotKeyManager::GetHotKeyManager();
+        System::HotKeyManager& manager = System::HotKeyManager::GetHotKeyManager();
 
         #if ENABLE_HOTKEYS
         #pragma warning(push)
