@@ -6,6 +6,7 @@
 
 #include "HotKey.h"
 #include "SecondWindow.xaml.h"
+#include "HotKeyManager.h"
 
 #define USE_TIMER 1
 #define DEACTIVATE_TIMER 0
@@ -27,6 +28,7 @@ using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Media;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
 using namespace winrt::Windows::ApplicationModel;
+
 using namespace winrt::Windows::ApplicationModel::Core;
 using namespace winrt::Windows::ApplicationModel::Resources;
 using namespace winrt::Windows::Foundation;
@@ -79,6 +81,7 @@ namespace winrt::SND_Vol::implementation
     MainWindow::~MainWindow()
     {
     }
+
 
     #pragma region Event handlers
     void MainWindow::OnLoaded(IInspectable const&, RoutedEventArgs const&)
@@ -194,12 +197,53 @@ namespace winrt::SND_Vol::implementation
     {
         LoadContent();
 
+#if ENABLE_HOTKEYS
         // Activate hotkeys.
-        volumeUpHotKeyPtr.Activate();
-        volumeDownHotKeyPtr.Activate();
-        volumePageUpHotKeyPtr.Activate();
-        volumePageDownHotKeyPtr.Activate();
-        muteHotKeyPtr.Activate();
+        try
+        {
+            volumeUpHotKeyPtr.Activate();
+        }
+        catch (const std::invalid_argument& ex)
+        {
+            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume up hot key");
+        }
+
+        try
+        {
+            volumeDownHotKeyPtr.Activate();
+        }
+        catch (const std::invalid_argument& ex)
+        {
+            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume down hot key");
+        }
+
+        try
+        {
+            volumePageUpHotKeyPtr.Activate();
+        }
+        catch (const std::invalid_argument& ex)
+        {
+            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume up (PageUp) hot key");
+        }
+
+        try
+        {
+            volumePageDownHotKeyPtr.Activate();
+        }
+        catch (const std::invalid_argument& ex)
+        {
+            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume down (PageDown) hot key");
+        }
+
+        try
+        {
+            muteHotKeyPtr.Activate();
+        }
+        catch (const std::invalid_argument& ex)
+        {
+            WindowMessageBar().EnqueueMessage(L"Failed to activate mute/unmute hot key");
+        }
+#endif // ENABLE_HOTKEYS
     }
 
     void MainWindow::SystemVolumeSlider_ValueChanged(IInspectable const&, RangeBaseValueChangedEventArgs const& e)
@@ -214,8 +258,11 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::SystemVolumeActivityBorder_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        SystemVolumeActivityBorderClipping().Rect(
-            Rect(0, 0, static_cast<float>(SystemVolumeActivityBorder().ActualWidth()), static_cast<float>(SystemVolumeActivityBorder().ActualHeight()))
+        SystemVolumeActivityBorderClippingRight().Rect(
+            Rect(0, 0, static_cast<float>(SystemVolumeActivityBorderRight().ActualWidth()), static_cast<float>(SystemVolumeActivityBorderRight().ActualHeight()))
+        );
+        SystemVolumeActivityBorderClippingLeft().Rect(
+            Rect(0, 0, static_cast<float>(SystemVolumeActivityBorderLeft().ActualWidth()), static_cast<float>(SystemVolumeActivityBorderLeft().ActualHeight()))
         );
     }
 
@@ -422,7 +469,8 @@ namespace winrt::SND_Vol::implementation
         }
 
 
-        VolumeAnimation().To(0.);
+        LeftVolumeAnimation().To(0.);
+        RightVolumeAnimation().To(0.);
         VolumeStoryboard().Begin();
 
         for (auto&& view : audioSessionViews)
@@ -460,12 +508,13 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::DisableHotKeysMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
     {
+#if ENABLE_HOTKEYS
         volumeUpHotKeyPtr.Enabled(!volumeUpHotKeyPtr.Enabled());
         volumeDownHotKeyPtr.Enabled(!volumeDownHotKeyPtr.Enabled());
         volumePageUpHotKeyPtr.Enabled(!volumePageUpHotKeyPtr.Enabled());
         volumePageDownHotKeyPtr.Enabled(!volumePageDownHotKeyPtr.Enabled());
         muteHotKeyPtr.Enabled(!muteHotKeyPtr.Enabled());
-        
+
         ResourceLoader loader{};
         if (muteHotKeyPtr.Enabled())
         {
@@ -475,14 +524,13 @@ namespace winrt::SND_Vol::implementation
         {
             WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysDisabled"));
         }
-    }
+#endif // ENABLE_HOTKEYS
 
-    void MainWindow::ProfilesMenuFlyoutItem_Tapped(IInspectable const&, TappedRoutedEventArgs const& e)
-    {  
     }
 
     void MainWindow::MenuFlyout_Opening(IInspectable const&, IInspectable const&)
     {
+        ProfilesMenuFlyoutItem().Items().Clear();
         ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
         if (audioProfilesContainer)
         {
@@ -498,7 +546,6 @@ namespace winrt::SND_Vol::implementation
                     });
 
                 ProfilesMenuFlyoutItem().Items().Append(item);
-                OutputDebugHString(L"Added profile " + key);
             }
         }
     }
@@ -689,7 +736,7 @@ namespace winrt::SND_Vol::implementation
                     try
                     {
                         float volume = mainAudioEndpoint->GetPeak();
-                        VolumeAnimation().To(static_cast<double>(volume));
+                        LeftVolumeAnimation().To(static_cast<double>(volume));
                         VolumeStoryboard().Begin();
                     }
                     catch (const hresult_error&)
@@ -807,6 +854,12 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::LoadHotKeys()
     {
+        System::HotKeyManager manager = System::HotKeyManager::GetHotKeyManager();
+
+        #if ENABLE_HOTKEYS
+        #pragma warning(push)
+        #pragma warning(disable:4305)
+        #pragma warning(disable:4244)
         /*
         * Currently used hotkeys:
         *  - Control + Shift + Up : system volume up
@@ -815,11 +868,6 @@ namespace winrt::SND_Vol::implementation
         *  - Control + Shift + PageDown : system volume big down
         *  - Alt/Menu + Shift + M : system volume mute/unmute
         */
-
-        #if ENABLE_HOTKEYS
-        #pragma warning(push)
-        #pragma warning(disable:4305)
-        #pragma warning(disable:4244)
 
         volumeUpHotKeyPtr.Fired([this](auto, auto)
         {
@@ -1072,7 +1120,11 @@ namespace winrt::SND_Vol::implementation
                             AutoViewMenuFlyoutItem_Click(nullptr, nullptr);
                             break;
                         }
+
+
+                        WindowMessageBar().EnqueueMessage(L"Loaded profile " + profileName);
                     }
+
                 }
                 catch (const hresult_error&)
                 {

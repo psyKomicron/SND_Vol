@@ -6,7 +6,6 @@
 #include "AudioSession.h"
 #include "LegacyAudioController.h"
 #include "MainAudioEndpoint.h"
-#include "HotKeyManager.h"
 #include "HotKey.h"
 
 using namespace winrt::Windows::System;
@@ -68,7 +67,7 @@ namespace winrt::SND_Vol::implementation
         void SplashScreen_Dismissed(winrt::SND_Vol::SplashScreen const& sender, winrt::Windows::Foundation::IInspectable const& args);
         void ShowAppBarMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void DisableHotKeysMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void ProfilesMenuFlyoutItem_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e);
+        void MenuFlyout_Opening(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Foundation::IInspectable const& e);
 
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
@@ -76,7 +75,7 @@ namespace winrt::SND_Vol::implementation
         // Static fields
         static winrt::SND_Vol::MainWindow singleton;
 
-        // Logic related attributes
+        // Logic related attributes.
         std::mutex audioSessionsMutex{};
         Audio::MainAudioEndpoint* mainAudioEndpoint = nullptr;
         Audio::LegacyAudioController* audioController = nullptr;
@@ -87,20 +86,22 @@ namespace winrt::SND_Vol::implementation
         winrt::event_token audioControllerEndpointChangedToken;
         std::map<winrt::guid, winrt::event_token> audioSessionVolumeChanged{};
         std::map<winrt::guid, winrt::event_token> audioSessionsStateChanged{};
-        //System::HotKeyManager hotKeyManager{};
-        System::HotKey volumeUpHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_UP);
-        System::HotKey volumeDownHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_DOWN);
-        System::HotKey volumePageUpHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_PRIOR);
-        System::HotKey volumePageDownHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_NEXT);
-        System::HotKey muteHotKeyPtr = System::HotKey(VirtualKeyModifiers::Menu | VirtualKeyModifiers::Shift, static_cast<uint32_t>('M'));
-        // UI related attributes
+        // Hot keys.
+        System::HotKey volumeUpHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_UP };
+        System::HotKey volumeDownHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_DOWN };
+        System::HotKey volumePageUpHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_PRIOR };
+        System::HotKey volumePageDownHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_NEXT };
+        System::HotKey muteHotKeyPtr{ VirtualKeyModifiers::Menu | VirtualKeyModifiers::Shift, static_cast<uint32_t>('M') };
+        // UI related attributes.
         bool loaded = false;
         bool compact = false;
         bool usingCustomTitleBar = false;
         uint16_t layout = 0;
+        winrt::SND_Vol::AudioSessionState globalSessionAudioState = winrt::SND_Vol::AudioSessionState::Unmuted;
         winrt::Windows::Graphics::RectInt32 displayRect;
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
         winrt::event_token appWindowClosingEventToken;
+        #pragma region Backdrop
         BackdropController backdropController = nullptr;
         winrt::Windows::System::DispatcherQueueController dispatcherQueueController = nullptr;
         winrt::Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration systemBackdropConfiguration = nullptr;
@@ -111,8 +112,9 @@ namespace winrt::SND_Vol::implementation
         {
             winrt::multi_threaded_observable_vector<winrt::SND_Vol::AudioSessionView>()
         };
-        winrt::SND_Vol::AudioSessionState globalSessionAudioState = winrt::SND_Vol::AudioSessionState::Unmuted;
+        #pragma endregion
         winrt::Microsoft::UI::Xaml::Window secondWindow{ nullptr };
+        winrt::SND_Vol::AudioProfile currentAudioProfile{ nullptr };
 
         void InitializeWindow();
         void SetBackground();
@@ -132,9 +134,7 @@ namespace winrt::SND_Vol::implementation
         void AudioSession_StateChanged(const winrt::guid& sender, const uint32_t& state);
         void AudioController_SessionAdded(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
         void AudioController_EndpointChanged(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);
-    public:
-        void MenuFlyout_Opening(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Foundation::IInspectable const& e);
-};
+    };
 }
 
 namespace winrt::SND_Vol::factory_implementation

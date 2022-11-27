@@ -60,10 +60,10 @@
                 Grid.Column="1"
                 Background="Transparent"
                 BorderThickness="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
                 Padding="8,7"
                 Margin="3,4"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center">
                 <Viewbox Height="16">
@@ -75,9 +75,7 @@
 
                         <MenuFlyoutSubItem 
                             x:Name="ProfilesMenuFlyoutItem" 
-                            Text="Profiles" 
-                            
-                            Tapped="ProfilesMenuFlyoutItem_Tapped"/>
+                            Text="Profiles"/>
 
                         <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
                             <ToggleMenuFlyoutItem
@@ -173,8 +171,15 @@
                 <Grid.Resources>
                     <Storyboard x:Name="VolumeStoryboard">
                         <DoubleAnimation 
-                            x:Name="VolumeAnimation"
-                            Storyboard.TargetName="BorderClippingCompositeTransform"
+                            x:Name="LeftVolumeAnimation"
+                            Storyboard.TargetName="BorderLeftClippingCompositeTransform"
+                            Storyboard.TargetProperty="ScaleX"
+                            To="0"
+                            Duration="{StaticResource AudioMeterAnimationDuration}"/>
+
+                        <DoubleAnimation 
+                            x:Name="RightVolumeAnimation"
+                            Storyboard.TargetName="BorderRightClippingCompositeTransform"
                             Storyboard.TargetProperty="ScaleX"
                             To="0"
                             Duration="{StaticResource AudioMeterAnimationDuration}"/>
@@ -190,10 +195,9 @@
                 </ToggleButton>
 
                 <Border 
-                    x:Name="SystemVolumeActivityBorder"
+                    x:Name="SystemVolumeActivityBorderLeft"
                     Grid.Column="1"
                     Background="{StaticResource AudioMeterReversedBackground}"
-                    CornerRadius="0"
                     Opacity="0.5"
                     Height="6"
                     VerticalAlignment="Center"
@@ -201,9 +205,9 @@
                     Translation="0,-6,0"
                     SizeChanged="SystemVolumeActivityBorder_SizeChanged">
                     <Border.Clip>
-                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClipping">
+                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingLeft">
                             <RectangleGeometry.Transform>
-                                <CompositeTransform x:Name="BorderClippingCompositeTransform" ScaleX="0"/>
+                                <CompositeTransform x:Name="BorderLeftClippingCompositeTransform" ScaleX="0"/>
                             </RectangleGeometry.Transform>
                         </RectangleGeometry>
                     </Border.Clip>
@@ -220,6 +224,24 @@
                         </TransitionCollection>
                     </Slider.Transitions>
                 </Slider>
+
+                <Border 
+                    x:Name="SystemVolumeActivityBorderRight"
+                    Grid.Column="1"
+                    Background="{StaticResource AudioMeterReversedBackground}"
+                    Opacity="0.5"
+                    Height="6"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Stretch"
+                    Translation="0,-6,0">
+                    <Border.Clip>
+                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingRight">
+                            <RectangleGeometry.Transform>
+                                <CompositeTransform x:Name="BorderRightClippingCompositeTransform" ScaleX="0"/>
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </Border.Clip>
+                </Border>
 
                 <TextBlock
                     x:Name="SystemVolumeSliderText"
@@ -288,7 +310,8 @@
                         x:Name="AudioSessionsPanel"
                         ItemsSource="{x:Bind AudioSessions}"
                         HorizontalAlignment="Center"
-                        Margin="0,0,0,-13"
+                        VerticalAlignment="Center"
+                        Margin="0,0,0,-7"
                         SelectionMode="None"
                         CanReorderItems="True"
                         ReorderMode="Enabled"
@@ -296,6 +319,11 @@
                         Grid.Row="1"
                         Loading="AudioSessionsPanel_Loading"
                         Loaded="OnLoaded">
+                        <GridView.Resources>
+                            <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                                <Setter Property="AllowDrop" Value="False" />
+                            </Style>
+                        </GridView.Resources>
                     </GridView>
                 </ScrollViewer>
 
