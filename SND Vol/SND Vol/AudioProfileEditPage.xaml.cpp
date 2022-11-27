@@ -11,6 +11,7 @@
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
+using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Storage;
 
@@ -86,17 +87,17 @@ namespace winrt::SND_Vol::implementation
         bool keepOnTop = KeepOnTopCheckBox().IsChecked().GetBoolean();
         bool showMenu = ShowMenuCheckBox().IsChecked().GetBoolean();
         /*
-        Layout combo box items should be arranged so that :
-         -First item is Auto
-         -Second item is Horizontal
-         -Third item is Vertical
-         */
+           Layout combo box items should be arranged so that :
+             -First item is Auto
+             -Second item is Horizontal
+             -Third item is Vertical
+        */
         uint32_t layout = LayoutComboBox().SelectedIndex();
 
         if (
             systemVolume != audioProfile.SystemVolume() || isDefaultProfile != audioProfile.IsDefaultProfile() || profileName != audioProfile.ProfileName() ||
             !audioLevelsEqual || !audioStatesEqual ||
-            disableAnimations != audioProfile.DisableAnimations() || showAdditionalButtons != audioProfile.ShowAdditionalButtons() || keepOnTop != audioProfile.KeepOnTop() || showMenu != audioProfile.ShowMenu()
+            disableAnimations != audioProfile.DisableAnimations() || showAdditionalButtons != audioProfile.ShowAdditionalButtons() || keepOnTop != audioProfile.KeepOnTop() || showMenu != audioProfile.ShowMenu() || layout != audioProfile.Layout()
             )
         {
             args.Cancel(true);
@@ -143,9 +144,11 @@ namespace winrt::SND_Vol::implementation
             for (auto&& pair : audioProfile.AudioLevels())
             {
                 AudioSessionView view{};
-                view.Header(pair.Key());
-                view.Volume(pair.Value());
-                view.Muted(audioProfile.AudioStates().Lookup(pair.Key()));
+                hstring sessionName = pair.Key();
+                double volume = pair.Value() * 100.;
+                view.Header(sessionName);
+                view.Volume(volume);
+                view.Muted(audioProfile.AudioStates().TryLookup(pair.Key()).value_or(false));
                 view.ContextFlyout(nullptr);
 
                 AudioSessionsGridView().Items().Append(view);
@@ -197,6 +200,61 @@ namespace winrt::SND_Vol::implementation
         // TODO: Check if the profile name is already in use.
     }
 
+    IAsyncAction AudioProfileEditPage::CreateAudioSessionButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        if (co_await AudioProfileCreationDialog().ShowAsync() == ContentDialogResult::Primary)
+        {
+            AudioSessionView view{};
+            hstring sessionName = ProfileCreationTextBox().Text();
+            double volume = ProfileCreationSlider().Value();
+            view.Header(sessionName);
+            view.Volume(volume);
+            view.Muted(ProfileCreationCheckBox().IsChecked().GetBoolean());
+            view.ContextFlyout(nullptr);
+
+            AudioSessionsGridView().Items().Append(view);
+        }
+    }
+
+    IAsyncAction AudioProfileEditPage::AddAudioSessionButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        // Get audio sessions.
+        Audio::LegacyAudioController* controllerPtr = new Audio::LegacyAudioController(GUID());
+        std::vector<Audio::AudioSession*>* audioSessionsPtr = controllerPtr->GetSessions();
+        for (size_t i = 0; i < audioSessionsPtr->size(); i++)
+        {
+            bool enabled = true;
+            for (auto item : AudioSessionsGridView().Items())
+            {
+                AudioSessionView view = item.try_as<AudioSessionView>();
+                if (view && view.Header() == audioSessionsPtr->at(i)->Name())
+                {
+                    enabled = false;
+                }
+            }
+
+            if (enabled)
+            {
+                // Create view.
+                AudioSessionView view{};
+                view.Header(audioSessionsPtr->at(i)->Name());
+                view.Volume(audioSessionsPtr->at(i)->Volume() * 100.);
+                view.Muted(audioSessionsPtr->at(i)->Muted());
+                view.ContextFlyout(nullptr);
+
+                ProfileAddGridView().Items().Append(view);
+            }
+
+            audioSessionsPtr->at(i)->Release(); // Directly release the AudioSession and release COM resources.
+        }
+        delete audioSessionsPtr;
+        controllerPtr->Release(); // Release audio controller and associated resources.
+
+        co_await AudioProfileAddDialog().ShowAsync();
+
+        ProfileAddGridView().Items().Clear();
+    }
+
 
     void AudioProfileEditPage::SaveProfile()
     {
@@ -213,7 +271,7 @@ namespace winrt::SND_Vol::implementation
             {
                 hstring header = view.Header();
                 bool isMuted = view.Muted();
-                float volume = static_cast<float>(view.Volume()) / 100.f; // Cast should be safe.
+                float volume = static_cast<float>(view.Volume()) / 100.f;
 
                 audioProfile.AudioLevels().Insert(header, volume);
                 audioProfile.AudioStates().Insert(header, isMuted);

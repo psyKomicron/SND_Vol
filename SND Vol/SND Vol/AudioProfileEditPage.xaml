@@ -113,6 +113,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
@@ -133,9 +134,15 @@
                     </Grid>
 
                     <TextBlock Text="Audio sessions" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.6" Grid.Row="2"/>
-                    <ScrollViewer VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Grid.Row="3">
+
+                    <StackPanel Grid.Row="3" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="7">
+                        <Button Content="Add session" Click="AddAudioSessionButton_Click"/>
+                        <Button Content="Create session" Click="CreateAudioSessionButton_Click"/>
+                    </StackPanel>
+                    
+                    <ScrollViewer VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Grid.Row="4">
                         <GridView 
-                        x:Name="AudioSessionsGridView">
+                            x:Name="AudioSessionsGridView">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -150,9 +157,9 @@
                         <ScalarTransition Duration="0:0:0.2"/>
                     </StackPanel.OpacityTransition>
 
-                    <Button Content="Cancel" Padding="45,6" Click="CancelButton_Click"/>
+                    <Button Content="Cancel" Style="{StaticResource LargeButtonStyle}" Click="CancelButton_Click"/>
 
-                    <Button Style="{StaticResource AccentButtonStyle}" Content="Save" Padding="45,6" Click="NextButton_Click"/>
+                    <Button Style="{StaticResource LargeAccentButtonStyle}" Content="Save" Click="NextButton_Click"/>
                 </StackPanel>
             </Grid>
         </ScrollViewer>
@@ -193,6 +200,24 @@
             PrimaryButtonText="Save" 
             SecondaryButtonText="Cancel">
             <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="Any changes made to the profile will be discarded."/>
+        </ContentDialog>
+
+        <ContentDialog x:Name="AudioProfileCreationDialog" DefaultButton="Primary" PrimaryButtonText="Create" SecondaryButtonText="Cancel" Title="Audio session creation">
+            <Grid RowSpacing="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <TextBox x:Name="ProfileCreationTextBox" VerticalAlignment="Center"/>
+                <Slider x:Name="ProfileCreationSlider" Grid.Row="1" Minimum="0" Maximum="100"/>
+                <CheckBox x:Name="ProfileCreationCheckBox" Grid.Row="2" Content="Is muted"/>
+            </Grid>
+        </ContentDialog>
+
+        <ContentDialog x:Name="AudioProfileAddDialog" DefaultButton="Primary" PrimaryButtonText="Create" SecondaryButtonText="Cancel" Title="Select the sessions to add">
+            <GridView x:Name="ProfileAddGridView" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </ContentDialog>
     </Grid>
 </Page>
