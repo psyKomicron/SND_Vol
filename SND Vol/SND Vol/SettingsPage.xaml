@@ -10,36 +10,118 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ListView SelectionMode="None">
-        <Grid Style="{StaticResource GridSettingStyle}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Text="Transparency effects" VerticalAlignment="Center"/>
-            <ToggleSwitch Grid.Column="1" Style="{StaticResource FlippedToggleSwitchStyle}"/>
-        </Grid>
-
-        <ListViewHeaderItem/>
-
-        <Button
-            Style="{StaticResource SettingsButtonStyle}"
-            HorizontalAlignment="Stretch"
-            HorizontalContentAlignment="Stretch"
-            Margin="0,0,0,5"
-            MinHeight="70"
-            Click="AudioProfilesButton_Click">
+    <ScrollViewer>
+        <Grid RowSpacing="60">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             
-            <TextBlock Text="Audio profiles" VerticalAlignment="Center"/>
-        </Button>
-        <Button
-            Style="{StaticResource SettingsButtonStyle}"
-            HorizontalAlignment="Stretch"
-            HorizontalContentAlignment="Stretch"
-            MinHeight="70"
-            Click="HotKeysButton_Click">
-            <TextBlock Text="Hot keys" VerticalAlignment="Center"/>
-        </Button>
-    </ListView>
+            <ListView SelectionMode="None">
+                <Grid Style="{StaticResource GridSettingStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Viewbox Height="20" Width="20">
+                        <FontIcon Glyph="&#xf4a5;"/>
+                    </Viewbox>
+                    <TextBlock Text="Transparency effects" VerticalAlignment="Center" Margin="15,0,0,0" Grid.Column="1"/>
+                    <ToggleSwitch Grid.Column="2" Style="{StaticResource FlippedToggleSwitchStyle}" IsOn="True" IsEnabled="False"/>
+                </Grid>
+
+                <ListViewHeaderItem/>
+
+                <Button
+                    Style="{StaticResource SettingsButtonStyle}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    Margin="0,0,0,5"
+                    MinHeight="70"
+                    Click="AudioProfilesButton_Click">
+
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Viewbox Height="20" Width="20">
+                            <FontIcon Glyph="&#xe748;"/>
+                        </Viewbox>
+
+                        <TextBlock Text="Audio profiles" VerticalAlignment="Center" Grid.Column="1"/>
+                    </Grid>
+                </Button>
+                <Button
+                    Style="{StaticResource SettingsButtonStyle}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    MinHeight="70"
+                    Click="HotKeysButton_Click">
+
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Viewbox Height="20" Width="20">
+                            <FontIcon Glyph="&#xeda7;"/>
+                        </Viewbox>
+
+                        <TextBlock Text="Hot keys" VerticalAlignment="Center" Grid.Column="1"/>
+                    </Grid>
+                </Button>
+            </ListView>
+
+            <Grid x:Name="AboutGrid" ColumnSpacing="30" Margin="30,0,0,0" VerticalAlignment="Top" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Uid="SettingsOtherLinksTextBlock" Margin="0,0,0,15" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="{StaticResource StackPanelDefaultSpacing}">
+                        <HyperlinkButton x:Name="GithubHyperlinkButton" Content="Github"/>
+
+                        <HyperlinkButton
+                            NavigateUri="https://github.com/microsoft/windowsappsdk" 
+                            ToolTipService.ToolTip="https://github.com/microsoft/windowsappsdk">
+
+                            <TextBlock Text="Windows App SDK" TextWrapping="Wrap"/>
+                        </HyperlinkButton>
+
+                        <HyperlinkButton x:Name="NewContentButton" Grid.RowSpan="2" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Click="NewContentButton_Click">
+                            <StackPanel Spacing="{StaticResource StackPanelButtonSpacing}" Orientation="Horizontal">
+                                <FontIcon Glyph="&#xe789;"/>
+                                <TextBlock x:Uid="SettingsNewContentTextBlock" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </HyperlinkButton>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Uid="SettingsAboutThisAppTextBlock" Grid.Row="0" Margin="0,0,0,15" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                    <TextBlock x:Uid="SettingsAppNameTextBlock" Grid.Row="1"/>
+                    <TextBlock x:Name="AppVersionTextBlock" Grid.Row="2"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </Page>

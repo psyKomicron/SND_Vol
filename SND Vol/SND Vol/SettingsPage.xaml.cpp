@@ -15,6 +15,11 @@ namespace winrt::SND_Vol::implementation
     SettingsPage::SettingsPage()
     {
         InitializeComponent();
+
+        winrt::Windows::ApplicationModel::PackageId packageId = winrt::Windows::ApplicationModel::Package::Current().Id();
+        AppVersionTextBlock().Text(
+            to_hstring(packageId.Version().Major) + L"." + to_hstring(packageId.Version().Minor) + L"." + to_hstring(packageId.Version().Build)
+        );
     }
 
     void SettingsPage::OnNavigatedTo(NavigationEventArgs const& args)
@@ -38,5 +43,10 @@ namespace winrt::SND_Vol::implementation
         SecondWindow::Current().Breadcrumbs().Append(
             winrt::SND_Vol::NavigationBreadcrumbBarItem{ loader.GetString(L"HotKeysPageDisplayName"), xaml_typename<winrt::SND_Vol::HotKeysPage>() }
         );
+    }
+
+    void SettingsPage::NewContentButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+
     }
 }
