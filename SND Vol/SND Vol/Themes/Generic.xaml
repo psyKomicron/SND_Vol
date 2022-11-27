@@ -29,6 +29,8 @@
 
     <Thickness x:Key="ToggleSwitchCenterMargin">0,0,-75,0</Thickness>
 
+    <x:Double x:Key="StackPanelButtonSpacing">10</x:Double>
+    <x:Double x:Key="StackPanelDefaultSpacing">15</x:Double>
     <x:Double x:Key="FontIconViewBoxHeight">16</x:Double>
     <x:Double x:Key="WindowPadding">30.0</x:Double>
     <x:Double x:Key="BackdropTintOpacity">0.2</x:Double>
@@ -41,8 +43,8 @@
     <x:Double x:Key="SettingHostControlMinHeight">70</x:Double>
     <x:Int32 x:Key="WindowWidth">300</x:Int32>
     <x:Int32 x:Key="WindowHeight">500</x:Int32>
-    <x:Int32 x:Key="SecondWindowWidth">850</x:Int32>
-    <x:Int32 x:Key="SecondWindowHeight">600</x:Int32>
+    <x:Int32 x:Key="SecondWindowWidth">1050</x:Int32>
+    <x:Int32 x:Key="SecondWindowHeight">800</x:Int32>
     <x:String x:Key="AppTitle">Croak</x:String>
 
     <Style x:Key="IconButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
@@ -1599,5 +1601,18 @@
 
     <Style x:Key="SmallTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
         <Setter Property="Opacity" Value="0.6" />
+    </Style>
+
+    <Style x:Key="ListViewItemSettingStyle" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+        <Setter Property="Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+        <Setter Property="MinHeight" Value="70"/>
+    </Style>
+
+    <Style x:Key="LargeAccentButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+        <Setter Property="Padding" Value="45,6" />
+    </Style>
+
+    <Style x:Key="LargeButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Padding" Value="45,6" />
     </Style>
 </ResourceDictionary>
