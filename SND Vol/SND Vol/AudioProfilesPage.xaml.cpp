@@ -35,7 +35,6 @@ namespace winrt::SND_Vol::implementation
                     {
                         audioProfiles.GetAt(i).IsDefaultProfile(false);
                         // Save the newly edited profile.
-                        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
                         audioProfiles.GetAt(i).Save(audioProfilesContainer);
                     }
                 }
@@ -169,6 +168,9 @@ namespace winrt::SND_Vol::implementation
         {
             if (audioProfiles.GetAt(i).ProfileName() == tag)
             {
+                ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
+                audioProfilesContainer.DeleteContainer(audioProfiles.GetAt(i).ProfileName());
+
                 audioProfiles.RemoveAt(i);
                 break;
             }

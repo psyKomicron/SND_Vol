@@ -17,58 +17,50 @@
         <Grid Padding="15,15,15,15" RowSpacing="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <ListViewItem
-                Style="{StaticResource DefaultListViewItemStyle}"
-                Background="{ThemeResource SubtleFillColorTertiaryBrush}"
-                MinHeight="70">
+            <Grid 
+                ColumnSpacing="10" 
+                Background="{ThemeResource SubtleFillColorTertiaryBrush}" 
+                MinHeight="70" 
+                Padding="16,0,12,0" 
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Margin="4,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <Grid ColumnSpacing="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                <Grid VerticalAlignment="Center" RowSpacing="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
 
-                    <Grid VerticalAlignment="Center" RowSpacing="5">
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Text="Manage your audio profiles"/>
-                        <TextBlock Text="Create, edit, delete and duplicate audio profiles to adjust your audio experience" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.8" Grid.Row="1"/>
-                    </Grid>
-
-                    <Button
-                        Style="{StaticResource AccentButtonStyle}"
-                        Padding="14,6"
-                        Grid.Column="2"
-                        Content="Add profile"
-                        HorizontalAlignment="Right"
-                        Click="AddProfileButton_Click"/>
+                    <TextBlock Text="Manage your audio profiles"/>
+                    <TextBlock Text="Create, edit, delete and duplicate audio profiles to adjust your audio experience" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.8" Grid.Row="1"/>
                 </Grid>
-            </ListViewItem>
 
-            <TextBlock
-                Style="{StaticResource SmallTextBlockStyle}" 
-                Text="Drag any profile to the top of the list to make it default"
-                Grid.Row="1" />
-            
+                <Button
+                    Style="{StaticResource AccentButtonStyle}"
+                    Padding="14,6"
+                    Grid.Column="2"
+                    Content="Add profile"
+                    HorizontalAlignment="Right"
+                    Click="AddProfileButton_Click"/>
+            </Grid>
+
             <ListView 
                 x:Name="ProfilesListView" 
-                Grid.Row="2" 
+                Grid.Row="1" 
                 CanReorderItems="True" 
                 AllowDrop="True"
                 ReorderMode="Enabled"
                 CanDrag="True">
                 <ListView.Resources>
-                    <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
-                        <Setter Property="Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemSettingStyle}">
                         <Setter Property="Padding" Value="7,2,3,-3" />
-                        <Setter Property="MinHeight" Value="70"/>
                     </Style>
                 </ListView.Resources>
                 <ListView.ItemsPanel>
@@ -81,7 +73,7 @@
                     <DataTemplate x:DataType="s:AudioProfile">
                         <Grid 
                             ColumnSpacing="15" 
-                            Padding="7,7"
+                            Padding="0,7,7,7"
                             Margin="0,0,0,5"
                             CornerRadius="{StaticResource ControlCornerRadius}">
                             <Grid.ColumnDefinitions>
@@ -90,7 +82,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <Grid Translation="15,2,0" >
+                            <Grid Translation="28,2,0" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -100,7 +92,7 @@
                                 <FontIcon Glyph="&#xe712;" Grid.Column="1" Translation="8,20,0" Rotation="90" />
                             </Grid>
 
-                            <Ellipse
+                            <!--<Ellipse
                                 Margin="33,0,0,0"
                                 Height="10"
                                 Width="10"
@@ -109,7 +101,7 @@
                                 VerticalAlignment="Center"
                                 ToolTipService.ToolTip="Default profile"
                                 Visibility="{x:Bind IsDefaultProfile, Mode=OneWay}"
-                                Fill="{ThemeResource AccentFillColorDefaultBrush}"/>
+                                Fill="{ThemeResource AccentFillColorDefaultBrush}"/>-->
 
                             <TextBlock
                                 Text="{x:Bind ProfileName, Mode=OneWay}"
@@ -127,6 +119,7 @@
                                     Tag="{x:Bind ProfileName, Mode=OneWay}" 
                                     Icon="Copy"
                                     Label="Duplicate"
+                                    IsEnabled="False"
                                     Click="DuplicateProfileButton_Click"/>
 
                                 <AppBarButton
