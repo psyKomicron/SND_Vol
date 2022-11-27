@@ -26,7 +26,7 @@ namespace winrt::SND_Vol::implementation
         props.Values().Insert(L"Layout", IReference(layout));
 
         ApplicationDataCompositeValue audioLevelsContainer{};
-        for (auto&& pair : audioStates)
+        for (auto&& pair : audioLevels)
         {
             hstring name = pair.Key();
             float level = pair.Value();
@@ -71,7 +71,7 @@ namespace winrt::SND_Vol::implementation
             hstring name = value.Key();
             bool muted = value.Value().as<bool>();
 
-            audioLevels.Insert(name, muted);
+            audioStates.Insert(name, muted);
         }
     }
 }
