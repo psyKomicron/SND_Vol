@@ -215,6 +215,18 @@ le son</value>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
     <value>- Afficher les paramètres, les fonctions de l'application, modifier la disposition des éléments et personnaliser l'affichage.</value>
   </data>
+  <data name="SettingsAboutThisAppTextBlock.Text" xml:space="preserve">
+    <value>A propos de cette application</value>
+  </data>
+  <data name="SettingsAppNameTextBlock.Text" xml:space="preserve">
+    <value>Croak par psyKomicron</value>
+  </data>
+  <data name="SettingsNewContentTextBlock.Text" xml:space="preserve">
+    <value>Nouveautées</value>
+  </data>
+  <data name="SettingsOtherLinksTextBlock.Text" xml:space="preserve">
+    <value>Autres liens</value>
+  </data>
   <data name="SettingsPageDisplayName" xml:space="preserve">
     <value>Paramètres</value>
   </data>
