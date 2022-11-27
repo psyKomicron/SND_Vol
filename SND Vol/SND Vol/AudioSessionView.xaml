@@ -15,6 +15,7 @@
     CornerRadius="5"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
+    AllowDrop="False"
     Loaded="UserControl_Loaded">
     <UserControl.ContextFlyout>
         <MenuFlyout>
