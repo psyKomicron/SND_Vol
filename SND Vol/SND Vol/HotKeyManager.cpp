@@ -14,6 +14,11 @@ namespace System
 
 	void HotKeyManager::RegisterHotKey(const VirtualKeyModifiers& modifiers, const uint32_t& virtualKey)
 	{
+		// TODO:
+		// - Check arguments validity
+		// - Activate and throw properly if the key has failed to activate.
+		// - Return an ID so that the caller can identify witch key has been fired.
+		// - Handle Fired events and send dispatch them.
 		UUID hotKeyId{};
 		if (SUCCEEDED((UuidCreate(&hotKeyId))))
 		{
