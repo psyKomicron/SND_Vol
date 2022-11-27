@@ -8,6 +8,7 @@ namespace SND_Vol
         String ProfileName{ get; set; };
         Windows.Foundation.Collections.IMap<String, Single> AudioLevels{ get; set; };
         Windows.Foundation.Collections.IMap<String, Boolean> AudioStates{ get; set; };
+        Windows.Foundation.Collections.IMap<String, UInt32> SessionsIndexes{ get; set; };
         Boolean IsDefaultProfile{ get; set; };
         Single SystemVolume{ get; set; };
 

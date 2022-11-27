@@ -12,6 +12,7 @@ namespace winrt::SND_Vol::implementation
         {
             return profileName;
         };
+
         inline void ProfileName(const winrt::hstring& value)
         {
             profileName = value;
@@ -22,24 +23,39 @@ namespace winrt::SND_Vol::implementation
         {
             return audioLevels;
         };
+
         inline void AudioLevels(const winrt::Windows::Foundation::Collections::IMap<hstring, float>& value)
         {
             audioLevels = value;
+            e_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs(L"AudioLevels"));
         };
 
         inline winrt::Windows::Foundation::Collections::IMap<hstring, bool> AudioStates()
         {
             return audioStates;
         };
+
         inline void AudioStates(const winrt::Windows::Foundation::Collections::IMap<hstring, bool>& value)
         {
             audioStates = value;
+            e_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs(L"AudioStates"));
+        };
+
+        inline winrt::Windows::Foundation::Collections::IMap<hstring, uint32_t> SessionsIndexes() const
+        {
+            return sessionsIndexes;
+        };
+        inline void SessionsIndexes(const winrt::Windows::Foundation::Collections::IMap<hstring, uint32_t>& value)
+        {
+            sessionsIndexes = value;
+            e_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs(L"SessionsIndexes"));
         };
 
         inline bool IsDefaultProfile()
         {
             return isDefaultProfile;
         };
+
         inline void IsDefaultProfile(const bool& value)
         {
             isDefaultProfile = value;
@@ -50,6 +66,7 @@ namespace winrt::SND_Vol::implementation
         {
             return systemVolume;
         };
+
         inline void SystemVolume(const float& value)
         {
             systemVolume = value;
@@ -60,6 +77,7 @@ namespace winrt::SND_Vol::implementation
         {
             return disableAnimations;
         };
+
         inline void DisableAnimations(const bool& value) 
         {
             disableAnimations = value;
@@ -70,6 +88,7 @@ namespace winrt::SND_Vol::implementation
         {
             return showAdditionalButtons;
         };
+
         inline void ShowAdditionalButtons(const bool& value)
         {
             showAdditionalButtons = value;
@@ -80,6 +99,7 @@ namespace winrt::SND_Vol::implementation
         {
             return keepOnTop;
         };
+
         inline void KeepOnTop(const bool& value)
         {
             keepOnTop = value;
@@ -90,6 +110,7 @@ namespace winrt::SND_Vol::implementation
         {
             return showMenu;
         };
+
         inline void ShowMenu(const bool& value)
         {
             showMenu = value;
@@ -100,6 +121,7 @@ namespace winrt::SND_Vol::implementation
         {
             return layout;
         };
+
         void Layout(const uint32_t& value)
         {
             layout = value;
@@ -122,6 +144,7 @@ namespace winrt::SND_Vol::implementation
         winrt::hstring profileName{};
         winrt::Windows::Foundation::Collections::IMap<hstring, float> audioLevels{ winrt::single_threaded_map<hstring, float>() };
         winrt::Windows::Foundation::Collections::IMap<hstring, bool> audioStates{ winrt::single_threaded_map<hstring, bool>() };
+        winrt::Windows::Foundation::Collections::IMap<hstring, uint32_t> sessionsIndexes{ winrt::single_threaded_map<hstring, uint32_t>() };
         bool isDefaultProfile = false;
         float systemVolume = 0.0;
         bool disableAnimations = false;
