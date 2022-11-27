@@ -10,29 +10,29 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Grid.Row="1" RowSpacing="10" Padding="15,15,15,15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer>
+        <Grid Grid.Row="1" RowSpacing="15" Padding="15,15,15,15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <TextBlock Text="Hot keys" Style="{StaticResource TitleTextBlockStyle}"/>
+            <ListView Grid.Row="0" SelectionMode="None">
+                <ListView.Resources>
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemSettingStyle}"/>
+                </ListView.Resources>
 
-        <ListView Grid.Row="1" SelectionMode="None">
-            <Expander Header="dlfknsd" HorizontalAlignment="Stretch">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                </Grid>
-            </Expander>
-        </ListView>
+                <s:HotKeyView HotKeyName="System volume up" Key="Up" Modifiers="Control,Shift" IsHotKeyEnabled="True"/>
+                <s:HotKeyView HotKeyName="System volume down" Key="Down" Modifiers="Control,Shift" IsHotKeyEnabled="True"/>
+                <s:HotKeyView HotKeyName="System volume extra up" Key="PageUp" Modifiers="Control,Shift" IsHotKeyEnabled="True"/>
+                <s:HotKeyView HotKeyName="System volume extra down" Key="PageDown" Modifiers="Control,Shift" IsHotKeyEnabled="True"/>
+                <s:HotKeyView HotKeyName="Mute/unmute" Key="M" Modifiers="Menu,Shift" IsHotKeyEnabled="True"/>
+            </ListView>
 
-        <s:HotKeysViewer x:Name="HotKeysViewer" Grid.Row="2"/>
-    </Grid>
+            <s:HotKeysViewer x:Name="HotKeysViewer" Grid.Row="1" ShowMouseMap="False"/>
+
+            <Button Click="Button_Click" Grid.Row="2" Content="Capture keyboard"/>
+        </Grid>
+    </ScrollViewer>
 </Page>
