@@ -1,6 +1,7 @@
 #pragma once
-#include "HotKey.h"
+#include <ppl.h>
 #include <concurrent_unordered_map.h>
+#include "HotKey.h"
 
 namespace System
 {
@@ -21,7 +22,10 @@ namespace System
 			static HotKeyManager instance{};
 			return instance;
 		};
-		void RegisterHotKey(const winrt::Windows::System::VirtualKeyModifiers& modifiers, const uint32_t& virtualKey);
+
+		winrt::guid RegisterHotKey(const winrt::Windows::System::VirtualKeyModifiers& modifiers, const uint32_t& virtualKey);
+		void EditKey(const winrt::guid& hotKeyId, const winrt::Windows::System::VirtualKeyModifiers& modifiers, const uint32_t& virtualKey);
+		void ReplaceOrInsertKey(System::HotKey* previousKey, System::HotKey* newKey);
 
 		/**
 		 * @brief Copy operator.
@@ -29,7 +33,9 @@ namespace System
 		HotKeyManager& operator=(const HotKeyManager& other) = delete;
 
 	private:
-		concurrency::concurrent_unordered_map<winrt::guid, std::unique_ptr<HotKey>> hotKeys{};
+		Concurrency::concurrent_unordered_map<winrt::guid, HotKey*> hotKeys{};
+
+		winrt::Windows::Foundation::TypedEventHandler<winrt::guid, winrt::Windows::Foundation::IInspectable> e_hotKeyFired{};
 
 		/**
 		 * @brief Default constructor.
