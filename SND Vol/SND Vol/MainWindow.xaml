@@ -162,7 +162,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="5,0,5,0" ColumnSpacing="3">
+            <Grid Grid.Row="0" Margin="5,0,5,3" ColumnSpacing="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="MuteToggleButtonColumn" Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -254,8 +254,8 @@
 
             <Border
                 Grid.Row="1"
-                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                Margin="0,0"/>
+                Background="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+            
             <Grid
                 x:Name="AppBarGrid"
                 Grid.Row="1"
