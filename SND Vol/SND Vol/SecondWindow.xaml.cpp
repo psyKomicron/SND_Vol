@@ -80,6 +80,8 @@ namespace winrt::SND_Vol::implementation
         appWindow = AppWindow::GetFromWindowId(windowID);
         if (appWindow != nullptr)
         {
+            appWindow.MoveInZOrderAtTop();
+
             ApplicationDataContainer settings = ApplicationData::Current().LocalSettings().CreateContainer(
                 L"SettingsWindow",
                 ApplicationData::Current().LocalSettings().Containers().HasKey(L"SettingsWindow") ? ApplicationDataCreateDisposition::Existing : ApplicationDataCreateDisposition::Always
@@ -93,7 +95,6 @@ namespace winrt::SND_Vol::implementation
                 settings.Values().TryLookup(L"WindowHeight"),
                 Application::Current().Resources().Lookup(box_value(L"SecondWindowHeight")).as<int32_t>()
             );
-
             PointInt32 lastPosition{};
             lastPosition.X = unbox_value_or(settings.Values().TryLookup(L"WindowPosX"), -1);
             lastPosition.Y = unbox_value_or(settings.Values().TryLookup(L"WindowPosY"), -1);
@@ -126,7 +127,6 @@ namespace winrt::SND_Vol::implementation
 
             appWindow.MoveAndResize(RectInt32(lastPosition.X, lastPosition.Y, width, height));
             appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>() + L"(hotkeys)");
-
             appWindowClosingEventToken = appWindow.Closing({ this, &SecondWindow::AppWindow_Closing });
 
             if (appWindow.TitleBar().IsCustomizationSupported())
