@@ -136,9 +136,7 @@
             <TeachingTip
                 x:Name="DefaultProfileTeachingTip"
                 PlacementMargin="10"
-                PreferredPlacement="Auto"
-                IsLightDismissEnabled="False"
-                CloseButtonContent="Ok">
+                IsLightDismissEnabled="False">
 
                 <TeachingTip.Content>
                     <TextBlock Text="Drag any profile to the top of the list to make it the default profile" TextWrapping="Wrap"/>
