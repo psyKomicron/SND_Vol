@@ -42,6 +42,15 @@ namespace winrt::SND_Vol::implementation
             audioStatesContainer.Insert(name, IReference(muted));
         }
         props.Values().Insert(L"AudioStates", audioStatesContainer);
+
+        ApplicationDataCompositeValue indexes{};
+        for (auto&& pair : sessionsIndexes)
+        {
+            hstring name = pair.Key();
+            uint32_t index = pair.Value();
+            indexes.Insert(name, IReference(index));
+        }
+        props.Values().Insert(L"SessionsIndexes", indexes);
     }
 
     void AudioProfile::Restore(const ApplicationDataContainer& container)
@@ -57,21 +66,27 @@ namespace winrt::SND_Vol::implementation
 
         auto audioLevelsContainer = container.Values().Lookup(L"AudioLevels").as<ApplicationDataCompositeValue>();
         auto audioStatesContainer = container.Values().Lookup(L"AudioStates").as<ApplicationDataCompositeValue>();
+        auto sessionsIndexesContainer = container.Values().Lookup(L"SessionsIndexes").as<ApplicationDataCompositeValue>();
 
-        for (auto value : audioLevelsContainer)
+        for (auto pair : audioLevelsContainer)
         {
-            hstring name = value.Key();
-            float level = value.Value().as<float>();
-
+            hstring name = pair.Key();
+            float level = pair.Value().as<float>();
             audioLevels.Insert(name, level);
         }
 
-        for (auto value : audioStatesContainer)
+        for (auto pair : audioStatesContainer)
         {
-            hstring name = value.Key();
-            bool muted = value.Value().as<bool>();
-
+            hstring name = pair.Key();
+            bool muted = pair.Value().as<bool>();
             audioStates.Insert(name, muted);
+        }
+
+        for (auto pair : sessionsIndexesContainer)
+        {
+            hstring name = pair.Key();
+            uint32_t index = pair.Value().as<uint32_t>();
+            sessionsIndexes.Insert(name, index);
         }
     }
 }
