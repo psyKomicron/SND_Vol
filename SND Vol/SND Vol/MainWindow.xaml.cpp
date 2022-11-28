@@ -6,7 +6,6 @@
 
 #include "HotKey.h"
 #include "SecondWindow.xaml.h"
-#include "HotKeyManager.h"
 
 #define USE_TIMER 1
 #define DEACTIVATE_TIMER 0
@@ -203,7 +202,7 @@ namespace winrt::SND_Vol::implementation
         {
             volumeUpHotKeyPtr.Activate();
         }
-        catch (const std::invalid_argument& ex)
+        catch (const std::invalid_argument&)
         {
             WindowMessageBar().EnqueueMessage(L"Failed to activate system volume up hot key");
         }
@@ -212,7 +211,7 @@ namespace winrt::SND_Vol::implementation
         {
             volumeDownHotKeyPtr.Activate();
         }
-        catch (const std::invalid_argument& ex)
+        catch (const std::invalid_argument&)
         {
             WindowMessageBar().EnqueueMessage(L"Failed to activate system volume down hot key");
         }
@@ -221,7 +220,7 @@ namespace winrt::SND_Vol::implementation
         {
             volumePageUpHotKeyPtr.Activate();
         }
-        catch (const std::invalid_argument& ex)
+        catch (const std::invalid_argument&)
         {
             WindowMessageBar().EnqueueMessage(L"Failed to activate system volume up (PageUp) hot key");
         }
@@ -230,7 +229,7 @@ namespace winrt::SND_Vol::implementation
         {
             volumePageDownHotKeyPtr.Activate();
         }
-        catch (const std::invalid_argument& ex)
+        catch (const std::invalid_argument&)
         {
             WindowMessageBar().EnqueueMessage(L"Failed to activate system volume down (PageDown) hot key");
         }
@@ -239,7 +238,7 @@ namespace winrt::SND_Vol::implementation
         {
             muteHotKeyPtr.Activate();
         }
-        catch (const std::invalid_argument& ex)
+        catch (const std::invalid_argument&)
         {
             WindowMessageBar().EnqueueMessage(L"Failed to activate mute/unmute hot key");
         }
@@ -578,7 +577,7 @@ namespace winrt::SND_Vol::implementation
 
             appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>());
 
-            appWindowClosingEventToken = appWindow.Closing({ this, &MainWindow::AppWindow_Closing });
+            appWindow.Closing({ this, &MainWindow::AppWindow_Closing });
             appWindow.Changed([this](auto&&, winrt::Microsoft::UI::Windowing::AppWindowChangedEventArgs args)
             {
                 OverlappedPresenter presenter = nullptr;
@@ -854,8 +853,6 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::LoadHotKeys()
     {
-        System::HotKeyManager& manager = System::HotKeyManager::GetHotKeyManager();
-
         #if ENABLE_HOTKEYS
         #pragma warning(push)
         #pragma warning(disable:4305)
@@ -1039,26 +1036,28 @@ namespace winrt::SND_Vol::implementation
                 try
                 {
                     hstring name = profile.Key();
-                    
                     if (name == profileName)
                     {
                         AudioProfile audioProfile{};
                         audioProfile.Restore(profile.Value()); // If the restore fails, the next instructions will not be ran.
+                        currentAudioProfile = move(audioProfile);
+                        // Cannot use audioProfile variable below here.
 
-                        float systemVolume = audioProfile.SystemVolume();
-                        auto audioLevels = audioProfile.AudioLevels();
-                        auto audioStates = audioProfile.AudioStates();
-                        bool disableAnimations = audioProfile.DisableAnimations();
-                        bool showAdditionalButtons = audioProfile.ShowAdditionalButtons();
-                        bool keepOnTop = audioProfile.KeepOnTop();
-                        bool showMenu = audioProfile.ShowMenu();
-                        uint32_t windowLayout = audioProfile.Layout();
+                        float systemVolume = currentAudioProfile.SystemVolume();
+                        auto audioLevels = currentAudioProfile.AudioLevels();
+                        auto audioStates = currentAudioProfile.AudioStates();
+                        bool disableAnimations = currentAudioProfile.DisableAnimations();
+                        bool showAdditionalButtons = currentAudioProfile.ShowAdditionalButtons();
+                        bool keepOnTop = currentAudioProfile.KeepOnTop();
+                        bool showMenu = currentAudioProfile.ShowMenu();
+                        uint32_t windowLayout = currentAudioProfile.Layout();
 
                         // Set system volume.
                         if (mainAudioEndpoint)
                         {
                             mainAudioEndpoint->SetVolume(systemVolume);
                         }
+
                         // Set audio sessions volume.
                         {
                             unique_lock lock{ audioSessionsMutex };
@@ -1097,9 +1096,7 @@ namespace winrt::SND_Vol::implementation
                             presenter.IsMinimizable(showAdditionalButtons);
                             presenter.IsMinimizable(showAdditionalButtons);
 
-                            RightPaddingColumn().Width(GridLengthHelper::FromPixels(
-                                showAdditionalButtons ? 135 : 45
-                            ));
+                            RightPaddingColumn().Width(GridLengthHelper::FromPixels(showAdditionalButtons ? 135 : 45));
                         }
 
                         if (showMenu)
@@ -1109,27 +1106,47 @@ namespace winrt::SND_Vol::implementation
 
                         switch (windowLayout)
                         {
-                        case 1:
-                            HorizontalViewMenuFlyoutItem_Click(nullptr, nullptr);
-                            break;
-                        case 2:
-                            VerticalViewMenuFlyoutItem_Click(nullptr, nullptr);
-                            break;
-                        case 0:
-                        default:
-                            AutoViewMenuFlyoutItem_Click(nullptr, nullptr);
-                            break;
+                            case 1:
+                                HorizontalViewMenuFlyoutItem_Click(nullptr, nullptr);
+                                break;
+                            case 2:
+                                VerticalViewMenuFlyoutItem_Click(nullptr, nullptr);
+                                break;
+                            case 0:
+                            default:
+                                AutoViewMenuFlyoutItem_Click(nullptr, nullptr);
+                                break;
                         }
+
+#ifdef DEBUG
+                        auto indexes = currentAudioProfile.SessionsIndexes();
+                        auto&& views = vector<AudioSessionView>(audioSessionViews.Size(), nullptr);
+                        for (auto view : audioSessionViews)
+                        {
+                            auto opt = indexes.TryLookup(view.Header());
+                            if (opt.has_value())
+                            {
+                                views[opt.value()] = view;
+                            }
+                        }
+                        for (auto&& pair : indexes)
+                        {
+
+                        }
+                        audioSessionViews = single_threaded_observable_vector<AudioSessionView>(move(views));
+                        // HACK: Can we use INotifyPropertyChanged to raise that the vector has changed ?
+                        AudioSessionsPanel().ItemsSource(audioSessionViews);
+#endif // DEBUG
 
 
                         WindowMessageBar().EnqueueMessage(L"Loaded profile " + profileName);
                     }
-
                 }
-                catch (const hresult_error&)
+                catch (const hresult_error& error)
                 {
                     // I18N: Failed to load profile [profile name]
-                    WindowMessageBar().EnqueueMessage(L"Failed to load profile \"" + profileName + L"\"");
+                    WindowMessageBar().EnqueueMessage(L"Failed to load profile: " + profileName);
+                    OutputDebugHString(error.message());
                 }
             }
         }
@@ -1300,18 +1317,19 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::AudioController_SessionAdded(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
     {
+        // TODO: Reorder audio sessions according to the currently loaded audio profile (if any).
         DispatcherQueue().TryEnqueue([this]()
         {
             audioSessionsPeakTimer.Stop();
-        while (AudioSession* newSession = audioController->NewSession())
-        {
+            while (AudioSession* newSession = audioController->NewSession())
             {
-                unique_lock lock{ audioSessionsMutex };
-                audioSessions->push_back(newSession);
+                {
+                    unique_lock lock{ audioSessionsMutex };
+                    audioSessions->push_back(newSession);
+                }
+                CreateAudioView(newSession, true);
             }
-            CreateAudioView(newSession, true);
-        }
-        audioSessionsPeakTimer.Start();
+            audioSessionsPeakTimer.Start();
         });
     }
 

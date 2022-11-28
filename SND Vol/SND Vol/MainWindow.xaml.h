@@ -100,7 +100,6 @@ namespace winrt::SND_Vol::implementation
         winrt::SND_Vol::AudioSessionState globalSessionAudioState = winrt::SND_Vol::AudioSessionState::Unmuted;
         winrt::Windows::Graphics::RectInt32 displayRect;
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
-        winrt::event_token appWindowClosingEventToken;
         #pragma region Backdrop
         BackdropController backdropController = nullptr;
         winrt::Windows::System::DispatcherQueueController dispatcherQueueController = nullptr;
