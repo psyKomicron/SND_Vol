@@ -13,6 +13,7 @@ using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Storage;
 
 
@@ -141,18 +142,27 @@ namespace winrt::SND_Vol::implementation
 
         if (audioProfile.AudioLevels().Size() > 0)
         {
+            std::vector<AudioSessionView> views{};
+            views.resize(audioProfile.SessionsIndexes().Size());
+
             for (auto&& pair : audioProfile.AudioLevels())
             {
-                AudioSessionView view{};
                 hstring sessionName = pair.Key();
                 double volume = pair.Value() * 100.;
+                bool muted = audioProfile.AudioStates().Lookup(pair.Key());
+                uint32_t index = audioProfile.SessionsIndexes().Lookup(pair.Key());
+
+                AudioSessionView view{};
                 view.Header(sessionName);
                 view.Volume(volume);
-                view.Muted(audioProfile.AudioStates().TryLookup(pair.Key()).value_or(false));
+                view.Muted(muted);
                 view.ContextFlyout(nullptr);
 
-                AudioSessionsGridView().Items().Append(view);
+                //views.emplace(views.begin() + index, view);
+                views[index] = view;
             }
+
+            audioSessions = single_threaded_observable_vector<AudioSessionView>(std::move(views));
         }
         else
         {
@@ -167,7 +177,7 @@ namespace winrt::SND_Vol::implementation
                 view.Muted(audioSessionsPtr->at(i)->Muted());
                 view.ContextFlyout(nullptr);
 
-                AudioSessionsGridView().Items().Append(view);
+                AudioSessions().Append(view);
 
                 audioSessionsPtr->at(i)->Release(); // Directly release the AudioSession and release COM resources.
             }
@@ -212,7 +222,7 @@ namespace winrt::SND_Vol::implementation
             view.Muted(ProfileCreationCheckBox().IsChecked().GetBoolean());
             view.ContextFlyout(nullptr);
 
-            AudioSessionsGridView().Items().Append(view);
+            audioSessions.Append(view);
         }
     }
 
@@ -224,7 +234,7 @@ namespace winrt::SND_Vol::implementation
         for (size_t i = 0; i < audioSessionsPtr->size(); i++)
         {
             bool enabled = true;
-            for (auto item : AudioSessionsGridView().Items())
+            for (auto item : audioSessions)
             {
                 AudioSessionView view = item.try_as<AudioSessionView>();
                 if (view && view.Header() == audioSessionsPtr->at(i)->Name())
@@ -265,17 +275,17 @@ namespace winrt::SND_Vol::implementation
 
         audioProfile.AudioLevels().Clear();
         audioProfile.AudioStates().Clear();
-        for (auto&& item : AudioSessionsGridView().Items())
+        for (auto&& view : AudioSessions())
         {
-            if (AudioSessionView view = item.try_as<AudioSessionView>())
-            {
-                hstring header = view.Header();
-                bool isMuted = view.Muted();
-                float volume = static_cast<float>(view.Volume()) / 100.f;
+            hstring header = view.Header();
+            bool isMuted = view.Muted();
+            float volume = static_cast<float>(view.Volume()) / 100.f;
+            uint32_t index = 0;
+            AudioSessions().IndexOf(view, index);
 
-                audioProfile.AudioLevels().Insert(header, volume);
-                audioProfile.AudioStates().Insert(header, isMuted);
-            }
+            audioProfile.AudioLevels().Insert(header, volume);
+            audioProfile.AudioStates().Insert(header, isMuted);
+            audioProfile.SessionsIndexes().Insert(header, index);
         }
 
         audioProfile.DisableAnimations(DisableAnimationsCheckBox().IsChecked().GetBoolean());

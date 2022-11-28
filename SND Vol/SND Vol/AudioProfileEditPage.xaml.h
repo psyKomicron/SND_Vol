@@ -12,6 +12,11 @@ namespace winrt::SND_Vol::implementation
     public:
         AudioProfileEditPage();
 
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::AudioSessionView> AudioSessions() const
+        {
+            return audioSessions;
+        };
+
         inline winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
         {
             return e_propertyChanged.add(handler);
@@ -33,7 +38,7 @@ namespace winrt::SND_Vol::implementation
     private:
         winrt::SND_Vol::AudioProfile audioProfile{ nullptr };
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer timer{ nullptr };
-        winrt::Windows::Foundation::Collections::IVectorView<winrt::SND_Vol::AudioSessionView> audioSessions;
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::AudioSessionView> audioSessions = winrt::single_threaded_observable_vector< winrt::SND_Vol::AudioSessionView>();
         bool navigationOutAllowed = false;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;

@@ -141,8 +141,12 @@
                     </StackPanel>
                     
                     <ScrollViewer VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Grid.Row="4">
-                        <GridView 
-                            x:Name="AudioSessionsGridView">
+                        <GridView
+                            ItemsSource="{x:Bind AudioSessions}"
+                            SelectionMode="None"
+                            CanReorderItems="True"
+                            ReorderMode="Enabled"
+                            AllowDrop="True">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"/>
