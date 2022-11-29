@@ -107,11 +107,11 @@ namespace winrt::SND_Vol::implementation
         winrt::Microsoft::UI::Xaml::FrameworkElement::ActualThemeChanged_revoker themeChangedRevoker;
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer audioSessionsPeakTimer = nullptr;
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer mainAudioEndpointPeakTimer = nullptr;
+        #pragma endregion
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::AudioSessionView> audioSessionViews
         {
             winrt::multi_threaded_observable_vector<winrt::SND_Vol::AudioSessionView>()
         };
-        #pragma endregion
         winrt::Microsoft::UI::Xaml::Window secondWindow{ nullptr };
         winrt::SND_Vol::AudioProfile currentAudioProfile{ nullptr };
 

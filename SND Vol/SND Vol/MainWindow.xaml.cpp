@@ -196,6 +196,12 @@ namespace winrt::SND_Vol::implementation
     {
         LoadContent();
 
+        hstring profileName = unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"AudioProfile"), L"");
+        if (!profileName.empty())
+        {
+            LoadProfile(profileName);
+        }
+
 #if ENABLE_HOTKEYS
         // Activate hotkeys.
         try
@@ -819,6 +825,14 @@ namespace winrt::SND_Vol::implementation
 
         });
 
+        if (currentAudioProfile)
+        {
+            auto optional = currentAudioProfile.SessionsIndexes().TryLookup(audioSession->Name());
+            if (optional.has_value())
+            {
+                return;
+            }
+        }
         audioSessionViews.InsertAt(0, view);
     }
 
@@ -1024,6 +1038,10 @@ namespace winrt::SND_Vol::implementation
         settings.Insert(L"DisableAnimations", box_value(DisableAnimationsMenuFlyoutItem().IsChecked()));
         settings.Insert(L"SessionsLayout", IReference<int32_t>(layout));
         settings.Insert(L"ShowAppBar", box_value(ShowAppBarMenuFlyoutItem().IsChecked()));
+        if (currentAudioProfile)
+        {
+            settings.Insert(L"AudioProfile", box_value(currentAudioProfile.ProfileName()));
+        }
     }
 
     void MainWindow::LoadProfile(const hstring& profileName)
@@ -1060,7 +1078,7 @@ namespace winrt::SND_Vol::implementation
 
                         // Set audio sessions volume.
                         {
-                            unique_lock lock{ audioSessionsMutex };
+                            unique_lock lock{ audioSessionsMutex }; // Taking the lock will also lock sessions from being added to the display.
 
                             for (auto pair : audioLevels)
                             {
@@ -1119,25 +1137,59 @@ namespace winrt::SND_Vol::implementation
                         }
 
 #ifdef DEBUG
+                        AudioSessionsPanel().ItemsSource(nullptr);
+
                         auto indexes = currentAudioProfile.SessionsIndexes();
                         auto&& views = vector<AudioSessionView>(audioSessionViews.Size(), nullptr);
-                        for (auto view : audioSessionViews)
+                        for (size_t i = 0; i < audioSessionViews.Size(); i++)
                         {
+                            auto view = audioSessionViews.GetAt(i);
                             auto opt = indexes.TryLookup(view.Header());
                             if (opt.has_value())
                             {
                                 views[opt.value()] = view;
+                                audioSessionViews.SetAt(i, nullptr);
                             }
                         }
-                        for (auto&& pair : indexes)
-                        {
 
+                        for (size_t i = 0; i < audioSessionViews.Size(); i++)
+                        {
+                            auto view = audioSessionViews.GetAt(i);
+                            if (view)
+                            {
+                                if (views[i] == nullptr)
+                                {
+                                    views[i] = view;
+                                }
+                                else
+                                {
+                                    int j = i;
+                                    while (views[j])
+                                    {
+                                        if (j == views.size() - 1u)
+                                        {
+                                            views.push_back(view);
+                                            j = views.size();
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            j++;
+                                        }
+                                    }
+
+                                    if (j < views.size())
+                                    {
+                                        views[j] = view;
+                                    }
+                                }
+                            }
                         }
-                        audioSessionViews = single_threaded_observable_vector<AudioSessionView>(move(views));
+                        
+                        audioSessionViews = multi_threaded_observable_vector<AudioSessionView>(move(views));
                         // HACK: Can we use INotifyPropertyChanged to raise that the vector has changed ?
                         AudioSessionsPanel().ItemsSource(audioSessionViews);
 #endif // DEBUG
-
 
                         WindowMessageBar().EnqueueMessage(L"Loaded profile " + profileName);
                     }
