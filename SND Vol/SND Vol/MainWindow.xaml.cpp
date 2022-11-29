@@ -830,6 +830,7 @@ namespace winrt::SND_Vol::implementation
             auto optional = currentAudioProfile.SessionsIndexes().TryLookup(audioSession->Name());
             if (optional.has_value())
             {
+                audioSessionViews.InsertAt(optional.value(), view);
                 return;
             }
         }
