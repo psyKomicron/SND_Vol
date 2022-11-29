@@ -128,7 +128,7 @@
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
 
-                        <MenuFlyoutItem x:Name="DisableHotKeysMenuFlyoutItem" Text="Disable hotkeys" Click="DisableHotKeysMenuFlyoutItem_Click"/>
+                        <MenuFlyoutItem x:Uid="MainWindowDisableHotKeysMenuFlyoutItem" Click="DisableHotKeysMenuFlyoutItem_Click"/>
 
                         <MenuFlyoutSeparator/>
 

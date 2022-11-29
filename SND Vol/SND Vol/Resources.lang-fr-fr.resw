@@ -162,6 +162,10 @@
   <data name="MainWindowDisableAnimationsMenuFlyoutItem.Text" xml:space="preserve">
     <value>Désactiver les animations</value>
   </data>
+  <data name="MainWindowDisableHotKeysMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Couper les
+hot keys</value>
+  </data>
   <data name="MainWindowDisplayMenuFlyoutItem.Text" xml:space="preserve">
     <value>Affichage</value>
   </data>
