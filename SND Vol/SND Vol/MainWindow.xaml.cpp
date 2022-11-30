@@ -830,7 +830,19 @@ namespace winrt::SND_Vol::implementation
             auto optional = currentAudioProfile.SessionsIndexes().TryLookup(audioSession->Name());
             if (optional.has_value())
             {
-                audioSessionViews.InsertAt(optional.value(), view);
+                if (optional.value() < audioSessionViews.Size())
+                {
+                    audioSessionViews.InsertAt(optional.value(), view);
+                }
+                else
+                {
+                    // I can either append at the end forever, or go through the hassle of checking everytime a sesion is added 
+                    // the sessions with indexes saved are in their right spot, including if the user has repositioned them
+                    // in-between 2 passes of this function. It could be functional but I don't think it would be that useful
+                    // for all the work done, and it could very well confuse the user with the sessions moving around for no
+                    // particular reason.
+                    audioSessionViews.Append(view);
+                }
                 return;
             }
         }
