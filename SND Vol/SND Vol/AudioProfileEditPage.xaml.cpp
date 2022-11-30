@@ -158,7 +158,6 @@ namespace winrt::SND_Vol::implementation
                 view.Muted(muted);
                 view.ContextFlyout(nullptr);
 
-                //views.emplace(views.begin() + index, view);
                 views[index] = view;
             }
 
