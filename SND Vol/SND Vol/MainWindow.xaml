@@ -47,7 +47,7 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <Grid x:Name="TitleBarGrid" MinHeight="30">
+        <Grid x:Name="TitleBarGrid" MinHeight="32">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
                 <ColumnDefinition x:Name="SettingsButtonColumn" Width="Auto"/>
@@ -60,10 +60,10 @@
                 Grid.Column="1"
                 Background="Transparent"
                 BorderThickness="0"
+                Padding="8,7"
+                Margin="3,4"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                Padding="9,8"
-                Margin="3,4"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center">
                 <Viewbox Height="16">
@@ -71,34 +71,11 @@
                 </Viewbox>
 
                 <Button.Flyout>
-                    <MenuFlyout ShowMode="Transient">
-                        <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="H" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
+                    <MenuFlyout ShowMode="Transient" Opening="MenuFlyout_Opening">
 
-                        <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutSeparator/>
-
-                        <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="M" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="R" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutSeparator/>
+                        <MenuFlyoutSubItem 
+                            x:Name="ProfilesMenuFlyoutItem" 
+                            Text="Profiles"/>
 
                         <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
                             <ToggleMenuFlyoutItem
@@ -125,11 +102,37 @@
                             <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
                         </MenuFlyoutSubItem>
 
+                        <MenuFlyoutSeparator/>
+
+                        <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="H" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="M" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="R" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem x:Uid="MainWindowDisableHotKeysMenuFlyoutItem" Click="DisableHotKeysMenuFlyoutItem_Click"/>
 
                         <MenuFlyoutSeparator/>
 
-                        <MenuFlyoutItem x:Uid="MainWindowHotkeysMenuFlyoutItem" x:Name="HotKeySettingsMenuFlyoutItem" Click="HotKeySettingsMenuFlyoutItem_Click"/>
-                        <MenuFlyoutItem x:Name="DisableHotKeysMenuFlyoutItem" Text="Disable hotkeys" Click="DisableHotKeysMenuFlyoutItem_Click"/>
+                        <MenuFlyoutItem x:Uid="MainWindowSettingsMenuFlyoutItem" x:Name="SettingsMenuFlyoutItem" Click="SettingsMenuFlyoutItem_Click"/>
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
@@ -159,7 +162,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="5,0,5,0" ColumnSpacing="3">
+            <Grid Grid.Row="0" Margin="5,0,5,3" ColumnSpacing="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="MuteToggleButtonColumn" Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -168,8 +171,15 @@
                 <Grid.Resources>
                     <Storyboard x:Name="VolumeStoryboard">
                         <DoubleAnimation 
-                            x:Name="VolumeAnimation"
-                            Storyboard.TargetName="BorderClippingCompositeTransform"
+                            x:Name="LeftVolumeAnimation"
+                            Storyboard.TargetName="BorderLeftClippingCompositeTransform"
+                            Storyboard.TargetProperty="ScaleX"
+                            To="0"
+                            Duration="{StaticResource AudioMeterAnimationDuration}"/>
+
+                        <DoubleAnimation 
+                            x:Name="RightVolumeAnimation"
+                            Storyboard.TargetName="BorderRightClippingCompositeTransform"
                             Storyboard.TargetProperty="ScaleX"
                             To="0"
                             Duration="{StaticResource AudioMeterAnimationDuration}"/>
@@ -185,10 +195,9 @@
                 </ToggleButton>
 
                 <Border 
-                    x:Name="SystemVolumeActivityBorder"
+                    x:Name="SystemVolumeActivityBorderLeft"
                     Grid.Column="1"
                     Background="{StaticResource AudioMeterReversedBackground}"
-                    CornerRadius="0"
                     Opacity="0.5"
                     Height="6"
                     VerticalAlignment="Center"
@@ -196,9 +205,9 @@
                     Translation="0,-6,0"
                     SizeChanged="SystemVolumeActivityBorder_SizeChanged">
                     <Border.Clip>
-                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClipping">
+                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingLeft">
                             <RectangleGeometry.Transform>
-                                <CompositeTransform x:Name="BorderClippingCompositeTransform" ScaleX="0"/>
+                                <CompositeTransform x:Name="BorderLeftClippingCompositeTransform" ScaleX="0"/>
                             </RectangleGeometry.Transform>
                         </RectangleGeometry>
                     </Border.Clip>
@@ -216,6 +225,24 @@
                     </Slider.Transitions>
                 </Slider>
 
+                <Border 
+                    x:Name="SystemVolumeActivityBorderRight"
+                    Grid.Column="1"
+                    Background="{StaticResource AudioMeterReversedBackground}"
+                    Opacity="0.5"
+                    Height="6"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Stretch"
+                    Translation="0,-6,0">
+                    <Border.Clip>
+                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingRight">
+                            <RectangleGeometry.Transform>
+                                <CompositeTransform x:Name="BorderRightClippingCompositeTransform" ScaleX="0"/>
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </Border.Clip>
+                </Border>
+
                 <TextBlock
                     x:Name="SystemVolumeSliderText"
                     Grid.Column="2"
@@ -227,8 +254,8 @@
 
             <Border
                 Grid.Row="1"
-                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                Margin="0,0"/>
+                Background="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+            
             <Grid
                 x:Name="AppBarGrid"
                 Grid.Row="1"
@@ -283,7 +310,8 @@
                         x:Name="AudioSessionsPanel"
                         ItemsSource="{x:Bind AudioSessions}"
                         HorizontalAlignment="Center"
-                        Margin="0,0,0,-13"
+                        VerticalAlignment="Center"
+                        Margin="0,0,0,-7"
                         SelectionMode="None"
                         CanReorderItems="True"
                         ReorderMode="Enabled"
@@ -291,6 +319,11 @@
                         Grid.Row="1"
                         Loading="AudioSessionsPanel_Loading"
                         Loaded="OnLoaded">
+                        <GridView.Resources>
+                            <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                                <Setter Property="AllowDrop" Value="False" />
+                            </Style>
+                        </GridView.Resources>
                     </GridView>
                 </ScrollViewer>
 
@@ -306,7 +339,7 @@
         <snd_vol:SplashScreen
             x:Name="WindowSplashScreen"
             Grid.Row="2"
-            OnScreenTimeSpan="0:0:02"
+            OnScreenTimeSpan="0:0:01"
             Dismissed="SplashScreen_Dismissed">
             <snd_vol:SplashScreen.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="0.6" ColorInterpolationMode="SRgbLinearInterpolation" MappingMode="RelativeToBoundingBox" SpreadMethod="Pad">
@@ -330,7 +363,7 @@
             </snd_vol:SplashScreen.TopContent>
 
             <snd_vol:SplashScreen.MainContent>
-                <Viewbox MaxHeight="100" MaxWidth="100">
+                <Viewbox MaxHeight="80" MaxWidth="80">
                     <FontIcon Glyph="&#xe767;"/>
                 </Viewbox>
             </snd_vol:SplashScreen.MainContent>
@@ -341,11 +374,10 @@
         </snd_vol:SplashScreen>
 
         <TeachingTip
-            x:Uid="MainWindowSettingsButtonTeachingTip"
             x:Name="SettingsButtonTeachingTip" 
-            PlacementMargin="0"
+            PlacementMargin="3"
             PreferredPlacement="Auto"
-            IsLightDismissEnabled="False">
+            IsLightDismissEnabled="True">
 
             <TeachingTip.Content>
                 <Grid RowSpacing="15" Padding="0,10,0,0">

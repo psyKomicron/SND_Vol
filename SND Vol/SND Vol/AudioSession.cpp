@@ -102,6 +102,11 @@ namespace Audio
         return muted;
     }
 
+    void AudioSession::Muted(const bool& isMuted)
+    {
+        simpleAudioVolume->SetMute(isMuted, &eventContextId);
+    }
+
     hstring AudioSession::Name()
     {
         return sessionName;
@@ -153,13 +158,12 @@ namespace Audio
 
     bool AudioSession::SetMute(bool const& state)
     {
-        ISimpleAudioVolumePtr volume;
-        if (SUCCEEDED(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&volume)))
-        {
-            HRESULT hResult = volume->SetMute(state, &eventContextId);
-            return SUCCEEDED(hResult);
-        }
-        return false;
+        return SUCCEEDED(simpleAudioVolume->SetMute(state, &eventContextId));
+    }
+
+    void AudioSession::SetVolume(const float& volume)
+    {
+        check_hresult(simpleAudioVolume->SetMasterVolume(volume, nullptr));
     }
 
     float AudioSession::GetPeak() const

@@ -36,10 +36,9 @@ namespace System
 	{
 		if (notificationThread != nullptr)
 		{
-			PostThreadMessage(threadId, WM_QUIT, 0, 0);
-			threadFlag.test_and_set();
-			notificationThread->join();
-			delete notificationThread;
+			PostThreadMessage(threadId, WM_QUIT, 0, 0); // Post quit message to the hotkey thread (GetMessage will return 0).
+			notificationThread->join(); // Wait for the thread to exit.
+			delete notificationThread; // Free the memory.
 		}
 	}
 
@@ -47,6 +46,11 @@ namespace System
 	void HotKey::Activate()
 	{
 		notificationThread = new std::thread(&HotKey::ThreadFunction, this);
+		threadFlag.wait(false); // Wait to check if the hotkey was registered successfully or not.
+		if (!threadFlag.test()) // If the test returns false it means the hotkey registration has failed, throw exception.
+		{
+			throw std::invalid_argument("Hot key is not valid (rejected by the system).");
+		}
 	}
 
 
@@ -81,13 +85,17 @@ namespace System
 		if (!::RegisterHotKey(nullptr, hotKeyId, modifiers, key))
 		{
 			OutputDebugHString(L"Failed to register hot key.");
+			threadFlag.test_and_set();
+			threadFlag.notify_one();
 		}
 		else
 		{
 			OutputDebugHString(L"Hotkey (id: " + winrt::to_hstring(static_cast<uint64_t>(hotKeyId)) + L") registered.");
+			threadFlag.test_and_set();
+			threadFlag.notify_one();
 
 			MSG message{};
-			while (!threadFlag.test())
+			while (1)
 			{
 				//PeekMessage()
 				if (GetMessage(&message, (HWND)(-1), 0, 0) & 1)
@@ -105,6 +113,7 @@ namespace System
 				else
 				{
 					OutputDebugString(L"HotKey.cpp > GetMessage returned 0\n");
+					break;
 				}
 			}
 

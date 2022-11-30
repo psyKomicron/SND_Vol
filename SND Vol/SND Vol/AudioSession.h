@@ -14,6 +14,7 @@ namespace Audio
         bool IsSystemSoundSession();
         GUID Id();
         bool Muted();
+        void Muted(const bool& isMuted);
         /**
          * @brief Gets the name of the session. Can be the display name or the name of the executable associated with the audio session's PID.
          * @return The name of the session
@@ -67,6 +68,11 @@ namespace Audio
          * @return True if the audio session has been muted.
         */
         bool SetMute(bool const& mute);
+        /**
+         * @brief Sets the volume of the audio sessions, allowing for the VolumeChanged event to be fired.
+         * @param volume Desired volume in absolute percentage (0-1)
+        */
+        void SetVolume(const float& volume);
         /**
          * @brief Gets the normalized peak PCM value for this audio session.
          * @return float between 0 and 1

@@ -3,6 +3,7 @@
 #include "App.xaml.g.h"
 #include "KeyIcon.h"
 #include "LetterKeyIcon.h"
+#include "IconButton.h"
 
 namespace winrt::SND_Vol::implementation
 {

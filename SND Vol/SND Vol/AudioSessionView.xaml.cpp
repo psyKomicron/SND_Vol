@@ -46,7 +46,7 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::Volume(double const& value)
     {
-        if (value > 0.0 && value < 100.0)
+        if (value >= 0.0 && value <= 100.0)
         {
             _volume = value;
             e_propertyChanged(*this, PropertyChangedEventArgs(L"Volume"));

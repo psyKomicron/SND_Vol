@@ -7,10 +7,8 @@
 #include <winrt/Windows.UI.Core.h>
 #include "HotKeyViewModel.h"
 
-using namespace winrt::Windows::Graphics;
 
 using namespace winrt;
-
 using namespace winrt::Microsoft::UI;
 using namespace winrt::Microsoft::UI::Composition;
 using namespace winrt::Microsoft::UI::Composition::SystemBackdrops;
@@ -18,46 +16,60 @@ using namespace winrt::Microsoft::UI::Input;
 using namespace winrt::Microsoft::UI::Windowing;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
-using namespace winrt::Microsoft::UI::Xaml::Media;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
-
+using namespace winrt::Microsoft::UI::Xaml::Media;
+using namespace winrt::Microsoft::UI::Xaml::Navigation;
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::ApplicationModel::Core;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
+using namespace winrt::Windows::Graphics;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::System;
 
 
 namespace winrt::SND_Vol::implementation
 {
+    winrt::SND_Vol::SecondWindow SecondWindow::singleton{ nullptr };
+
     SecondWindow::SecondWindow()
     {
+        singleton = *this;
         InitializeComponent();
+        InitializeWindow();
 
-        InitWindow();
-        SetBackground();
-        
         TitleTextBlock().Text(appWindow.Title());
     }
 
 
     void SecondWindow::Grid_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
-        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeUpHotKeyName"), true, VirtualKey::Up, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift});
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeDownHotKeyName"), true, VirtualKey::Down, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumePageUpHotKeyName"), true, VirtualKey::PageUp, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumePageDownHotKeyName"), true, VirtualKey::PageDown, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
-        HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeSwitchStateHotKeyName"), true, VirtualKey::M, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
+        NavigationFrame().Navigate(xaml_typename<SettingsPage>(), box_value(L"SettingsPage"));
     }
 
-    void SecondWindow::CloseHotKeysViewerButton_Click(IInspectable const&, RoutedEventArgs const&)
+    void SecondWindow::NavigationFrame_Navigated(IInspectable const&, NavigationEventArgs const& e)
     {
     }
 
+    void SecondWindow::NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar const&, BreadcrumbBarItemClickedEventArgs const& e)
+    {
+        winrt::SND_Vol::NavigationBreadcrumbBarItem item = breadcrumbs.GetAt(e.Index());
 
-    void SecondWindow::InitWindow()
+        for (int i = breadcrumbs.Size() - 1; i >= e.Index(); i--)
+        {
+            breadcrumbs.RemoveAt(i);
+        }
+
+        NavigationFrame().Navigate(item.ItemTypeName());
+    }
+
+    void SecondWindow::NavigationFrame_NavigationFailed(IInspectable const&, NavigationFailedEventArgs const&)
+    {
+        ErrorMessageBar().EnqueueMessage(L"Navigation failed");
+    }
+
+
+    void SecondWindow::InitializeWindow()
     {
         auto nativeWindow{ this->try_as<::IWindowNative>() };
         check_bool(nativeWindow);
@@ -68,6 +80,8 @@ namespace winrt::SND_Vol::implementation
         appWindow = AppWindow::GetFromWindowId(windowID);
         if (appWindow != nullptr)
         {
+            appWindow.MoveInZOrderAtTop();
+
             ApplicationDataContainer settings = ApplicationData::Current().LocalSettings().CreateContainer(
                 L"SettingsWindow",
                 ApplicationData::Current().LocalSettings().Containers().HasKey(L"SettingsWindow") ? ApplicationDataCreateDisposition::Existing : ApplicationDataCreateDisposition::Always
@@ -81,7 +95,6 @@ namespace winrt::SND_Vol::implementation
                 settings.Values().TryLookup(L"WindowHeight"),
                 Application::Current().Resources().Lookup(box_value(L"SecondWindowHeight")).as<int32_t>()
             );
-
             PointInt32 lastPosition{};
             lastPosition.X = unbox_value_or(settings.Values().TryLookup(L"WindowPosX"), -1);
             lastPosition.Y = unbox_value_or(settings.Values().TryLookup(L"WindowPosY"), -1);
@@ -114,7 +127,6 @@ namespace winrt::SND_Vol::implementation
 
             appWindow.MoveAndResize(RectInt32(lastPosition.X, lastPosition.Y, width, height));
             appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>() + L"(hotkeys)");
-
             appWindowClosingEventToken = appWindow.Closing({ this, &SecondWindow::AppWindow_Closing });
 
             if (appWindow.TitleBar().IsCustomizationSupported())
@@ -136,6 +148,8 @@ namespace winrt::SND_Vol::implementation
                 appWindow.TitleBar().ButtonPressedForegroundColor(Colors::White());
             }
         }
+
+        SetBackground();
     }
 
     void SecondWindow::SetBackground()
@@ -164,11 +178,13 @@ namespace winrt::SND_Vol::implementation
                 systemBackdropConfiguration.IsInputActive(true);
                 systemBackdropConfiguration.Theme((SystemBackdropTheme)RootGrid().ActualTheme());
 
-                backdropController = DesktopAcrylicController();
-                backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
-                backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
-                backdropController.TintOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropTintOpacity")).as<double>()));
-                backdropController.LuminosityOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropLuminosityOpacity")).as<double>()));
+                backdropController = MicaController();
+                backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorSecondary")).as<Windows::UI::Color>());
+                backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorSecondary")).as<Windows::UI::Color>());
+                backdropController.TintOpacity(
+                    static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropSecondaryTintOpacity")).as<double>()));
+                backdropController.LuminosityOpacity(
+                    static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropSecondaryLuminosityOpacity")).as<double>()));
                 backdropController.SetSystemBackdropConfiguration(systemBackdropConfiguration);
                 backdropController.AddSystemBackdropTarget(supportsBackdrop);
             }
