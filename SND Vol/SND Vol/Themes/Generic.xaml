@@ -1615,4 +1615,25 @@
     <Style x:Key="LargeButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
         <Setter Property="Padding" Value="45,6" />
     </Style>
+
+    <Style TargetType="local:IconButton">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:IconButton">
+
+                    <Button>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon FontSize="12" Glyph="{TemplateBinding Glyph}"/>
+                            <TextBlock Text="{TemplateBinding Text}" Grid.Column="1" TextWrapping="Wrap"/>
+                        </Grid>
+                    </Button>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

@@ -76,6 +76,9 @@
     <ClCompile Include="LetterKeyIcon.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
+    <ClCompile Include="IconButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

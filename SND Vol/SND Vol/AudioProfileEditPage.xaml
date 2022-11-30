@@ -164,6 +164,8 @@
                     <Button Content="Cancel" Style="{StaticResource LargeButtonStyle}" Click="CancelButton_Click"/>
 
                     <Button Style="{StaticResource LargeAccentButtonStyle}" Content="Save" Click="NextButton_Click"/>
+
+                    <local:IconButton/>
                 </StackPanel>
             </Grid>
         </ScrollViewer>

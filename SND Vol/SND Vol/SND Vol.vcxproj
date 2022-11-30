@@ -154,6 +154,10 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="IComEventImplementation.h" />
+    <ClInclude Include="IconButton.h">
+      <DependentUpon>IconButton.cpp</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="KeyIcon.h">
       <DependentUpon>KeyIcon.cpp</DependentUpon>
       <SubType>Code</SubType>
@@ -266,6 +270,9 @@
       <DependentUpon>HotKeyViewModel.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="IconButton.cpp">
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="KeyIcon.cpp">
       <SubType>Code</SubType>
     </ClCompile>
@@ -339,6 +346,10 @@
     </Midl>
     <Midl Include="HotKeyViewModel.idl">
       <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="IconButton.idl">
+      <DependentUpon>IconButton.cpp</DependentUpon>
+      <SubType>Code</SubType>
     </Midl>
     <Midl Include="KeyIcon.idl">
       <DependentUpon>KeyIcon.cpp</DependentUpon>
