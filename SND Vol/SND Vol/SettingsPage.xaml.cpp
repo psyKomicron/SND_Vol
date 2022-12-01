@@ -47,6 +47,6 @@ namespace winrt::SND_Vol::implementation
 
     void SettingsPage::NewContentButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-
+        Frame().Navigate(xaml_typename<NewContentPage>());
     }
 }
