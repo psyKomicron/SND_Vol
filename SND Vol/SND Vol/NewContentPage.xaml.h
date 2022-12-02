@@ -6,7 +6,10 @@ namespace winrt::SND_Vol::implementation
 {
     struct NewContentPage : NewContentPageT<NewContentPage>
     {
+    public:
         NewContentPage();
+
+        void OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args);
     };
 }
 
