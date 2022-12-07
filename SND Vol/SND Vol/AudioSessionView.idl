@@ -27,6 +27,6 @@ namespace SND_Vol
 
         void SetState(AudioSessionState state);
         void SetPeak(Single peak);
-        void SetPeak(Single peak1, Single peak2);
+        void SetPeak(Single left, Single right);
     }
 }

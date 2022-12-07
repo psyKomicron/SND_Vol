@@ -188,12 +188,12 @@ namespace winrt::SND_Vol::implementation
         LeftPeakStoryboard().Begin();
     }
 
-    void AudioSessionView::SetPeak(const float& peak1, const float& peak2)
+    void AudioSessionView::SetPeak(const float& left, const float& right)
     {
-        LeftPeakAnimation().To(static_cast<double>(peak1));
+        LeftPeakAnimation().To(static_cast<double>(left));
         LeftPeakStoryboard().Begin();
 
-        RightPeakAnimation().To(static_cast<double>(peak2));
+        RightPeakAnimation().To(static_cast<double>(right));
         RightPeakStoryboard().Begin();
     }
 
