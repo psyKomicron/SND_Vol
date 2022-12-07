@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    BorderThickness="1"
+    BorderThickness="0"
     BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
     MinHeight="{ThemeResource AudioSessionViewMinHeight}"
     MaxHeight="{ThemeResource AudioSessionViewMaxHeight}"
@@ -110,7 +110,7 @@
         <Border
             x:Name="VolumePeakBorderLeft"
             Background="{StaticResource AudioMeterBackground}"
-            Opacity="0.5"
+            Opacity="{StaticResource PeakBorderOpacity}"
             CornerRadius="0"
             Height="171"
             Width="7"
@@ -132,7 +132,7 @@
         <Border
             x:Name="VolumePeakBorderRight"
             Background="{StaticResource AudioMeterBackground}"
-            Opacity="0.5"
+            Opacity="{StaticResource PeakBorderOpacity}"
             CornerRadius="0"
             Height="171"
             Width="7"
@@ -157,7 +157,6 @@
             Text="{x:Bind Header, Mode=OneWay}"
             FontSize="14"
             Margin="3,0,3,0"
-            FontStretch="ExtraCondensed"
             VerticalAlignment="Bottom"
             HorizontalAlignment="Center"
             TextAlignment="Center"
@@ -176,7 +175,7 @@
             VerticalAlignment="Stretch"
             Grid.Row="2"
             Margin="0,0,0,0"
-            Translation="0,0,0"
+            Translation="0.1,0,0"
             ValueChanged="Slider_ValueChanged"/>
 
         <Button
