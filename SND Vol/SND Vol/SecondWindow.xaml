@@ -16,20 +16,14 @@
         <Grid x:Name="TitleBarGrid" IsHitTestVisible="False">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition MinWidth="45" MaxWidth="135"/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}">
-                <SymbolIcon Symbol="Back"/>
-            </Button>
-            
             <TextBlock 
                 x:Name="TitleTextBlock"
-                Grid.Column="2"
+                Grid.Column="1"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Opacity="0.5"
                 TextWrapping="Wrap"
                 MaxLines="2"
                 VerticalAlignment="Center"
