@@ -2,20 +2,32 @@
     x:Class="SND_Vol.NewContentPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:SND_Vol"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <ScrollViewer>
-        <Grid Margin="15" Padding="5" BorderBrush="{ThemeResource AccentControlElevationBorderBrush}" BorderThickness="1" HorizontalAlignment="Stretch" CornerRadius="{StaticResource OverlayCornerRadius}" Background="{ThemeResource SubtleFillColorTertiaryBrush}">
+        <Grid Margin="15" RowSpacing="20">
             <Grid.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="TextWrapping" Value="Wrap" />
                 </Style>
+                <Style TargetType="ListView">
+                    <Setter Property="SelectionMode" Value="None" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource AccentControlElevationBorderBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                    <Setter Property="Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                    <Setter Property="Padding" Value="5,12,5,22" />
+                </Style>
             </Grid.Resources>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            <ListView SelectionMode="None">
+            <ListView>
 
                 <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="What's new"/>
                 <ListViewHeaderItem Margin="-20,0"/>
@@ -24,37 +36,47 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Spacing="12">
-
+                    <StackPanel Spacing="7">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Audio profiles</TextBlock>
-                        <TextBlock>
-                                You can now use audio profiles to quickly set the app's appearance but also change system volume and individual audio sessions volume.
-                        </TextBlock>
-                        <TextBlock Style="{StaticResource SmallTextBlockStyle}">Insert GIF here</TextBlock>
+                        <TextBlock>You can now use audio profiles to quickly set the app's appearance but also change system volume and individual audio sessions volume.</TextBlock>
                     </StackPanel>
 
-                    <StackPanel Spacing="12" Grid.Row="1">
+                    <StackPanel Spacing="7" Grid.Row="1">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">New content</TextBlock>
                         <TextBlock>This page will list the changes made between 2 updates.</TextBlock>
                     </StackPanel>
+
+                    <StackPanel Spacing="7" Grid.Row="2">
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Add to startup</TextBlock>
+                        <TextBlock>You can now find in settings a toggle to add the app to Window's startup app list. Is it not activated by default and you can at any time deactivate it using this app settings or Windows settings (right click on Croak, app settings).</TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Spacing="7" Grid.Row="3">
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Personalization</TextBlock>
+                        <TextBlock>While you can disable transparency effects in Windows settings, you can also choose to disable this app background transparency effects in the settings. If you have it disabled inside the app, you can choose an picture as a background or leave it as is.</TextBlock>
+                    </StackPanel>
                 </Grid>
+            </ListView>
 
-
+            <ListView Grid.Row="1">
                 <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Changes"/>
                 <ListViewHeaderItem Margin="-20,0"/>
 
-                <StackPanel Spacing="12" Margin="13,0,0,55">
-                    <TextBlock>No changes.</TextBlock>
-                </StackPanel>
+                <TextBlock>- The ability to set audio session positions when loading audio profiles has been disabled as it was not working well enough. It will be brought back as soon as possible.</TextBlock>
+                <TextBlock>- Windows audio device peak graph has been updated to show the 2 stereo tracks.</TextBlock>
+            </ListView>
 
-
+            <ListView Grid.Row="2">
                 <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Fixes"/>
                 <ListViewHeaderItem Margin="-20,0"/>
 
                 <StackPanel Spacing="12" Margin="13,0,0,55">
-                    <TextBlock>Fixed a bug where you couldn't set a session's volume to 100% or 0%.</TextBlock>
+                    <TextBlock>- Fixed a bug where you couldn't set a session's volume to 100% or 0%.</TextBlock>
+                    <TextBlock>- Fixed a bug causing audio sessions to not be shown after one had already been added.</TextBlock>
                 </StackPanel>
             </ListView>
         </Grid>
