@@ -25,9 +25,9 @@ using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Input;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Media;
+using namespace winrt::Microsoft::UI::Xaml::Media::Imaging;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
 using namespace winrt::Windows::ApplicationModel;
-
 using namespace winrt::Windows::ApplicationModel::Core;
 using namespace winrt::Windows::ApplicationModel::Resources;
 using namespace winrt::Windows::Foundation;
@@ -185,9 +185,9 @@ namespace winrt::SND_Vol::implementation
         for (size_t i = 0; i < audioSessions->size(); i++)
         {
             guid id = audioSessions->at(i)->Id();
-            if (id == sender.Id() && audioSessions->at(i)->Muted() != args)
+            if (id == sender.Id())
             {
-                audioSessions->at(i)->Muted(args);
+                audioSessions->at(i)->SetMute(args);
             }
         }
     }
@@ -384,9 +384,6 @@ namespace winrt::SND_Vol::implementation
             mainAudioEndpointPeakTimer.Stop();
         }
 
-        ResourceLoader loader{};
-        WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoReloadingAudioSessions"));
-
         audioSessionViews.Clear();
         VolumeStoryboard().Stop();
 
@@ -410,20 +407,19 @@ namespace winrt::SND_Vol::implementation
         // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
         {
             unique_lock lock{ audioSessionsMutex };
-
             for (size_t i = 0; i < audioSessions->size(); i++)
             {
                 audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[audioSessions->at(i)->Id()]);
                 audioSessions->at(i)->Unregister();
                 audioSessions->at(i)->Release();
             }
-
             audioSessions->clear();
         }
 
 
         // Reload content
         LoadContent();
+        ResourceLoader loader{};
         WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoAudioSessionsReloaded"));
     }
 
@@ -577,7 +573,7 @@ namespace winrt::SND_Vol::implementation
             timestamp.Text(to_hstring(__TIME__) + L", " + to_hstring(__DATE__));
             //timestamp.Margin(Thickness(0, 0, 5, 0));
 
-            Grid::SetRow(timestamp, RootGrid().RowDefinitions().GetView().Size() - 1);
+            Grid::SetRow(timestamp, WindowGrid().RowDefinitions().GetView().Size() - 1);
             RootGrid().Children().Append(timestamp);
         #endif // _DEBUG
 
@@ -615,7 +611,8 @@ namespace winrt::SND_Vol::implementation
                 }
             });
 
-            if (appWindow.TitleBar().IsCustomizationSupported())
+            if (unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"UseCustomTitleBar"), true) &&
+                appWindow.TitleBar().IsCustomizationSupported())
             {
                 usingCustomTitleBar = true;
 
@@ -640,42 +637,64 @@ namespace winrt::SND_Vol::implementation
         }
 
         SetBackground();
+
         LoadHotKeys();
     }
 
     void MainWindow::SetBackground()
     {
-        if (DesktopAcrylicController::IsSupported())
+        if (unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"TransparencyAllowed"), true))
         {
-            auto&& supportsBackdrop = try_as<ICompositionSupportsSystemBackdrop>();
-            if (supportsBackdrop)
+            if (DesktopAcrylicController::IsSupported())
             {
-                RootGrid().Background(SolidColorBrush(Colors::Transparent()));
-                if (!DispatcherQueue::GetForCurrentThread() && !dispatcherQueueController)
+                auto&& supportsBackdrop = try_as<ICompositionSupportsSystemBackdrop>();
+                if (supportsBackdrop)
                 {
-                    DispatcherQueueOptions options
+                    WindowGrid().Background(SolidColorBrush(Colors::Transparent()));
+
+                    if (!DispatcherQueue::GetForCurrentThread() && !dispatcherQueueController)
                     {
-                        sizeof(DispatcherQueueOptions),
-                        DQTYPE_THREAD_CURRENT,
-                        DQTAT_COM_NONE
-                    };
+                        DispatcherQueueOptions options
+                        {
+                            sizeof(DispatcherQueueOptions),
+                            DQTYPE_THREAD_CURRENT,
+                            DQTAT_COM_NONE
+                        };
 
-                    ABI::Windows::System::IDispatcherQueueController* ptr{ nullptr };
-                    check_hresult(CreateDispatcherQueueController(options, &ptr));
-                    dispatcherQueueController = DispatcherQueueController(ptr, take_ownership_from_abi);
+                        ABI::Windows::System::IDispatcherQueueController* ptr{ nullptr };
+                        check_hresult(CreateDispatcherQueueController(options, &ptr));
+                        dispatcherQueueController = DispatcherQueueController(ptr, take_ownership_from_abi);
+                    }
+
+                    systemBackdropConfiguration = SystemBackdropConfiguration();
+                    systemBackdropConfiguration.IsInputActive(true);
+                    systemBackdropConfiguration.Theme((SystemBackdropTheme)RootGrid().ActualTheme());
+
+                    backdropController = BackdropController();
+                    backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
+                    backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
+                    backdropController.TintOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropTintOpacity")).as<double>()));
+                    backdropController.LuminosityOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropLuminosityOpacity")).as<double>()));
+                    backdropController.SetSystemBackdropConfiguration(systemBackdropConfiguration);
+                    backdropController.AddSystemBackdropTarget(supportsBackdrop);
                 }
-
-                systemBackdropConfiguration = SystemBackdropConfiguration();
-                systemBackdropConfiguration.IsInputActive(true);
-                systemBackdropConfiguration.Theme((SystemBackdropTheme)RootGrid().ActualTheme());
-
-                backdropController = BackdropController();
-                backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
-                backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
-                backdropController.TintOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropTintOpacity")).as<double>()));
-                backdropController.LuminosityOpacity(static_cast<float>(Application::Current().Resources().TryLookup(box_value(L"BackdropLuminosityOpacity")).as<double>()));
-                backdropController.SetSystemBackdropConfiguration(systemBackdropConfiguration);
-                backdropController.AddSystemBackdropTarget(supportsBackdrop);
+            }
+        }
+        else 
+        {
+            hstring path = unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"BackgroundImageUri"), L"");
+            if (!path.empty())
+            {
+                try
+                {
+                    BitmapImage image{};
+                    image.UriSource(Uri(path));
+                    BackgroundImage().Source(image);
+                }
+                catch (const hresult_access_denied&)
+                {
+                    WindowMessageBar().EnqueueMessage(L"Failed to load background image.");
+                }
             }
         }
     }
@@ -740,8 +759,9 @@ namespace winrt::SND_Vol::implementation
 
                     try
                     {
-                        float volume = mainAudioEndpoint->GetPeak();
-                        LeftVolumeAnimation().To(static_cast<double>(volume));
+                        pair<float, float> peakValues = mainAudioEndpoint->GetPeaks();
+                        LeftVolumeAnimation().To(static_cast<double>(peakValues.first));
+                        RightVolumeAnimation().To(static_cast<double>(peakValues.second));
                         VolumeStoryboard().Begin();
                     }
                     catch (const hresult_error&)
@@ -805,9 +825,9 @@ namespace winrt::SND_Vol::implementation
         view.VolumeStateChanged({ this, &MainWindow::AudioSessionView_VolumeStateChanged });
         view.Hidden([this](AudioSessionView sender, auto)
         {
-        #ifdef DEBUG
+#ifdef DEBUG
             
-        #else
+#else
             for (auto const& view : audioSessionViews)
             {
                 if (view.Id() == sender.Id())
@@ -821,7 +841,7 @@ namespace winrt::SND_Vol::implementation
                     return;
                 }
             }
-        #endif // DEBUG
+#endif // DEBUG
 
         });
 
@@ -868,13 +888,12 @@ namespace winrt::SND_Vol::implementation
             ApplicationData::Current().LocalSettings().Containers().HasKey(L"AudioLevels") ? ApplicationDataCreateDisposition::Existing : ApplicationDataCreateDisposition::Always
         );
 
-        // TODO: Check if i need to take the mutex or not.
-        for (size_t i = 0; i < audioSessions->size(); i++)
+        for (size_t i = 0; i < audioSessionViews.Size(); i++) // Only saving the visible audio sessions levels.
         {
             ApplicationDataCompositeValue compositeValue{};
-            compositeValue.Insert(L"Muted", box_value(audioSessions->at(i)->Muted()));
-            compositeValue.Insert(L"Level", box_value(audioSessions->at(i)->Volume()));
-            audioLevels.Values().Insert(audioSessions->at(i)->Name(), compositeValue);
+            compositeValue.Insert(L"Muted", box_value(audioSessionViews.GetAt(i).Muted()));
+            compositeValue.Insert(L"Level", box_value(audioSessionViews.GetAt(i).Volume()));
+            audioLevels.Values().Insert(audioSessionViews.GetAt(i).Header(), compositeValue);
         }
     }
 
@@ -988,7 +1007,7 @@ namespace winrt::SND_Vol::implementation
         auto&& presenter = appWindow.Presenter().as<OverlappedPresenter>();
 
         bool alwaysOnTop = unbox_value_or(settings.TryLookup(L"IsAlwaysOnTop"), true);
-        bool additionalButtons = unbox_value_or(settings.TryLookup(L"ShowAdditionalWindowButtons"), false);
+        bool additionalButtons = unbox_value_or(settings.TryLookup(L"ShowAdditionalWindowButtons"), true);
         OverlappedPresenterState presenterState = static_cast<OverlappedPresenterState>(unbox_value_or(settings.TryLookup(L"PresenterState"), 2));
         switch (presenterState)
         {
@@ -1069,6 +1088,7 @@ namespace winrt::SND_Vol::implementation
                     hstring name = profile.Key();
                     if (name == profileName)
                     {
+#pragma region Basic profile stuff
                         AudioProfile audioProfile{};
                         audioProfile.Restore(profile.Value()); // If the restore fails, the next instructions will not be ran.
                         currentAudioProfile = move(audioProfile);
@@ -1084,10 +1104,7 @@ namespace winrt::SND_Vol::implementation
                         uint32_t windowLayout = currentAudioProfile.Layout();
 
                         // Set system volume.
-                        if (mainAudioEndpoint)
-                        {
-                            mainAudioEndpoint->SetVolume(systemVolume);
-                        }
+                        mainAudioEndpoint->SetVolume(systemVolume);
 
                         // Set audio sessions volume.
                         {
@@ -1148,13 +1165,32 @@ namespace winrt::SND_Vol::implementation
                                 AutoViewMenuFlyoutItem_Click(nullptr, nullptr);
                                 break;
                         }
+#pragma endregion
 
-#ifdef DEBUG
+#if FALSE & defined DEBUG
                         AudioSessionsPanel().ItemsSource(nullptr);
+                        audioSessionViews.Clear();
 
-                        auto indexes = currentAudioProfile.SessionsIndexes();
+                        // TODO: There is a bug where an AudioSession can fire an event while we are loading the profile, and because we are changing the audioSessionViews collection, the iterator breaks.
+                        vector<AudioSession*>* currentAudioSessions = audioController->GetSessions();
+                        int hitcount = 0;
+                        for (size_t j = 0; j < currentAudioSessions->size(); j++)
+                        {
+                            if (audioSessions->at(j)->GroupingParam() == audioSession->GroupingParam())
+                            {
+                                if (hitcount > 1)
+                                {
+                                    return;
+                                }
+                                hitcount++;
+                            }
+                        }
+
+
+
+                        /*auto indexes = currentAudioProfile.SessionsIndexes();
                         auto&& views = vector<AudioSessionView>(audioSessionViews.Size(), nullptr);
-                        for (size_t i = 0; i < audioSessionViews.Size(); i++)
+                        for (size_t i = 0; i < currentAudioSessions->size(); i++)
                         {
                             auto view = audioSessionViews.GetAt(i);
                             auto opt = indexes.TryLookup(view.Header());
@@ -1199,7 +1235,7 @@ namespace winrt::SND_Vol::implementation
                             }
                         }
                         
-                        audioSessionViews = multi_threaded_observable_vector<AudioSessionView>(move(views));
+                        audioSessionViews = multi_threaded_observable_vector<AudioSessionView>(move(views));*/
                         // HACK: Can we use INotifyPropertyChanged to raise that the vector has changed ?
                         AudioSessionsPanel().ItemsSource(audioSessionViews);
 #endif // DEBUG
@@ -1336,8 +1372,8 @@ namespace winrt::SND_Vol::implementation
                     AudioSession* session = audioSessions->at(i);
                     session->Unregister();
                     session->Release();
-
                     audioSessions->erase(audioSessions->begin() + i);
+                    break;
                 }
             }
 
@@ -1370,6 +1406,11 @@ namespace winrt::SND_Vol::implementation
                             if (audioSessionViews.IndexOf(view, indexOf))
                             {
                                 audioSessionViews.RemoveAt(indexOf);
+
+                                if (audioSessionViews.Size() == 0)
+                                {
+                                    WindowMessageBar().EnqueueMessage(L"All sessions expired.");
+                                }
                             }
                             break;
                     }

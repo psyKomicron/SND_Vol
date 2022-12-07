@@ -7,394 +7,402 @@
     mc:Ignorable="d"
     Activated="Window_Activated">
 
-    <Grid x:Name="RootGrid" Background="{ThemeResource SolidBackgroundFillColorSecondary}" SizeChanged="Grid_SizeChanged">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Grid.Resources>
-            <Style x:Key="GridViewHorizontalLayout" TargetType="GridView">
-                <Setter Property="ItemsPanel">
-                    <Setter.Value>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
+    <Grid x:Name="RootGrid" SizeChanged="Grid_SizeChanged">
+        
+        <Image x:Name="BackgroundImage" Grid.RowSpan="2" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-            <Style x:Key="GridViewVerticalLayout" TargetType="GridView">
-                <Setter Property="ItemsPanel">
-                    <Setter.Value>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-        </Grid.Resources>
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState x:Name="Normal"/>
-
-                <VisualState x:Name="Below200Width">
-                    <VisualState.Setters>
-                        <Setter Target="MuteToggleButton.Visibility" Value="Collapsed"/>
-                        <Setter Target="SystemVolumeSliderText.Visibility" Value="Collapsed"/>
-                    </VisualState.Setters>
-                </VisualState>
-
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-
-        <Grid x:Name="TitleBarGrid" MinHeight="32">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
-                <ColumnDefinition x:Name="SettingsButtonColumn" Width="Auto"/>
-                <ColumnDefinition x:Name="TitleBarGridContentColumn" Width="*"/>
-                <ColumnDefinition x:Name="RightPaddingColumn" Width="45"/>
-            </Grid.ColumnDefinitions>
-
-            <Button
-                x:Name="SettingsButton"
-                Grid.Column="1"
-                Background="Transparent"
-                BorderThickness="0"
-                Padding="8,7"
-                Margin="3,4"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center">
-                <Viewbox Height="16">
-                    <FontIcon Glyph="&#xe712;"/>
-                </Viewbox>
-
-                <Button.Flyout>
-                    <MenuFlyout ShowMode="Transient" Opening="MenuFlyout_Opening">
-
-                        <MenuFlyoutSubItem 
-                            x:Name="ProfilesMenuFlyoutItem" 
-                            Text="Profiles"/>
-
-                        <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
-                            <ToggleMenuFlyoutItem
-                                x:Uid="MainWindowKeepOnTopToggleMenuFlyoutItem"
-                                x:Name="KeepOnTopToggleMenuFlyoutItem"
-                                Click="KeepOnTopToggleMenuFlyoutItem_Click"/>
-                            <ToggleMenuFlyoutItem 
-                                x:Uid="MainWindowDisableAnimationsMenuFlyoutItem"
-                                x:Name="DisableAnimationsMenuFlyoutItem"
-                                Click="DisableAnimationsToggleMenuFlyoutItem_Click"/>
-                            <ToggleMenuFlyoutItem 
-                                x:Uid="MainWindowSwitchPresenterStyleMenuFlyoutItem"
-                                x:Name="SwitchPresenterStyleMenuFlyoutItem"
-                                Click="SwitchPresenterStyleMenuFlyoutItem_Click"/>
-                            <ToggleMenuFlyoutItem
-                                x:Uid="MainWindowShowAppBarMenuFlyoutItem"
-                                x:Name="ShowAppBarMenuFlyoutItem"
-                                Click="ShowAppBarMenuFlyoutItem_Click"/>
-                        </MenuFlyoutSubItem>
-
-                        <MenuFlyoutSubItem x:Uid="MainWindowLayoutMenuFlyoutItem">
-                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemHorizontal" Click="HorizontalViewMenuFlyoutItem_Click"/>
-                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemVertical" Click="VerticalViewMenuFlyoutItem_Click"/>
-                            <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
-                        </MenuFlyoutSubItem>
-
-                        <MenuFlyoutSeparator/>
-
-                        <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="H" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="M" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="R" Modifiers="Control"/>
-                            </MenuFlyoutItem.KeyboardAccelerators>
-                        </MenuFlyoutItem>
-
-                        <MenuFlyoutItem x:Uid="MainWindowDisableHotKeysMenuFlyoutItem" Click="DisableHotKeysMenuFlyoutItem_Click"/>
-
-                        <MenuFlyoutSeparator/>
-
-                        <MenuFlyoutItem x:Uid="MainWindowSettingsMenuFlyoutItem" x:Name="SettingsMenuFlyoutItem" Click="SettingsMenuFlyoutItem_Click"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-
-            <TextBlock 
-                x:Name="MainEndpointNameTextBlock" 
-                Grid.Column="2"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Opacity="0.5"
-                TextWrapping="Wrap"
-                MaxLines="2"
-                VerticalAlignment="Center"
-                Margin="0,2,0,2">
-                <TextBlock.Transitions>
-                    <TransitionCollection>
-                        <RepositionThemeTransition/>
-                    </TransitionCollection>
-                </TextBlock.Transitions>
-            </TextBlock>
-        </Grid>
-
-        <Grid x:Name="ContentGrid" Grid.Row="2" Margin="0,-3,0,0" Visibility="Collapsed">
+        <Grid x:Name="WindowGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="1"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+            <Grid.Background>
+                <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorBase}" Opacity="0.6"/>
+            </Grid.Background>
+            <Grid.Resources>
+                <Style x:Key="GridViewHorizontalLayout" TargetType="GridView">
+                    <Setter Property="ItemsPanel">
+                        <Setter.Value>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
 
-            <Grid Grid.Row="0" Margin="5,0,5,3" ColumnSpacing="3">
+                <Style x:Key="GridViewVerticalLayout" TargetType="GridView">
+                    <Setter Property="ItemsPanel">
+                        <Setter.Value>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Grid.Resources>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="Normal"/>
+
+                    <VisualState x:Name="Below200Width">
+                        <VisualState.Setters>
+                            <Setter Target="MuteToggleButton.Visibility" Value="Collapsed"/>
+                            <Setter Target="SystemVolumeSliderText.Visibility" Value="Collapsed"/>
+                        </VisualState.Setters>
+                    </VisualState>
+
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+
+            <Grid x:Name="TitleBarGrid" MinHeight="32">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="MuteToggleButtonColumn" Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition x:Name="SystemVolumeSliderTextColumn" Width="26"/>
+                    <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                    <ColumnDefinition x:Name="SettingsButtonColumn" Width="Auto"/>
+                    <ColumnDefinition x:Name="TitleBarGridContentColumn" Width="*"/>
+                    <ColumnDefinition x:Name="RightPaddingColumn" Width="45"/>
                 </Grid.ColumnDefinitions>
-                <Grid.Resources>
-                    <Storyboard x:Name="VolumeStoryboard">
-                        <DoubleAnimation 
-                            x:Name="LeftVolumeAnimation"
-                            Storyboard.TargetName="BorderLeftClippingCompositeTransform"
-                            Storyboard.TargetProperty="ScaleX"
-                            To="0"
-                            Duration="{StaticResource AudioMeterAnimationDuration}"/>
 
-                        <DoubleAnimation 
-                            x:Name="RightVolumeAnimation"
-                            Storyboard.TargetName="BorderRightClippingCompositeTransform"
-                            Storyboard.TargetProperty="ScaleX"
-                            To="0"
-                            Duration="{StaticResource AudioMeterAnimationDuration}"/>
-                    </Storyboard>
-                </Grid.Resources>
-
-                <ToggleButton
-                    x:Name="MuteToggleButton"
-                    Style="{StaticResource MuteToggleButtonStyle}"
-                    Click="MuteToggleButton_Click">
-
-                    <FontIcon x:Name="MuteToggleButtonFontIcon" Glyph="&#xe767;" FontSize="{StaticResource FontIconHeight}"/>
-                </ToggleButton>
-
-                <Border 
-                    x:Name="SystemVolumeActivityBorderLeft"
+                <Button
+                    x:Name="SettingsButton"
                     Grid.Column="1"
-                    Background="{StaticResource AudioMeterReversedBackground}"
-                    Opacity="0.5"
-                    Height="6"
-                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="8,7"
+                    Margin="3,4"
                     HorizontalAlignment="Stretch"
-                    Translation="0,-6,0"
-                    SizeChanged="SystemVolumeActivityBorder_SizeChanged">
-                    <Border.Clip>
-                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingLeft">
-                            <RectangleGeometry.Transform>
-                                <CompositeTransform x:Name="BorderLeftClippingCompositeTransform" ScaleX="0"/>
-                            </RectangleGeometry.Transform>
-                        </RectangleGeometry>
-                    </Border.Clip>
-                </Border>
+                    VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center">
+                    <Viewbox Height="16">
+                        <FontIcon Glyph="&#xe712;"/>
+                    </Viewbox>
 
-                <Slider 
-                    x:Name="SystemVolumeSlider"
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    ValueChanged="SystemVolumeSlider_ValueChanged">
-                    <Slider.Transitions>
-                        <TransitionCollection>
-                            <RepositionThemeTransition IsStaggeringEnabled="False"/>
-                        </TransitionCollection>
-                    </Slider.Transitions>
-                </Slider>
+                    <Button.Flyout>
+                        <MenuFlyout ShowMode="Transient" Opening="MenuFlyout_Opening">
 
-                <Border 
-                    x:Name="SystemVolumeActivityBorderRight"
-                    Grid.Column="1"
-                    Background="{StaticResource AudioMeterReversedBackground}"
-                    Opacity="0.5"
-                    Height="6"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Stretch"
-                    Translation="0,-6,0">
-                    <Border.Clip>
-                        <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingRight">
-                            <RectangleGeometry.Transform>
-                                <CompositeTransform x:Name="BorderRightClippingCompositeTransform" ScaleX="0"/>
-                            </RectangleGeometry.Transform>
-                        </RectangleGeometry>
-                    </Border.Clip>
-                </Border>
+                            <MenuFlyoutSubItem 
+                                x:Name="ProfilesMenuFlyoutItem" 
+                                Text="Profiles"/>
 
-                <TextBlock
-                    x:Name="SystemVolumeSliderText"
+                            <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
+                                <ToggleMenuFlyoutItem
+                                    x:Uid="MainWindowKeepOnTopToggleMenuFlyoutItem"
+                                    x:Name="KeepOnTopToggleMenuFlyoutItem"
+                                    Click="KeepOnTopToggleMenuFlyoutItem_Click"/>
+                                <ToggleMenuFlyoutItem 
+                                    x:Uid="MainWindowDisableAnimationsMenuFlyoutItem"
+                                    x:Name="DisableAnimationsMenuFlyoutItem"
+                                    Click="DisableAnimationsToggleMenuFlyoutItem_Click"/>
+                                <ToggleMenuFlyoutItem 
+                                    x:Uid="MainWindowSwitchPresenterStyleMenuFlyoutItem"
+                                    x:Name="SwitchPresenterStyleMenuFlyoutItem"
+                                    Click="SwitchPresenterStyleMenuFlyoutItem_Click"/>
+                                <ToggleMenuFlyoutItem
+                                    x:Uid="MainWindowShowAppBarMenuFlyoutItem"
+                                    x:Name="ShowAppBarMenuFlyoutItem"
+                                    Click="ShowAppBarMenuFlyoutItem_Click"/>
+                            </MenuFlyoutSubItem>
+
+                            <MenuFlyoutSubItem x:Uid="MainWindowLayoutMenuFlyoutItem">
+                                <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemHorizontal" Click="HorizontalViewMenuFlyoutItem_Click"/>
+                                <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemVertical" Click="VerticalViewMenuFlyoutItem_Click"/>
+                                <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
+                            </MenuFlyoutSubItem>
+
+                            <MenuFlyoutSeparator/>
+
+                            <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
+                                <MenuFlyoutItem.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="H" Modifiers="Control"/>
+                                </MenuFlyoutItem.KeyboardAccelerators>
+                            </MenuFlyoutItem>
+
+                            <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
+                                <MenuFlyoutItem.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
+                                </MenuFlyoutItem.KeyboardAccelerators>
+                            </MenuFlyoutItem>
+
+                            <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
+                                <MenuFlyoutItem.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="M" Modifiers="Control"/>
+                                </MenuFlyoutItem.KeyboardAccelerators>
+                            </MenuFlyoutItem>
+
+                            <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
+                                <MenuFlyoutItem.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="R" Modifiers="Control"/>
+                                </MenuFlyoutItem.KeyboardAccelerators>
+                            </MenuFlyoutItem>
+
+                            <MenuFlyoutItem x:Uid="MainWindowDisableHotKeysMenuFlyoutItem" Click="DisableHotKeysMenuFlyoutItem_Click"/>
+
+                            <MenuFlyoutSeparator/>
+
+                            <MenuFlyoutItem x:Uid="MainWindowSettingsMenuFlyoutItem" x:Name="SettingsMenuFlyoutItem" Click="SettingsMenuFlyoutItem_Click"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+
+                <TextBlock 
+                    x:Name="MainEndpointNameTextBlock" 
                     Grid.Column="2"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    TextWrapping="Wrap"
+                    MaxLines="2"
                     VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                    FontWeight="SemiBold"/>
+                    Margin="0,2,0,2">
+                    <TextBlock.Transitions>
+                        <TransitionCollection>
+                            <RepositionThemeTransition/>
+                        </TransitionCollection>
+                    </TextBlock.Transitions>
+                </TextBlock>
             </Grid>
 
-            <Border
-                Grid.Row="1"
-                Background="{ThemeResource SubtleFillColorSecondaryBrush}"/>
-            
-            <Grid
-                x:Name="AppBarGrid"
-                Grid.Row="1"
-                ColumnSpacing="10"
-                Padding="5,4"
-                MaxWidth="400"
-                Visibility="Collapsed">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Grid.Resources>
-                    <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}"/>
-                    <Style TargetType="FontIcon">
-                        <Setter Property="FontSize" Value="13"/>
-                    </Style>
-                </Grid.Resources>
-
-                <Button>
-                    <FontIcon Glyph="&#xe72c;"/>
-                </Button>
-
-                <Button Grid.Column="1">
-                    <FontIcon Glyph="&#xe74f;"/>
-                </Button>
-
-                <Button Grid.Column="2">
-                    <FontIcon Glyph="&#xe7b3;"/>
-                </Button>
-
-                <Button Grid.Column="3">
-                    <FontIcon Glyph="&#xf4a5;"/>
-                </Button>
-            </Grid>
-            
-            <Border Height="1" Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="2"/>
-
-            <Grid Grid.Row="3" Margin="0,5,0,0">
+            <Grid x:Name="ContentGrid" Grid.Row="1" Margin="0,-3,0,0" Visibility="Collapsed">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                
-                <ScrollViewer 
-                    x:Name="AudioSessionsScrollViewer"
-                    Padding="3,0,0,0" 
-                    Grid.Row="1"
-                    HorizontalScrollBarVisibility="Disabled">
 
-                    <GridView
-                        x:Name="AudioSessionsPanel"
-                        ItemsSource="{x:Bind AudioSessions}"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Margin="0,0,0,-7"
-                        SelectionMode="None"
-                        CanReorderItems="True"
-                        ReorderMode="Enabled"
-                        AllowDrop="True"
-                        Grid.Row="1"
-                        Loading="AudioSessionsPanel_Loading"
-                        Loaded="OnLoaded">
-                        <GridView.Resources>
-                            <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
-                                <Setter Property="AllowDrop" Value="False" />
-                            </Style>
-                        </GridView.Resources>
-                    </GridView>
-                </ScrollViewer>
-
-                <snd_vol:MessageBar
-                    x:Name="WindowMessageBar"
-                    Grid.Row="0" 
-                    VerticalAlignment="Top"
-                    Visibility="Collapsed"
-                    Margin="5,3"/>
-            </Grid>
-        </Grid>
-
-        <snd_vol:SplashScreen
-            x:Name="WindowSplashScreen"
-            Grid.Row="2"
-            OnScreenTimeSpan="0:0:01"
-            Dismissed="SplashScreen_Dismissed">
-            <snd_vol:SplashScreen.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="0.6" ColorInterpolationMode="SRgbLinearInterpolation" MappingMode="RelativeToBoundingBox" SpreadMethod="Pad">
-                    <LinearGradientBrush.GradientStops>
-                        <GradientStop Color="{ThemeResource SolidBackgroundFillColorSecondary}" Offset="0.2"/>
-                        <GradientStop Color="{ThemeResource SystemAccentColorDark1}" Offset="2.5"/>
-                    </LinearGradientBrush.GradientStops>
-                </LinearGradientBrush>
-            </snd_vol:SplashScreen.Background>
-            
-            <snd_vol:SplashScreen.TopContent>
-                <Grid VerticalAlignment="Top">
+                <Grid Grid.Row="0" Margin="5,0,5,3" ColumnSpacing="3">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition x:Name="MuteToggleButtonColumn" Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition x:Name="SystemVolumeSliderTextColumn" Width="26"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.Resources>
+                        <Storyboard x:Name="VolumeStoryboard">
+                            <DoubleAnimation 
+                                x:Name="LeftVolumeAnimation"
+                                Storyboard.TargetName="BorderLeftClippingCompositeTransform"
+                                Storyboard.TargetProperty="ScaleX"
+                                To="0"
+                                Duration="{StaticResource AudioMeterAnimationDuration}"/>
 
-                    <TextBlock Text="Croak" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="ApplicationVersionTextBlock" Style="{StaticResource TitleTextBlockStyle}" Grid.Column="1" VerticalAlignment="Center"/>
+                            <DoubleAnimation 
+                                x:Name="RightVolumeAnimation"
+                                Storyboard.TargetName="BorderRightClippingCompositeTransform"
+                                Storyboard.TargetProperty="ScaleX"
+                                To="0"
+                                Duration="{StaticResource AudioMeterAnimationDuration}"/>
+                        </Storyboard>
+                    </Grid.Resources>
+
+                    <ToggleButton
+                        x:Name="MuteToggleButton"
+                        Style="{StaticResource MuteToggleButtonStyle}"
+                        Click="MuteToggleButton_Click">
+
+                        <FontIcon x:Name="MuteToggleButtonFontIcon" Glyph="&#xe767;" FontSize="{StaticResource FontIconHeight}"/>
+                    </ToggleButton>
+
+                    <Border 
+                        x:Name="SystemVolumeActivityBorderLeft"
+                        Grid.Column="1"
+                        Background="{StaticResource AudioMeterReversedBackground}"
+                        Opacity="{StaticResource PeakBorderOpacity}"
+                        Height="6"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Translation="0,-6,0"
+                        SizeChanged="SystemVolumeActivityBorder_SizeChanged">
+                        <Border.Clip>
+                            <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingLeft">
+                                <RectangleGeometry.Transform>
+                                    <CompositeTransform x:Name="BorderLeftClippingCompositeTransform" ScaleX="0"/>
+                                </RectangleGeometry.Transform>
+                            </RectangleGeometry>
+                        </Border.Clip>
+                    </Border>
+
+                    <Slider 
+                        x:Name="SystemVolumeSlider"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        ValueChanged="SystemVolumeSlider_ValueChanged">
+                        <Slider.Transitions>
+                            <TransitionCollection>
+                                <RepositionThemeTransition IsStaggeringEnabled="False"/>
+                            </TransitionCollection>
+                        </Slider.Transitions>
+                    </Slider>
+
+                    <Border 
+                        x:Name="SystemVolumeActivityBorderRight"
+                        Grid.Column="1"
+                        Background="{StaticResource AudioMeterReversedBackground}"
+                        Opacity="{StaticResource PeakBorderOpacity}"
+                        Height="6"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Translation="0,6,0">
+                        <Border.Clip>
+                            <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingRight">
+                                <RectangleGeometry.Transform>
+                                    <CompositeTransform x:Name="BorderRightClippingCompositeTransform" ScaleX="0"/>
+                                </RectangleGeometry.Transform>
+                            </RectangleGeometry>
+                        </Border.Clip>
+                    </Border>
+
+                    <TextBlock
+                        x:Name="SystemVolumeSliderText"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        FontSize="14"
+                        FontWeight="SemiBold"/>
                 </Grid>
-            </snd_vol:SplashScreen.TopContent>
 
-            <snd_vol:SplashScreen.MainContent>
-                <Viewbox MaxHeight="80" MaxWidth="80">
-                    <FontIcon Glyph="&#xe767;"/>
-                </Viewbox>
-            </snd_vol:SplashScreen.MainContent>
+                <Border
+                    Grid.Row="1"
+                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+            
+                <Grid
+                    x:Name="AppBarGrid"
+                    Grid.Row="1"
+                    ColumnSpacing="10"
+                    Padding="5,4"
+                    MaxWidth="400"
+                    Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.Resources>
+                        <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}"/>
+                        <Style TargetType="FontIcon">
+                            <Setter Property="FontSize" Value="13"/>
+                        </Style>
+                    </Grid.Resources>
 
-            <snd_vol:SplashScreen.BottomContent>
-                <TextBlock Text="by psykomicron 🐢" FontStretch="UltraExpanded" Opacity="0.6"/>
-            </snd_vol:SplashScreen.BottomContent>
-        </snd_vol:SplashScreen>
+                    <Button>
+                        <FontIcon Glyph="&#xe72c;"/>
+                    </Button>
 
-        <TeachingTip
-            x:Name="SettingsButtonTeachingTip" 
-            PlacementMargin="3"
-            PreferredPlacement="Auto"
-            IsLightDismissEnabled="True">
+                    <Button Grid.Column="1">
+                        <FontIcon Glyph="&#xe74f;"/>
+                    </Button>
 
-            <TeachingTip.Content>
-                <Grid RowSpacing="15" Padding="0,10,0,0">
+                    <Button Grid.Column="2">
+                        <FontIcon Glyph="&#xe7b3;"/>
+                    </Button>
+
+                    <Button Grid.Column="3">
+                        <FontIcon Glyph="&#xf4a5;"/>
+                    </Button>
+                </Grid>
+            
+                <Border Height="1" Background="{ThemeResource SystemControlForegroundBaseLowBrush}" Grid.Row="2"/>
+
+                <Grid Grid.Row="3" Margin="0,5,0,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+                
+                    <ScrollViewer 
+                        x:Name="AudioSessionsScrollViewer"
+                        Padding="3,0,0,0" 
+                        Grid.Row="1"
+                        HorizontalScrollBarVisibility="Disabled">
 
-                    <TextBlock x:Uid="MainWindowTeachingTipViewSettingsTextBlock" TextWrapping="Wrap"/>
+                        <GridView
+                            x:Name="AudioSessionsPanel"
+                            ItemsSource="{x:Bind AudioSessions}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="0,0,0,-7"
+                            SelectionMode="None"
+                            CanReorderItems="True"
+                            ReorderMode="Enabled"
+                            AllowDrop="True"
+                            Grid.Row="1"
+                            Loading="AudioSessionsPanel_Loading"
+                            Loaded="OnLoaded">
+                            <GridView.Resources>
+                                <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                                    <Setter Property="AllowDrop" Value="False" />
+                                </Style>
+                            </GridView.Resources>
+                        </GridView>
+                    </ScrollViewer>
 
-                    <StackPanel Grid.Row="1" Spacing="10">
-                        <TextBlock x:Uid="MainWindowTeachingTipViewHotkeysTextBlock" TextWrapping="Wrap"/>
-
-                        <HyperlinkButton x:Uid="MainWindowTeachingTipViewHotkeysHyperlinkButton" Click="ViewHotKeysHyperlinkButton_Click"/>
-                    </StackPanel>
+                    <snd_vol:MessageBar
+                        x:Name="WindowMessageBar"
+                        Grid.Row="0" 
+                        VerticalAlignment="Top"
+                        Visibility="Collapsed"
+                        Margin="5,3"/>
                 </Grid>
-            </TeachingTip.Content>
-        </TeachingTip>
+            </Grid>
+
+            <snd_vol:SplashScreen
+                x:Name="WindowSplashScreen"
+                Grid.Row="2"
+                OnScreenTimeSpan="0:0:01"
+                Dismissed="SplashScreen_Dismissed">
+                <snd_vol:SplashScreen.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="0.6" ColorInterpolationMode="SRgbLinearInterpolation" MappingMode="RelativeToBoundingBox" SpreadMethod="Pad">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="{ThemeResource SolidBackgroundFillColorSecondary}" Offset="0.2"/>
+                            <GradientStop Color="{ThemeResource SystemAccentColorDark1}" Offset="2.5"/>
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </snd_vol:SplashScreen.Background>
+            
+                <snd_vol:SplashScreen.TopContent>
+                    <Grid VerticalAlignment="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Croak" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="ApplicationVersionTextBlock" Style="{StaticResource TitleTextBlockStyle}" Grid.Column="1" VerticalAlignment="Center"/>
+                    </Grid>
+                </snd_vol:SplashScreen.TopContent>
+
+                <snd_vol:SplashScreen.MainContent>
+                    <Viewbox MaxHeight="80" MaxWidth="80">
+                        <FontIcon Glyph="&#xe767;"/>
+                    </Viewbox>
+                </snd_vol:SplashScreen.MainContent>
+
+                <snd_vol:SplashScreen.BottomContent>
+                    <TextBlock Text="by psykomicron 🐢" FontStretch="UltraExpanded" Opacity="0.6"/>
+                </snd_vol:SplashScreen.BottomContent>
+            </snd_vol:SplashScreen>
+
+            <TeachingTip
+                x:Name="SettingsButtonTeachingTip" 
+                PlacementMargin="3"
+                PreferredPlacement="Auto"
+                IsLightDismissEnabled="True">
+
+                <TeachingTip.Content>
+                    <Grid RowSpacing="15" Padding="0,10,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock x:Uid="MainWindowTeachingTipViewSettingsTextBlock" TextWrapping="Wrap"/>
+
+                        <StackPanel Grid.Row="1" Spacing="10">
+                            <TextBlock x:Uid="MainWindowTeachingTipViewHotkeysTextBlock" TextWrapping="Wrap"/>
+
+                            <HyperlinkButton x:Uid="MainWindowTeachingTipViewHotkeysHyperlinkButton" Click="ViewHotKeysHyperlinkButton_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </TeachingTip.Content>
+            </TeachingTip>
+        </Grid>
     </Grid>
+    
 </Window>
