@@ -19,7 +19,7 @@ namespace winrt::SND_Vol::implementation
         InitializeComponent();
 
         timer = DispatcherQueue().CreateTimer();
-        auto duration = (Application::Current().Resources().Lookup(box_value(L"MessageBarIntervalSeconds")).as<int32_t>() * 1000) + 300;
+        auto duration = (Application::Current().Resources().Lookup(box_value(L"MessageBarIntervalSeconds")).as<int32_t>() * 1000) + 150;
         timer.Interval(
             std::chrono::milliseconds(duration)
         );
@@ -72,8 +72,11 @@ namespace winrt::SND_Vol::implementation
             else
             {
                 timer.Stop();
-                Visibility(Visibility::Collapsed);
-                MainContentTextBlock().Text(L"");
+                // Hide the control.
+                //Visibility(Visibility::Collapsed);
+                //MainContentTextBlock().Text(L"");
+
+                VisualStateManager::GoToState(*this, L"Collapsed", true);
             }
         }
 
@@ -81,7 +84,9 @@ namespace winrt::SND_Vol::implementation
         {
             if (Visibility() == Visibility::Collapsed)
             {
-                Visibility(Visibility::Visible);
+                // Show the control.
+                //Visibility(Visibility::Visible);
+                VisualStateManager::GoToState(*this, L"Visible", true);
             }
 
             MainContentTextBlock().Text(message);
