@@ -219,6 +219,9 @@ le son</value>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
     <value>- Afficher les paramètres, les fonctions de l'application, modifier la disposition des éléments et personnaliser l'affichage.</value>
   </data>
+  <data name="SecondWindowTitle" xml:space="preserve">
+    <value>Paramètres (Croak)</value>
+  </data>
   <data name="SettingsAboutThisAppTextBlock.Text" xml:space="preserve">
     <value>A propos de cette application</value>
   </data>

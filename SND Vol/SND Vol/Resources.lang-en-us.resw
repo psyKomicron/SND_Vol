@@ -151,7 +151,7 @@
     <value>Audio sessions reloaded</value>
   </data>
   <data name="InfoHotKeysDisabled" xml:space="preserve">
-    <value>Hot keys enabled</value>
+    <value>Hot keys disabled</value>
   </data>
   <data name="InfoHotKeysEnabled" xml:space="preserve">
     <value>Hot keys enabled</value>
@@ -219,6 +219,9 @@ unmute all</value>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
     <value>- View settings, app actions, change items layout customize display.</value>
   </data>
+  <data name="SecondWindowTitle" xml:space="preserve">
+    <value>Croak settings</value>
+  </data>
   <data name="SettingsAboutThisAppTextBlock.Text" xml:space="preserve">
     <value>About this app</value>
   </data>
@@ -226,7 +229,7 @@ unmute all</value>
     <value>Croak by psyKomicron</value>
   </data>
   <data name="SettingsNewContentTextBlock.Text" xml:space="preserve">
-    <value>News</value>
+    <value>What's new</value>
   </data>
   <data name="SettingsOtherLinksTextBlock.Text" xml:space="preserve">
     <value>Other links</value>
