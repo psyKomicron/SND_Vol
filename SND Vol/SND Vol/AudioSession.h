@@ -7,9 +7,8 @@ namespace Audio
     class AudioSession : private IAudioSessionEvents, public IComEventImplementation
     {
     public:
-        AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId, uint32_t channel);
+        AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId);
 
-        uint32_t Channel();
         GUID GroupingParam();
         bool IsSystemSoundSession();
         GUID Id();
@@ -102,7 +101,6 @@ namespace Audio
         DWORD processPID = 0;
         ::winrt::impl::atomic_ref_count refCount{ 1 };
         winrt::hstring sessionName{};
-        uint32_t channel;
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float>> e_volumeChanged{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t>> e_stateChanged{};

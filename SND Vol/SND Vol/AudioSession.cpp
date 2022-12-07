@@ -13,15 +13,14 @@ using namespace std;
 
 namespace Audio
 {
-    AudioSession::AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId, uint32_t channel) :
-        eventContextId(eventContextId),
-        sessionName(L"Unknown"),
-        channel(channel),
+    AudioSession::AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId) :
+        eventContextId{ eventContextId },
+        sessionName{ L"Unknown" },
         audioSessionControl{ audioSessionControl }
     {
         check_bool(UuidCreate(&id) == 0);
         check_hresult(audioSessionControl->GetGroupingParam(&groupingParam));
-        check_hresult(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&simpleAudioVolume));
+
 
         if (audioSessionControl->IsSystemSoundsSession() == S_OK)
         {
@@ -64,6 +63,7 @@ namespace Audio
             }
         }
 
+        check_hresult(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&simpleAudioVolume));
         if (FAILED(simpleAudioVolume->GetMute((BOOL*)&muted)))
         {
             OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get session state. Default (unmuted) assumed.");
@@ -77,11 +77,6 @@ namespace Audio
 
 
     #pragma region Properties
-    uint32_t AudioSession::Channel()
-    {
-        return channel;
-    }
-
     GUID AudioSession::GroupingParam()
     {
         return groupingParam;
@@ -181,7 +176,7 @@ namespace Audio
         UINT meteringChannelCount = 0;
         if (SUCCEEDED(audioMeter->GetMeteringChannelCount(&meteringChannelCount)) && meteringChannelCount == 2) 
         {
-            float channelsPeak[2](0);
+            float channelsPeak[2]{ 0 };
             check_hresult(audioMeter->GetChannelsPeakValues(2, channelsPeak));
             peaks.first = channelsPeak[0];
             peaks.second = channelsPeak[1];
