@@ -6,6 +6,7 @@
 
 #include <winrt/Windows.UI.Core.h>
 #include "HotKeyViewModel.h"
+using namespace winrt::Windows::ApplicationModel::Resources;
 
 
 using namespace winrt;
@@ -126,7 +127,7 @@ namespace winrt::SND_Vol::implementation
             }
 
             appWindow.MoveAndResize(RectInt32(lastPosition.X, lastPosition.Y, width, height));
-            appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>() + L"(hotkeys)");
+            appWindow.Title(ResourceLoader().GetString(L"SecondWindowTitle"));
             appWindowClosingEventToken = appWindow.Closing({ this, &SecondWindow::AppWindow_Closing });
 
             if (appWindow.TitleBar().IsCustomizationSupported())

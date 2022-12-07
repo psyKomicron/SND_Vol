@@ -12,5 +12,6 @@ namespace SND_Vol
 
         IObservableVector<NavigationBreadcrumbBarItem> Breadcrumbs{ get; };
         Windows.Graphics.RectInt32 DisplayRect{ get; };
+        Microsoft.UI.WindowId Id{ get; };
     }
 }
