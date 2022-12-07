@@ -73,9 +73,10 @@ namespace Audio
 		bool Unregister();
 		/**
 		 * @brief Gets the current peak PCM value for the audio endpoint.
-		 * @return the current peak PCM value ∈ [0, 1]
+		 * @return The current peak PCM value ∈ [0, 1]
 		*/
 		float GetPeak() const;
+		std::pair<float, float> GetPeaks();
 		/**
 		 * @brief Sets the audio endpoint muted or unmuted.
 		 * @param mute true to mute, false to unmute

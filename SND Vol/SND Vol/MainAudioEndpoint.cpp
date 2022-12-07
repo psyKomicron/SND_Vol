@@ -73,6 +73,14 @@ namespace Audio
 		return peak;
 	}
 
+	std::pair<float, float> MainAudioEndpoint::GetPeaks()
+	{
+		float channelsPeakValues[2]{ 0 };
+		// TODO: Make sure we are giving the correct amount of channels.
+		check_hresult(audioMeterInfo->GetChannelsPeakValues(2, channelsPeakValues));
+		return std::pair<float, float>(channelsPeakValues[0], channelsPeakValues[1]);
+	}
+
 	bool MainAudioEndpoint::Register()
 	{
 		return SUCCEEDED(audioEndpointVolume->RegisterControlChangeNotify(this));
