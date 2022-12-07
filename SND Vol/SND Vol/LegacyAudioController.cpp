@@ -113,7 +113,7 @@ namespace Audio
                     SUCCEEDED(control->GetGroupingParam(&groupingParam)) &&
                     SUCCEEDED(control->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
                 {
-                    sessions->push_back(new AudioSession(control2, audioSessionID, i));
+                    sessions->push_back(new AudioSession(control2, audioSessionID));
                 }
             }
         }
@@ -146,25 +146,36 @@ namespace Audio
 
     STDMETHODIMP LegacyAudioController::OnSessionCreated(IAudioSessionControl* NewSession) noexcept
     {
-        static bool ignoreNotification = true;
-
         // HACK: Audio session creation notifications are sent in double. Once we receive one, we will ignore the next. This can cause non doubled events to be ignored.
+        static bool ignoreNotification = false;
+
         if (!ignoreNotification)
         {
             IAudioSessionControl2* control2 = nullptr;
             if (SUCCEEDED(NewSession->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
             {
                 // TODO: Insure thread safety.
-                OutputDebugHString(L"New session created");
 
-                // TODO: Remove channel count.
-                newSessions.push(new AudioSession(control2, audioSessionID, 0));
-
-                e_sessionAdded(winrt::Windows::Foundation::IInspectable(), winrt::Windows::Foundation::IInspectable());
+                try
+                {
+                    // Windows sends OnSessionCreated event when disabling audio enhancements. The IAudioSessionControl received is not usable, making any calls to it's functions or properties fail.
+                    auto newAudioSession = new AudioSession(control2, audioSessionID);
+                    OutputDebugHString(L"New session created " + newAudioSession->Name());
+                    newSessions.push(newAudioSession);
+                    e_sessionAdded(nullptr, nullptr);
+                }
+                catch (const hresult_error& ex)
+                {
+                    OutputDebugHString(L"LegacyAudioController::OnSessionCreated failed to create audio session : " + ex.message());
+                }
             }
         }
-        ignoreNotification = !ignoreNotification;
+        else
+        {
+            OutputDebugString(L"Ignoring OnSessionCreated event.");
+        }
 
+        ignoreNotification = !ignoreNotification;
         return S_OK;
     }
 
@@ -176,11 +187,11 @@ namespace Audio
         {
             OutputDebugHString(L"Default device changed (id: " + to_hstring(pwstrDefaultDeviceId) + L").");
 
-            e_endpointChanged(winrt::Windows::Foundation::IInspectable(), winrt::Windows::Foundation::IInspectable());
+            e_endpointChanged(nullptr, nullptr);
         }
         else
         {
-            OutputDebugHString(L"Ignored notification: Default device changed (id: " + to_hstring(pwstrDefaultDeviceId) + L").");
+            OutputDebugHString(L"Ignored notification : Default device changed (id: " + to_hstring(pwstrDefaultDeviceId) + L").");
         }
 
         notified = !notified;
