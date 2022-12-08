@@ -11,12 +11,13 @@ namespace SND_Vol
         Windows.Foundation.Collections.IMap<String, UInt32> SessionsIndexes{ get; set; };
         Boolean IsDefaultProfile{ get; set; };
         Single SystemVolume{ get; set; };
-
         Boolean DisableAnimations{ get; set; };
         Boolean ShowAdditionalButtons{ get; set; };
         Boolean KeepOnTop{ get; set; };
         Boolean ShowMenu{ get; set; };
         UInt32 Layout{ get; set; };
+        Boolean RestoreWindowState{ get; set; };
+        Windows.Graphics.RectInt32 WindowDisplayRect{ get; set; };
 
         void Restore(Windows.Storage.ApplicationDataContainer container);
         void Save(Windows.Storage.ApplicationDataContainer container);
