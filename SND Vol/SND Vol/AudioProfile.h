@@ -45,6 +45,7 @@ namespace winrt::SND_Vol::implementation
         {
             return sessionsIndexes;
         };
+
         inline void SessionsIndexes(const winrt::Windows::Foundation::Collections::IMap<hstring, uint32_t>& value)
         {
             sessionsIndexes = value;
@@ -78,7 +79,7 @@ namespace winrt::SND_Vol::implementation
             return disableAnimations;
         };
 
-        inline void DisableAnimations(const bool& value) 
+        inline void DisableAnimations(const bool& value)
         {
             disableAnimations = value;
             e_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs(L"DisableAnimations"));
@@ -117,15 +118,33 @@ namespace winrt::SND_Vol::implementation
             e_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs(L"ShowMenu"));
         };
 
-        uint32_t Layout() const
+        inline uint32_t Layout() const
         {
             return layout;
         };
 
-        void Layout(const uint32_t& value)
+        inline void Layout(const uint32_t& value)
         {
             layout = value;
             e_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs(L"Layout"));
+        };
+
+        inline bool RestoreWindowState() const
+        {
+            return false;
+        };
+        void RestoreWindowState(const bool& value)
+        {
+
+        };
+
+        inline winrt::Windows::Graphics::RectInt32 WindowDisplayRect() const
+        {
+            return {};
+        };
+
+        inline void WindowDisplayRect(const winrt::Windows::Graphics::RectInt32& value)
+        {
         };
 
         inline winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
@@ -136,6 +155,7 @@ namespace winrt::SND_Vol::implementation
         {
             e_propertyChanged.remove(token);
         };
+
 
         void Save(const winrt::Windows::Storage::ApplicationDataContainer& container);
         void Restore(const winrt::Windows::Storage::ApplicationDataContainer& container);
