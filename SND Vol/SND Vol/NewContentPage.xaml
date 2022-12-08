@@ -32,7 +32,7 @@
                 <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="What's new"/>
                 <ListViewHeaderItem Margin="-20,0"/>
 
-                <Grid Margin="13,0,0,55" RowSpacing="25">
+                <Grid Margin="13,0,0,0" RowSpacing="25">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -42,21 +42,25 @@
 
                     <StackPanel Spacing="7">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Audio profiles</TextBlock>
+                        <ListViewHeaderItem Margin="-15,-15,-15,-25"/>
                         <TextBlock>You can now use audio profiles to quickly set the app's appearance but also change system volume and individual audio sessions volume.</TextBlock>
                     </StackPanel>
 
                     <StackPanel Spacing="7" Grid.Row="1">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">New content</TextBlock>
+                        <ListViewHeaderItem Margin="-15,-15,-15,-25"/>
                         <TextBlock>This page will list the changes made between 2 updates.</TextBlock>
                     </StackPanel>
 
                     <StackPanel Spacing="7" Grid.Row="2">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Add to startup</TextBlock>
+                        <ListViewHeaderItem Margin="-15,-15,-15,-25"/>
                         <TextBlock>You can now find in settings a toggle to add the app to Window's startup app list. Is it not activated by default and you can at any time deactivate it using this app settings or Windows settings (right click on Croak, app settings).</TextBlock>
                     </StackPanel>
 
                     <StackPanel Spacing="7" Grid.Row="3">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Personalization</TextBlock>
+                        <ListViewHeaderItem Margin="-15,-15,-15,-25"/>
                         <TextBlock>While you can disable transparency effects in Windows settings, you can also choose to disable this app background transparency effects in the settings. If you have it disabled inside the app, you can choose an picture as a background or leave it as is.</TextBlock>
                     </StackPanel>
                 </Grid>
@@ -74,10 +78,8 @@
                 <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Fixes"/>
                 <ListViewHeaderItem Margin="-20,0"/>
 
-                <StackPanel Spacing="12" Margin="13,0,0,55">
-                    <TextBlock>- Fixed a bug where you couldn't set a session's volume to 100% or 0%.</TextBlock>
-                    <TextBlock>- Fixed a bug causing audio sessions to not be shown after one had already been added.</TextBlock>
-                </StackPanel>
+                <TextBlock>- Fixed a bug where you couldn't set a session's volume to 100% or 0%.</TextBlock>
+                <TextBlock>- Fixed a bug causing audio sessions to not be shown after one had already been added.</TextBlock>
             </ListView>
         </Grid>
     </ScrollViewer>
