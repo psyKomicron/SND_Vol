@@ -50,13 +50,24 @@
                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="1" KeySpline="0.0, 0.0, 0.0, 1.0" />
                         </DoubleAnimationUsingKeyFrames>
 
-                        <DoubleAnimationUsingKeyFrames 
+                        <DoubleAnimation
+                            Storyboard.TargetName="RootGrid"
+                            Storyboard.TargetProperty="Opacity"
+                            From="0"
+                            To="1"
+                            Duration="0:0:0.167">
+                            <DoubleAnimation.EasingFunction>
+                                <ExponentialEase EasingMode="EaseOut" Exponent="3"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+
+                        <!--<DoubleAnimationUsingKeyFrames 
                             Storyboard.TargetName="RootGrid" 
                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateY)">
 
-                            <DiscreteDoubleKeyFrame KeyTime="0" Value="-10" />
+                            <DiscreteDoubleKeyFrame KeyTime="0" Value="-50" />
                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="0" KeySpline="0.0, 0.0, 0.0, 1.0" />
-                        </DoubleAnimationUsingKeyFrames>
+                        </DoubleAnimationUsingKeyFrames>-->
                     </Storyboard>
                 </VisualState>
 
@@ -70,13 +81,24 @@
                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="0" KeySpline="1.0, 1.0, 0.0, 1.0" />
                         </DoubleAnimationUsingKeyFrames>
 
-                        <DoubleAnimationUsingKeyFrames 
+                        <DoubleAnimation
+                            Storyboard.TargetName="RootGrid"
+                            Storyboard.TargetProperty="Opacity"
+                            From="1"
+                            To="0"
+                            Duration="0:0:0.167">
+                            <DoubleAnimation.EasingFunction>
+                                <ExponentialEase Exponent="3"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+
+                        <!--<DoubleAnimationUsingKeyFrames 
                             Storyboard.TargetName="RootGrid" 
                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateY)">
 
                             <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
-                            <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="-10" KeySpline="0.0, 0.0, 0.0, 1.0" />
-                        </DoubleAnimationUsingKeyFrames>
+                            <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="-50" KeySpline="0.0, 0.0, 0.0, 1.0" />
+                        </DoubleAnimationUsingKeyFrames>-->
 
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MessageControl" Storyboard.TargetProperty="Visibility">
                             <DiscreteObjectKeyFrame KeyTime="0:0:0.168" Value="Collapsed"/>
