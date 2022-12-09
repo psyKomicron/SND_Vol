@@ -196,11 +196,11 @@ namespace winrt::SND_Vol::implementation
     {
         LoadContent();
 
-        hstring profileName = unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"AudioProfile"), L"");
+        /*hstring profileName = unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"AudioProfile"), L"");
         if (!profileName.empty())
         {
             LoadProfile(profileName);
-        }
+        }*/
 
 #if ENABLE_HOTKEYS
         // Activate hotkeys.
@@ -410,6 +410,7 @@ namespace winrt::SND_Vol::implementation
             for (size_t i = 0; i < audioSessions->size(); i++)
             {
                 audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[audioSessions->at(i)->Id()]);
+                audioSessions->at(i)->StateChanged(audioSessionsStateChanged[audioSessions->at(i)->Id()]);
                 audioSessions->at(i)->Unregister();
                 audioSessions->at(i)->Release();
             }
@@ -528,10 +529,18 @@ namespace winrt::SND_Vol::implementation
 #endif // ENABLE_HOTKEYS
 
     }
-
+        
     void MainWindow::MenuFlyout_Opening(IInspectable const&, IInspectable const&)
     {
-        ProfilesMenuFlyoutItem().Items().Clear();
+        MenuFlyoutSubItem profilesMenuFlyout{};
+        profilesMenuFlyout.Tag(box_value(L"Profiles"));
+        profilesMenuFlyout.Text(L"Profiles");
+
+        if (SettingsButtonFlyout().Items().GetAt(0).Tag().try_as<hstring>() == L"Profiles")
+        {
+            SettingsButtonFlyout().Items().RemoveAt(0);
+        }
+
         ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
         if (audioProfilesContainer)
         {
@@ -546,9 +555,11 @@ namespace winrt::SND_Vol::implementation
                         LoadProfile(sender.as<FrameworkElement>().Tag().as<hstring>());
                     });
 
-                ProfilesMenuFlyoutItem().Items().Append(item);
+                profilesMenuFlyout.Items().Append(item);
             }
         }
+
+        SettingsButtonFlyout().Items().InsertAt(0, profilesMenuFlyout);
     }
     #pragma endregion
 
@@ -738,7 +749,11 @@ namespace winrt::SND_Vol::implementation
                 audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
                 for (size_t i = 0; i < audioSessions->size(); i++)
                 {
-                    CreateAudioView(audioSessions->at(i), true);
+                    AudioSessionView view = CreateAudioView(audioSessions->at(i), true);
+                    if (view)
+                    {
+                        audioSessionViews.Append(view);
+                    }
                 }
 
 
@@ -786,7 +801,7 @@ namespace winrt::SND_Vol::implementation
         }
     }
 
-    void MainWindow::CreateAudioView(AudioSession* audioSession, bool enabled)
+    AudioSessionView MainWindow::CreateAudioView(AudioSession* audioSession, bool enabled)
     {
         if (!audioSession->Register())
         {
@@ -805,7 +820,7 @@ namespace winrt::SND_Vol::implementation
                 {
                     if (hitcount > 1)
                     {
-                        return;
+                        return nullptr;
                     }
                     hitcount++;
                 }
@@ -845,28 +860,29 @@ namespace winrt::SND_Vol::implementation
 
         });
 
-        if (currentAudioProfile)
-        {
-            auto optional = currentAudioProfile.SessionsIndexes().TryLookup(audioSession->Name());
-            if (optional.has_value())
-            {
-                if (optional.value() < audioSessionViews.Size())
-                {
-                    audioSessionViews.InsertAt(optional.value(), view);
-                }
-                else
-                {
-                    // I can either append at the end forever, or go through the hassle of checking everytime a sesion is added 
-                    // the sessions with indexes saved are in their right spot, including if the user has repositioned them
-                    // in-between 2 passes of this function. It could be functional but I don't think it would be that useful
-                    // for all the work done, and it could very well confuse the user with the sessions moving around for no
-                    // particular reason.
-                    audioSessionViews.Append(view);
-                }
-                return;
-            }
-        }
-        audioSessionViews.InsertAt(0, view);
+        //if (currentAudioProfile)
+        //{
+        //    auto optional = currentAudioProfile.SessionsIndexes().TryLookup(audioSession->Name());
+        //    if (optional.has_value())
+        //    {
+        //        if (optional.value() < audioSessionViews.Size())
+        //        {
+        //            audioSessionViews.InsertAt(optional.value(), view);
+        //        }
+        //        else
+        //        {
+        //            // I can either append at the end forever, or go through the hassle of checking everytime a sesion is added 
+        //            // the sessions with indexes saved are in their right spot, including if the user has repositioned them
+        //            // in-between 2 passes of this function. It could be functional but I don't think it would be that useful
+        //            // for all the work done, and it could very well confuse the user with the sessions moving around for no
+        //            // particular reason.
+        //            audioSessionViews.Append(view);
+        //        }
+        //        return;
+        //    }
+        //}
+        
+        return view;
     }
 
     void MainWindow::SetDragRectangles()
@@ -1116,7 +1132,7 @@ namespace winrt::SND_Vol::implementation
                                 {
                                     if (audioSessions->at(i)->Name() == pair.Key())
                                     {
-                                        audioSessions->at(i)->SetVolume(pair.Value());
+                                        audioSessions->at(i)->Volume(pair.Value());
                                     }
                                 }
                             }
@@ -1127,7 +1143,7 @@ namespace winrt::SND_Vol::implementation
                                 {
                                     if (audioSessions->at(i)->Name() == pair.Key())
                                     {
-                                        audioSessions->at(i)->SetMute(pair.Value());
+                                        audioSessions->at(i)->Muted(pair.Value());
                                     }
                                 }
                             }
@@ -1167,78 +1183,78 @@ namespace winrt::SND_Vol::implementation
                         }
 #pragma endregion
 
-#if FALSE & defined DEBUG
                         AudioSessionsPanel().ItemsSource(nullptr);
                         audioSessionViews.Clear();
 
-                        // TODO: There is a bug where an AudioSession can fire an event while we are loading the profile, and because we are changing the audioSessionViews collection, the iterator breaks.
-                        vector<AudioSession*>* currentAudioSessions = audioController->GetSessions();
+                        // Remove duplicates.
+                        vector<AudioSessionView> uniqueSessions{};
                         int hitcount = 0;
-                        for (size_t j = 0; j < currentAudioSessions->size(); j++)
+                        for (size_t i = 0; i < audioSessions->size(); i++)
                         {
-                            if (audioSessions->at(j)->GroupingParam() == audioSession->GroupingParam())
+                            auto&& view = CreateAudioView(audioSessions->at(i), true);
+                            if (view)
                             {
-                                if (hitcount > 1)
-                                {
-                                    return;
-                                }
-                                hitcount++;
+                                uniqueSessions.push_back(view);
                             }
                         }
 
-
-
-                        /*auto indexes = currentAudioProfile.SessionsIndexes();
-                        auto&& views = vector<AudioSessionView>(audioSessionViews.Size(), nullptr);
-                        for (size_t i = 0; i < currentAudioSessions->size(); i++)
+                        auto indexes = currentAudioProfile.SessionsIndexes();
+                        auto&& views = vector<AudioSessionView>(indexes.Size(), nullptr);
+                        for (size_t i = 0; i < uniqueSessions.size(); i++)
                         {
-                            auto view = audioSessionViews.GetAt(i);
+                            auto&& view = uniqueSessions[i];
                             auto opt = indexes.TryLookup(view.Header());
                             if (opt.has_value())
                             {
-                                views[opt.value()] = view;
-                                audioSessionViews.SetAt(i, nullptr);
+                                if (opt.value() < views.size())
+                                {
+                                    if (views[opt.value()] == nullptr) // The index might already be populated by the else if/else statements when the index is over the collection size.
+                                    {
+                                        views[opt.value()] = view;
+                                    }
+                                    else
+                                    {
+                                        views.push_back(views[opt.value()]);
+                                        views[opt.value()] = view;
+                                    }
+                                }
+                                else if (views[views.size() - 1] == nullptr) // Check if the last index of the collection is free.
+                                {
+                                    views[views.size() - 1] = view;
+                                }
+                                else // The index is over the collection size and the last value of the collection is already populated.
+                                {
+                                    views.push_back(view);
+                                }
+
+                                uniqueSessions[i] = nullptr; // Set to null to tell the session has been added.
                             }
                         }
 
-                        for (size_t i = 0; i < audioSessionViews.Size(); i++)
+                        for (size_t i = 0; i < uniqueSessions.size(); i++)
                         {
-                            auto view = audioSessionViews.GetAt(i);
-                            if (view)
+                            if (uniqueSessions[i])
                             {
-                                if (views[i] == nullptr)
+                                int j = views.size() - 1;
+                                for (; j >= 0; j--)
                                 {
-                                    views[i] = view;
+                                    if (views[j] == nullptr)
+                                    {
+                                        views[j] = uniqueSessions[i];
+                                        break;
+                                    }
                                 }
-                                else
-                                {
-                                    int j = i;
-                                    while (views[j])
-                                    {
-                                        if (j == views.size() - 1u)
-                                        {
-                                            views.push_back(view);
-                                            j = views.size();
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            j++;
-                                        }
-                                    }
 
-                                    if (j < views.size())
-                                    {
-                                        views[j] = view;
-                                    }
+                                if (j < 0)
+                                {
+                                    views.push_back(uniqueSessions[i]);
                                 }
                             }
                         }
                         
-                        audioSessionViews = multi_threaded_observable_vector<AudioSessionView>(move(views));*/
+                        audioSessionViews = multi_threaded_observable_vector<AudioSessionView>(move(views));
                         // HACK: Can we use INotifyPropertyChanged to raise that the vector has changed ?
                         AudioSessionsPanel().ItemsSource(audioSessionViews);
-#endif // DEBUG
 
                         WindowMessageBar().EnqueueMessage(L"Loaded profile " + profileName);
                     }
@@ -1433,7 +1449,11 @@ namespace winrt::SND_Vol::implementation
                     unique_lock lock{ audioSessionsMutex };
                     audioSessions->push_back(newSession);
                 }
-                CreateAudioView(newSession, true);
+                AudioSessionView view = CreateAudioView(newSession, true);
+                if (view)
+                {
+                    audioSessionViews.InsertAt(0, view);
+                }
             }
             audioSessionsPeakTimer.Start();
         });
