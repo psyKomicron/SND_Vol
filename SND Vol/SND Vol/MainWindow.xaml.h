@@ -118,7 +118,7 @@ namespace winrt::SND_Vol::implementation
         void InitializeWindow();
         void SetBackground();
         void LoadContent();
-        void CreateAudioView(Audio::AudioSession* audioSession, bool enabled);
+        winrt::SND_Vol::AudioSessionView CreateAudioView(Audio::AudioSession* audioSession, bool enabled);
         void SetDragRectangles();
         void SaveAudioLevels();
         void LoadHotKeys();
