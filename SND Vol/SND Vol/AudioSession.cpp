@@ -153,7 +153,7 @@ namespace Audio
 
     bool AudioSession::SetMute(bool const& state)
     {
-        return SUCCEEDED(simpleAudioVolume->SetMute(state, &eventContextId));
+        return SUCCEEDED(simpleAudioVolume->SetMute(state, nullptr));
     }
 
     void AudioSession::SetVolume(const float& volume)
