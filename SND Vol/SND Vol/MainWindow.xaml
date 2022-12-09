@@ -8,7 +8,28 @@
     Activated="Window_Activated">
 
     <Grid x:Name="RootGrid" SizeChanged="Grid_SizeChanged">
-        
+        <Grid.Resources>
+            <Style x:Key="GridViewHorizontalLayout" TargetType="GridView">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="GridViewVerticalLayout" TargetType="GridView">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
+
         <Image x:Name="BackgroundImage" Grid.RowSpan="2" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
         <Grid x:Name="WindowGrid">
@@ -19,27 +40,7 @@
             <Grid.Background>
                 <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorBase}" Opacity="0.6"/>
             </Grid.Background>
-            <Grid.Resources>
-                <Style x:Key="GridViewHorizontalLayout" TargetType="GridView">
-                    <Setter Property="ItemsPanel">
-                        <Setter.Value>
-                            <ItemsPanelTemplate>
-                                <ItemsWrapGrid Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-
-                <Style x:Key="GridViewVerticalLayout" TargetType="GridView">
-                    <Setter Property="ItemsPanel">
-                        <Setter.Value>
-                            <ItemsPanelTemplate>
-                                <ItemsWrapGrid Orientation="Vertical"/>
-                            </ItemsPanelTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </Grid.Resources>
+            
             <VisualStateManager.VisualStateGroups>
                 <VisualStateGroup>
                     <VisualState x:Name="Normal"/>
@@ -78,11 +79,11 @@
                     </Viewbox>
 
                     <Button.Flyout>
-                        <MenuFlyout ShowMode="Transient" Opening="MenuFlyout_Opening">
+                        <MenuFlyout x:Name="SettingsButtonFlyout" ShowMode="Transient" Opening="MenuFlyout_Opening">
 
-                            <MenuFlyoutSubItem 
+                            <!--<MenuFlyoutSubItem 
                                 x:Name="ProfilesMenuFlyoutItem" 
-                                Text="Profiles"/>
+                                Text="Profiles"/>-->
 
                             <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
                                 <ToggleMenuFlyoutItem
