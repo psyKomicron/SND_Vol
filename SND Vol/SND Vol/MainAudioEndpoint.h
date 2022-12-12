@@ -13,6 +13,7 @@ namespace Audio
 		 * @param eventContextId GUID used by this app to generate events.
 		*/
 		MainAudioEndpoint(IMMDevice* devicePtr, GUID eventContextId);
+		~MainAudioEndpoint();
 
 		/**
 		 * @brief Gets the volume of the session.
@@ -102,6 +103,7 @@ namespace Audio
 		#pragma region IAudioEndpointVolumeCallback
 		STDMETHODIMP OnNotify(__in PAUDIO_VOLUME_NOTIFICATION_DATA pNotify);
 		#pragma endregion
+		void CheckIfAvailable();
 	};
 }
 
