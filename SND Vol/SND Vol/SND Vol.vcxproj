@@ -130,10 +130,12 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="AudioSession.h" />
+    <ClInclude Include="AudioSessionStates.h" />
     <ClInclude Include="AudioSessionView.xaml.h">
       <DependentUpon>AudioSessionView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="ComSmartPtrTypeDefs.h" />
     <ClInclude Include="HotKey.h" />
     <ClInclude Include="HotKeyManager.h" />
     <ClInclude Include="HotKeysPage.xaml.h">
@@ -167,6 +169,7 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="MainAudioEndpoint.h" />
+    <ClInclude Include="ManifestApplicationNode.h" />
     <ClInclude Include="MessageBar.xaml.h">
       <DependentUpon>MessageBar.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -287,6 +290,7 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="MainAudioEndpoint.cpp" />
+    <ClCompile Include="ManifestApplicationNode.cpp" />
     <ClCompile Include="MessageBar.xaml.cpp">
       <DependentUpon>MessageBar.xaml</DependentUpon>
       <SubType>Code</SubType>
