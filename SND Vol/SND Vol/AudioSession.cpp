@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "AudioSession.h"
 
 #include <rpc.h>
@@ -6,6 +6,9 @@
 #include <ShObjIdl.h>
 #include <objbase.h>
 #include <strsafe.h>
+#include <Shlwapi.h>
+#include "AudioSessionStates.h"
+#include "ManifestApplicationNode.h"
 
 using namespace winrt;
 using namespace std;
@@ -73,6 +76,38 @@ namespace Audio
         {
             OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get audio meter info. Peak values will be blank.");
         }
+
+        /*LPWSTR iconPathLPWSTR = nullptr;
+        if (SUCCEEDED(audioSessionControl->GetIconPath(&iconPathLPWSTR)))
+        {
+            wstring iconPath = wstring(iconPathLPWSTR);
+            CoTaskMemFree(iconPathLPWSTR);
+            
+            if (!iconPath.empty())
+            {
+                for (int i = iconPath.size() - 1; i >= 0; i--)
+                {
+                    if (iconPath[i] == L',')
+                    {
+                        wstring libraryPath = iconPath.substr(0, i);
+                        wstring iconId = iconPath.substr(i + 1);
+                        if (!iconId.empty())
+                        {
+
+                            auto&& library = LoadLibrary(libraryPath.c_str());
+                            if (library)
+                            {
+                                HRSRC resourceHandle = FindResource(library, iconId.c_str(), RT_GROUP_ICON);
+                                HGLOBAL hMem = LoadResource(library, resourceHandle);
+                                lpResource = LockResource(hMem);
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }*/
     }
 
 
@@ -247,9 +282,9 @@ namespace Audio
         hstring processName{};
 
         HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pId);
-
         if (processHandle != NULL && processHandle != INVALID_HANDLE_VALUE)
         {
+            GetPackageInfo(processHandle);
             // Try to get display name for UWP-like apps
             uint32_t applicationUserModelIdLength = 0;
             PWSTR applicationUserModelId = nullptr;
@@ -280,23 +315,21 @@ namespace Audio
                                 return processName;
                             }
                         }
-                        else // Failed to get shell item display name, release the object and continue to default naming using PID.
-                        {
-                            shellItem->Release();
-                        }
+
+                        // Failed to get shell item display name, release the object and continue to default naming using PID.
+                        shellItem->Release();
                     }
                 }
             }
             
             // Default naming using PID.
-
             wchar_t executableName[MAX_PATH]{};
             DWORD executableNameLength = MAX_PATH;
             if (QueryFullProcessImageName(processHandle, 0, executableName, &executableNameLength))
             {
                 CloseHandle(processHandle); // Close handle since we don't need it anymore.
 
-                uint64_t fileVersionInfoSize = GetFileVersionInfoSize(executableName, NULL);
+                DWORD fileVersionInfoSize = GetFileVersionInfoSize(executableName, NULL);
                 if (fileVersionInfoSize > 0)
                 {
                     void* lpData = malloc(fileVersionInfoSize);
@@ -337,29 +370,13 @@ namespace Audio
                                         }
                                     }
                                 }
-
-                                /*
-                                for (size_t i = 0; i < (cbTranslate / sizeof(LANGANDCODEPAGE)); i++)
+                                else if ((cbTranslate / sizeof(LANGANDCODEPAGE)) > 1)
                                 {
-                                    HRESULT hr = StringCchPrintf(
-                                        strSubBlock,
-                                        50,
-                                        L"\\StringFileInfo\\%04x%04x\\FileDescription",
-                                        lpTranslate[i].wLanguage,
-                                        lpTranslate[i].wCodePage
-                                    );
-
-                                    if (SUCCEEDED(hr))
+                                    if (IsDebuggerPresent())
                                     {
-                                        wchar_t* lpBuffer = nullptr;
-                                        uint32_t lpBufferSize = 0;
-                                        if (VerQueryValue(lpData, strSubBlock, (void**)&lpBuffer, &lpBufferSize) && lpBufferSize > 0)
-                                        {
-                                            OutputDebugString(lpBuffer);
-                                        }
+                                        __debugbreak();
                                     }
                                 }
-                                */
                             }
                         }
 
@@ -376,15 +393,128 @@ namespace Audio
         return processName;
     }
 
+    void AudioSession::GetPackageInfo(HANDLE processHandle)
+    {
+        uint32_t packageFullNameLength = 0;
+        long result = GetPackageFullName(processHandle, &packageFullNameLength, nullptr);
+        if (result != ERROR_INSUFFICIENT_BUFFER)
+        {
+            return;
+        }
+
+        PWSTR packageFullNameWstr = new WCHAR[packageFullNameLength](0);
+        if (SUCCEEDED(GetPackageFullName(processHandle, &packageFullNameLength, packageFullNameWstr)))
+        {
+            PACKAGE_INFO_REFERENCE packageInfoReference{};
+            if (SUCCEEDED(OpenPackageInfoByFullName(packageFullNameWstr, 0, &packageInfoReference)))
+            {
+                uint32_t bufferLength = 0;
+                uint32_t count = 0;
+                if (::GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, nullptr, &count) == ERROR_INSUFFICIENT_BUFFER)
+                {
+                    BYTE* bytes = (BYTE*)malloc(bufferLength * sizeof(BYTE));
+                    if (SUCCEEDED(::GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, bytes, &count)))
+                    {
+                        try
+                        {
+                            PACKAGE_INFO* packageInfos = reinterpret_cast<PACKAGE_INFO*>(bytes);
+                            if (packageInfos)
+                            {
+                                for (uint32_t i = 0; i < count; i++)
+                                {
+                                    PACKAGE_INFO packageInfo = packageInfos[i];
+
+                                    // Create AppX factory.
+                                    IAppxFactoryPtr factory = nullptr;
+                                    if (SUCCEEDED(CoCreateInstance(__uuidof(AppxFactory), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
+                                    {
+                                        // Get the AppXManifest.xml path for the package.
+                                        wchar_t appxManifest[2048](0); // 32 768 bits -- Supported by UTF-8 APIs
+                                        PathCombine(appxManifest, packageInfo.path, L"AppXManifest.xml");
+                                        if (lstrlen(appxManifest) > 0) // Check if PathCombine succeeded.
+                                        {
+                                            // Create stream and package reader to read package data.
+                                            IStreamPtr streamPtr = nullptr;
+                                            IAppxManifestReaderPtr manifestReaderPtr = nullptr;
+                                            if (SUCCEEDED(SHCreateStreamOnFileEx(appxManifest, STGM_SHARE_DENY_NONE, 0, false, nullptr, &streamPtr)))
+                                            {
+                                                check_hresult(factory->CreateManifestReader(streamPtr, &manifestReaderPtr));
+
+                                                // Get the manifest data for the package.
+                                                // Get package display name through manifest properties.
+                                                IAppxManifestPropertiesPtr properties = nullptr;
+                                                manifestReaderPtr->GetProperties(&properties);
+                                                LPWSTR packageDisplayNameProperty = nullptr;
+                                                if (SUCCEEDED(properties->GetStringValue(L"DisplayName", &packageDisplayNameProperty)))
+                                                {
+                                                    OutputDebugHString(L"Package display name : " + to_hstring(packageDisplayNameProperty));
+                                                    CoTaskMemFree(packageDisplayNameProperty);
+                                                }
+
+                                                // Get manifest Applications node to get package data.
+                                                IAppxManifestApplicationsEnumeratorPtr manifestResEnumeratorPtr = nullptr;
+                                                manifestReaderPtr->GetApplications(&manifestResEnumeratorPtr);
+                                                // Wacky for each.
+                                                BOOL getHasCurrent = false;
+                                                while (SUCCEEDED(manifestResEnumeratorPtr->GetHasCurrent(&getHasCurrent)) && getHasCurrent)
+                                                {
+                                                    IAppxManifestApplicationPtr application = nullptr;
+                                                    if (FAILED(manifestResEnumeratorPtr->GetCurrent(&application)))
+                                                    {
+                                                        continue;
+                                                    }
+
+                                                    System::AppX::ManifestApplicationNode applicationNode{ application, packageInfo.path };
+                                                }
+                                            }
+                                        }
+
+                                        // Release raw COM pointers.
+                                    }
+                                }
+                            }
+                        }
+                        catch (hresult_error err)
+                        {
+                            OutputDebugHString(err.message());
+                        }
+                        catch (...)
+                        {
+                        }
+                    }
+
+                    free(bytes);
+                }
+                else
+                {
+                    OutputDebugString(L"Failed to get package info.\n");
+                }
+            }
+            else
+            {
+                OutputDebugString(L"Failed to open package.\n");
+            }
+
+            ClosePackageInfo(packageInfoReference);
+            delete[] packageFullNameWstr;
+        }
+        else
+        {
+            OutputDebugString(L"Failed to get package full name.\n");
+        }
+    }
+
     STDMETHODIMP AudioSession::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID)
     {
         OutputDebugHString(sessionName + L" > Display name changed : " + to_hstring(NewDisplayName));
+        e_stateChanged(id, static_cast<uint32_t>(AudioSessionStates::DisplayNameChanged));
         return S_OK;
     }
 
     STDMETHODIMP AudioSession::OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID)
     {
         OutputDebugHString(sessionName + L" > Icon path changed : " + to_hstring(NewIconPath));
+        e_stateChanged(id, static_cast<uint32_t>(AudioSessionStates::IconChanged));
         return S_OK;
     }
 
@@ -392,26 +522,22 @@ namespace Audio
     {
         if (*EventContext != eventContextId)
         {
-            e_volumeChanged(guid(id), NewVolume);
-
             muted = NewMute;
-            // 3 = AudioSessionState::Muted
-            e_stateChanged(guid(id), muted ? 3u : 4u);
+            e_volumeChanged(id, NewVolume);
+            e_stateChanged(id, muted ? static_cast<uint32_t>(AudioSessionStates::Muted) : static_cast<uint32_t>(AudioSessionStates::Unmuted));
         }
         return S_OK;
     }
 
     STDMETHODIMP AudioSession::OnStateChanged(::AudioSessionState NewState)
     {
-        e_stateChanged(guid(id), static_cast<uint32_t>(NewState));
-
+        e_stateChanged(id, static_cast<uint32_t>(NewState));
         return S_OK;
     }
 
     STDMETHODIMP AudioSession::OnSessionDisconnected(AudioSessionDisconnectReason /*DisconnectReason*/)
     {
-        e_stateChanged(guid(id), static_cast<uint32_t>(AudioSessionState::AudioSessionStateExpired));
-
+        e_stateChanged(id, static_cast<uint32_t>(AudioSessionStates::Expired));
         return S_OK;
     }
 }

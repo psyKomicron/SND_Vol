@@ -9,10 +9,30 @@ namespace Audio
     public:
         AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId);
 
+        /**
+         * @brief Grouping parameter for the audio session.
+         * @return GUID
+        */
         GUID GroupingParam();
+        /**
+         * @brief True if the audio session is the "System" audio session.
+         * @return 
+        */
         bool IsSystemSoundSession();
+        /**
+         * @brief Unique ID for this session.
+         * @return GUID
+        */
         GUID Id();
+        /**
+         * @brief Checks if the audio session is muted or not.
+         * @return True if the session is muted.
+        */
         bool Muted();
+        /**
+         * @brief Checks if the audio session is muted or not.
+         * @param isMuted 
+        */
         void Muted(const bool& isMuted);
         /**
          * @brief Gets the name of the session. Can be the display name or the name of the executable associated with the audio session's PID.
@@ -32,7 +52,6 @@ namespace Audio
         /**
          * @brief Gets the volume of the session.
          * @param desiredVolume 
-         * @return True if the fonction succeeded
         */
         void Volume(float const& desiredVolume);
 
@@ -111,6 +130,7 @@ namespace Audio
          * @return The name of the process
         */
         winrt::hstring GetProcessName(DWORD const& pid);
+        void GetPackageInfo(HANDLE processHandle);
 
         // IAudioSessionEvents
         STDMETHOD(OnDisplayNameChanged)(LPCWSTR NewDisplayName, LPCGUID EventContext);
