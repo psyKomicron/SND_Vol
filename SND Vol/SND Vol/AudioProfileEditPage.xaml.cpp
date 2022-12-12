@@ -119,7 +119,7 @@ namespace winrt::SND_Vol::implementation
         }
     }
 
-    void AudioProfileEditPage::Page_Loading(FrameworkElement const&, IInspectable const& args)
+    void AudioProfileEditPage::Page_Loading(FrameworkElement const&, IInspectable const&)
     {
         ProfileNameEditTextBox().Text(audioProfile.ProfileName());
         DisableAnimationsCheckBox().IsChecked(audioProfile.DisableAnimations());

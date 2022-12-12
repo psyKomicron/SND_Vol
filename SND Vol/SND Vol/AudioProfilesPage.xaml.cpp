@@ -31,7 +31,7 @@ namespace winrt::SND_Vol::implementation
                     ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
                     audioProfiles.GetAt(0).Save(audioProfilesContainer);
 
-                    for (size_t i = 1; i < audioProfiles.Size(); i++)
+                    for (uint32_t i = 1; i < audioProfiles.Size(); i++)
                     {
                         audioProfiles.GetAt(i).IsDefaultProfile(false);
                         // Save the newly edited profile.
@@ -84,7 +84,7 @@ namespace winrt::SND_Vol::implementation
             }
             else
             {
-                for (size_t i = 0; i < audioProfiles.Size(); i++)
+                for (uint32_t i = 0; i < static_cast<uint32_t>(audioProfiles.Size()); i++)
                 {
                     if (audioProfiles.GetAt(i).IsDefaultProfile())
                     {
@@ -149,7 +149,7 @@ namespace winrt::SND_Vol::implementation
         // I18N: Audio profile.
         hstring profileName = L"Audio profile";
         uint32_t count = 1u;
-        for (size_t j = 0; j < audioProfiles.Size(); j++)
+        for (uint32_t j = 0; j < audioProfiles.Size(); j++)
         {
             hstring test = audioProfiles.GetAt(j).ProfileName();
             if (test == profileName)
@@ -164,7 +164,7 @@ namespace winrt::SND_Vol::implementation
     void AudioProfilesPage::DeleteProfileButton_Click(IInspectable const& sender, RoutedEventArgs const&)
     {
         hstring tag = sender.as<Button>().Tag().as<hstring>();
-        for (size_t i = 0; i < audioProfiles.Size(); i++)
+        for (uint32_t i = 0; i < audioProfiles.Size(); i++)
         {
             if (audioProfiles.GetAt(i).ProfileName() == tag)
             {
@@ -180,7 +180,7 @@ namespace winrt::SND_Vol::implementation
     IAsyncAction AudioProfilesPage::EditProfileButton_Click(IInspectable const& sender, RoutedEventArgs const&)
     {
         hstring tag = sender.as<Button>().Tag().as<hstring>();
-        for (size_t i = 0; i < audioProfiles.Size(); i++)
+        for (uint32_t i = 0; i < audioProfiles.Size(); i++)
         {
             if (audioProfiles.GetAt(i).ProfileName() == tag)
             {
@@ -196,7 +196,7 @@ namespace winrt::SND_Vol::implementation
     void AudioProfilesPage::DuplicateProfileButton_Click(IInspectable const& sender, RoutedEventArgs const&)
     {
         hstring tag = sender.as<Button>().Tag().as<hstring>();
-        for (size_t i = 0; i < audioProfiles.Size(); i++)
+        for (uint32_t i = 0; i < audioProfiles.Size(); i++)
         {
             if (audioProfiles.GetAt(i).ProfileName() == tag)
             {
@@ -206,7 +206,7 @@ namespace winrt::SND_Vol::implementation
                 hstring profileName = audioProfiles.GetAt(i).ProfileName();
 
                 uint32_t count = 1u;
-                for (size_t j = 0; j < audioProfiles.Size(); j++)
+                for (uint32_t j = 0; j < audioProfiles.Size(); j++)
                 {
                     hstring test = audioProfiles.GetAt(j).ProfileName();
                     if (test == profileName)

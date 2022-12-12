@@ -24,7 +24,7 @@ namespace winrt::SND_Vol::implementation
         HotKeysViewer().AddActiveKey({ loader.GetString(L"SystemVolumeSwitchStateHotKeyName"), true, VirtualKey::M, VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift });
     }
 
-    void HotKeysPage::OnKeyDown(const winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs& args)
+    void HotKeysPage::OnKeyDown(const winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs&)
     {
         OutputDebugHString(L"Key pressed.");
     }

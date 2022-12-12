@@ -64,8 +64,8 @@ namespace System
 	{
 		for (auto&& pair : hotKeys)
 		{
-			VirtualKeyModifiers modifiers = previousKey->KeyModifiers();
-			VirtualKeyModifiers currentModifiers = pair.second->KeyModifiers();
+			//VirtualKeyModifiers modifiers = previousKey->KeyModifiers();
+			//VirtualKeyModifiers currentModifiers = pair.second->KeyModifiers();
 
 			if ((static_cast<uint32_t>(previousKey->KeyModifiers()) == static_cast<uint32_t>(pair.second->KeyModifiers())) &&
 				(pair.second->Key() == previousKey->Key()))

@@ -904,7 +904,7 @@ namespace winrt::SND_Vol::implementation
             ApplicationData::Current().LocalSettings().Containers().HasKey(L"AudioLevels") ? ApplicationDataCreateDisposition::Existing : ApplicationDataCreateDisposition::Always
         );
 
-        for (size_t i = 0; i < audioSessionViews.Size(); i++) // Only saving the visible audio sessions levels.
+        for (uint32_t i = 0; i < audioSessionViews.Size(); i++) // Only saving the visible audio sessions levels.
         {
             ApplicationDataCompositeValue compositeValue{};
             compositeValue.Insert(L"Muted", box_value(audioSessionViews.GetAt(i).Muted()));
@@ -1045,7 +1045,7 @@ namespace winrt::SND_Vol::implementation
         ));
         presenter.IsAlwaysOnTop(alwaysOnTop);
 
-        layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 0);
+        layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 0u);
         switch (layout)
         {
             case 1:
@@ -1188,13 +1188,16 @@ namespace winrt::SND_Vol::implementation
 
                         // Remove duplicates.
                         vector<AudioSessionView> uniqueSessions{};
-                        int hitcount = 0;
-                        for (size_t i = 0; i < audioSessions->size(); i++)
                         {
-                            auto&& view = CreateAudioView(audioSessions->at(i), true);
-                            if (view)
+                            unique_lock lock{ audioSessionsMutex };
+
+                            for (size_t i = 0; i < audioSessions->size(); i++)
                             {
-                                uniqueSessions.push_back(view);
+                                auto&& view = CreateAudioView(audioSessions->at(i), true);
+                                if (view)
+                                {
+                                    uniqueSessions.push_back(view);
+                                }
                             }
                         }
 
@@ -1262,7 +1265,7 @@ namespace winrt::SND_Vol::implementation
                 catch (const hresult_error& error)
                 {
                     // I18N: Failed to load profile [profile name]
-                    WindowMessageBar().EnqueueMessage(L"Failed to load profile: " + profileName);
+                    WindowMessageBar().EnqueueMessage(L"Couldn't load profile " + profileName);
                     OutputDebugHString(error.message());
                 }
             }
@@ -1273,6 +1276,7 @@ namespace winrt::SND_Vol::implementation
     {
         if (!loaded) return;
 
+        // TODO: Try to see if I can update the code to make it faster. Multithreading is not an option since it's a single threaded appartement.
         for (size_t i = 0; i < audioSessions->size(); i++)
         {
             if (audioSessions->at(i))
@@ -1283,7 +1287,6 @@ namespace winrt::SND_Vol::implementation
                 {
                     if (view.Id() == id)
                     {
-                        //view.SetPeak(audioSessions->at(i)->GetPeak());
                         auto&& pair = audioSessions->at(i)->GetChannelsPeak();
                         view.SetPeak(pair.first, pair.second);
                     }

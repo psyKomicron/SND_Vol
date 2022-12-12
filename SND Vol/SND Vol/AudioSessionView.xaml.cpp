@@ -216,7 +216,7 @@ namespace winrt::SND_Vol::implementation
         e_volumeChanged(*this, e);
     }
 
-    void AudioSessionView::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const& e)
+    void AudioSessionView::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
         _muted = !_muted;
         if (_muted)
@@ -241,7 +241,7 @@ namespace winrt::SND_Vol::implementation
         VolumePeakBorder().Translation(translation);*/
     }
 
-    void AudioSessionView::RootGrid_PointerEntered(winrt::Windows::Foundation::IInspectable const& sender, PointerRoutedEventArgs const&)
+    void AudioSessionView::RootGrid_PointerEntered(winrt::Windows::Foundation::IInspectable const&, PointerRoutedEventArgs const&)
     {
         VisualStateManager::GoToState(*this, L"PointerOver", true);
     }

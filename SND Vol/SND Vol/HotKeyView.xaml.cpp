@@ -31,7 +31,7 @@ namespace winrt::SND_Vol::implementation
         }
     }
 
-    void HotKeyView::OnKeyDown(const winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs& args)
+    void HotKeyView::OnKeyDown(const winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs&)
     {
         OutputDebugHString(L"Key pressed.");
     }

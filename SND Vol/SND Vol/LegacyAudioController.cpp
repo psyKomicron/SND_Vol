@@ -179,7 +179,7 @@ namespace Audio
         return S_OK;
     }
 
-    STDMETHODIMP LegacyAudioController::OnDefaultDeviceChanged(__in EDataFlow flow, __in  ERole /*role*/, __in_opt LPCWSTR pwstrDefaultDeviceId) noexcept
+    STDMETHODIMP LegacyAudioController::OnDefaultDeviceChanged(__in EDataFlow flow, __in ERole /*role*/, __in_opt LPCWSTR pwstrDefaultDeviceId) noexcept
     {
         static bool notified = false;
 

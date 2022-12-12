@@ -53,7 +53,7 @@ namespace winrt::SND_Vol::implementation
 
     void MessageBar::TimerProgressBar_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        TimerProgressBarClipping().Rect(Rect(0, 0, BackgroundTimerBorder().ActualWidth(), BackgroundTimerBorder().ActualHeight()));
+        TimerProgressBarClipping().Rect(Rect(0.f, 0.f, static_cast<float>(BackgroundTimerBorder().ActualWidth()), static_cast<float>(BackgroundTimerBorder().ActualHeight())));
     }
 
 
