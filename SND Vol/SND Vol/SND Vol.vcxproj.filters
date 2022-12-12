@@ -82,6 +82,9 @@
     <ClCompile Include="IconButton.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
+    <ClCompile Include="ManifestApplicationNode.cpp">
+      <Filter>System\AppX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -103,6 +106,13 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="IComEventImplementation.h">
       <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioSessionStates.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="ComSmartPtrTypeDefs.h" />
+    <ClInclude Include="ManifestApplicationNode.h">
+      <Filter>System\AppX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +139,9 @@
     </Filter>
     <Filter Include="Assets\Translations">
       <UniqueIdentifier>{c7557cbd-8373-4959-8b08-70cb664c7dc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\AppX">
+      <UniqueIdentifier>{d57053af-92c7-45a4-bcf5-be2ca997a37a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
