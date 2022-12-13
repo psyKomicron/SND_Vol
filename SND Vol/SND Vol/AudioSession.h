@@ -55,6 +55,11 @@ namespace Audio
         */
         void Volume(float const& desiredVolume);
 
+        inline winrt::hstring LogoPath()
+        {
+            return logoPath;
+        };
+
         /**
          * @brief State changed event subscriber.
          * @param handler Event handler
@@ -120,6 +125,7 @@ namespace Audio
         DWORD processPID = 0;
         ::winrt::impl::atomic_ref_count refCount{ 1 };
         winrt::hstring sessionName{};
+        winrt::hstring logoPath;
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float>> e_volumeChanged{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t>> e_stateChanged{};
@@ -130,7 +136,7 @@ namespace Audio
          * @return The name of the process
         */
         winrt::hstring GetProcessName(DWORD const& pid);
-        void GetPackageInfo(HANDLE processHandle);
+        bool GetPackageInfoFromHandle(HANDLE processHandle);
 
         // IAudioSessionEvents
         STDMETHOD(OnDisplayNameChanged)(LPCWSTR NewDisplayName, LPCGUID EventContext);

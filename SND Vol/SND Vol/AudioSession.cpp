@@ -282,9 +282,8 @@ namespace Audio
         hstring processName{};
 
         HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pId);
-        if (processHandle != NULL && processHandle != INVALID_HANDLE_VALUE)
+        if (processHandle != NULL && processHandle != INVALID_HANDLE_VALUE && !GetPackageInfoFromHandle(processHandle))
         {
-            GetPackageInfo(processHandle);
             // Try to get display name for UWP-like apps
             uint32_t applicationUserModelIdLength = 0;
             PWSTR applicationUserModelId = nullptr;
@@ -393,13 +392,14 @@ namespace Audio
         return processName;
     }
 
-    void AudioSession::GetPackageInfo(HANDLE processHandle)
+    bool AudioSession::GetPackageInfoFromHandle(HANDLE processHandle)
     {
+        bool success = false;
         uint32_t packageFullNameLength = 0;
         long result = GetPackageFullName(processHandle, &packageFullNameLength, nullptr);
         if (result != ERROR_INSUFFICIENT_BUFFER)
         {
-            return;
+            return false;
         }
 
         PWSTR packageFullNameWstr = new WCHAR[packageFullNameLength](0);
@@ -410,10 +410,10 @@ namespace Audio
             {
                 uint32_t bufferLength = 0;
                 uint32_t count = 0;
-                if (::GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, nullptr, &count) == ERROR_INSUFFICIENT_BUFFER)
+                if (GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, nullptr, &count) == ERROR_INSUFFICIENT_BUFFER)
                 {
                     BYTE* bytes = (BYTE*)malloc(bufferLength * sizeof(BYTE));
-                    if (SUCCEEDED(::GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, bytes, &count)))
+                    if (SUCCEEDED(GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, bytes, &count)))
                     {
                         try
                         {
@@ -426,60 +426,77 @@ namespace Audio
 
                                     // Create AppX factory.
                                     IAppxFactoryPtr factory = nullptr;
-                                    if (SUCCEEDED(CoCreateInstance(__uuidof(AppxFactory), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
+                                    check_hresult(CoCreateInstance(__uuidof(AppxFactory), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory)));
+                                    
+                                    // Get the AppXManifest.xml path for the package.
+                                    wchar_t appxManifest[2048](0); // 32 768 bits -- Supported by UTF-8 APIs
+                                    PathCombine(appxManifest, packageInfo.path, L"AppXManifest.xml");
+                                    if (lstrlen(appxManifest) > 0) // Check if PathCombine succeeded.
                                     {
-                                        // Get the AppXManifest.xml path for the package.
-                                        wchar_t appxManifest[2048](0); // 32 768 bits -- Supported by UTF-8 APIs
-                                        PathCombine(appxManifest, packageInfo.path, L"AppXManifest.xml");
-                                        if (lstrlen(appxManifest) > 0) // Check if PathCombine succeeded.
+                                        // Create stream and package reader to read package data.
+                                        IStreamPtr streamPtr = nullptr;
+                                        IAppxManifestReaderPtr manifestReaderPtr = nullptr;
+                                        check_hresult(SHCreateStreamOnFileEx(appxManifest, STGM_SHARE_DENY_NONE, 0, false, nullptr, &streamPtr));
+                                        
+                                        check_hresult(factory->CreateManifestReader(streamPtr, &manifestReaderPtr));
+
+                                        // Get the manifest data for the package.
+                                        // Get package display name through manifest properties.
+                                        IAppxManifestPropertiesPtr properties = nullptr;
+                                        manifestReaderPtr->GetProperties(&properties);
+
+                                        LPWSTR packageDisplayNameProperty = nullptr;
+                                        if (SUCCEEDED(properties->GetStringValue(L"DisplayName", &packageDisplayNameProperty)))
                                         {
-                                            // Create stream and package reader to read package data.
-                                            IStreamPtr streamPtr = nullptr;
-                                            IAppxManifestReaderPtr manifestReaderPtr = nullptr;
-                                            if (SUCCEEDED(SHCreateStreamOnFileEx(appxManifest, STGM_SHARE_DENY_NONE, 0, false, nullptr, &streamPtr)))
-                                            {
-                                                check_hresult(factory->CreateManifestReader(streamPtr, &manifestReaderPtr));
-
-                                                // Get the manifest data for the package.
-                                                // Get package display name through manifest properties.
-                                                IAppxManifestPropertiesPtr properties = nullptr;
-                                                manifestReaderPtr->GetProperties(&properties);
-                                                LPWSTR packageDisplayNameProperty = nullptr;
-                                                if (SUCCEEDED(properties->GetStringValue(L"DisplayName", &packageDisplayNameProperty)))
-                                                {
-                                                    OutputDebugHString(L"Package display name : " + to_hstring(packageDisplayNameProperty));
-                                                    CoTaskMemFree(packageDisplayNameProperty);
-                                                }
-
-                                                // Get manifest Applications node to get package data.
-                                                IAppxManifestApplicationsEnumeratorPtr manifestResEnumeratorPtr = nullptr;
-                                                manifestReaderPtr->GetApplications(&manifestResEnumeratorPtr);
-                                                // Wacky for each.
-                                                BOOL getHasCurrent = false;
-                                                while (SUCCEEDED(manifestResEnumeratorPtr->GetHasCurrent(&getHasCurrent)) && getHasCurrent)
-                                                {
-                                                    IAppxManifestApplicationPtr application = nullptr;
-                                                    if (FAILED(manifestResEnumeratorPtr->GetCurrent(&application)))
-                                                    {
-                                                        continue;
-                                                    }
-
-                                                    System::AppX::ManifestApplicationNode applicationNode{ application, packageInfo.path };
-                                                }
-                                            }
+                                            sessionName = to_hstring(packageDisplayNameProperty);
+                                            CoTaskMemFree(packageDisplayNameProperty);
                                         }
 
-                                        // Release raw COM pointers.
+                                        // Get manifest Applications node to get package data.
+                                        IAppxManifestApplicationsEnumeratorPtr manifestResEnumeratorPtr = nullptr;
+                                        manifestReaderPtr->GetApplications(&manifestResEnumeratorPtr);
+                                        BOOL getHasCurrent = false;
+                                        while (SUCCEEDED(manifestResEnumeratorPtr->GetHasCurrent(&getHasCurrent)) && getHasCurrent)
+                                        {
+                                            IAppxManifestApplicationPtr application = nullptr;
+                                            if (FAILED(manifestResEnumeratorPtr->GetCurrent(&application)))
+                                            {
+                                                continue;
+                                            }
+
+                                            System::AppX::ManifestApplicationNode applicationNode{ application, packageInfo.path };
+                                            if (sessionName.empty())
+                                            {
+                                                sessionName = applicationNode.DisplayName();
+                                            }
+
+                                            if (!applicationNode.Square150Logo().empty())
+                                            {
+                                                logoPath = applicationNode.SmallLogo();
+                                            }
+
+                                            manifestResEnumeratorPtr->MoveNext(&getHasCurrent);
+                                        }
+
+                                        success = true;
+                                        CloseHandle(processHandle); // Close the handle here to free up work.
                                     }
                                 }
                             }
                         }
-                        catch (hresult_error err)
+                        catch (const hresult_error& err)
                         {
                             OutputDebugHString(err.message());
                         }
                         catch (...)
                         {
+                            std::source_location location = source_location::current();
+                            string log = string(location.file_name()) + " " + string(location.function_name());
+                            OutputDebugHString(to_hstring(log) + L" : Catch all clause reached.");
+                            if (IsDebuggerPresent())
+                            {
+                                __debugbreak();
+                            }
                         }
                     }
 
@@ -502,6 +519,8 @@ namespace Audio
         {
             OutputDebugString(L"Failed to get package full name.\n");
         }
+
+        return success;
     }
 
     STDMETHODIMP AudioSession::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID)
