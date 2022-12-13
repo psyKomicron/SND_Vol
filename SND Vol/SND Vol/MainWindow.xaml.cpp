@@ -420,6 +420,20 @@ namespace winrt::SND_Vol::implementation
 
         // Reload content
         LoadContent();
+        if (!DisableAnimationsMenuFlyoutItem().IsChecked())
+        {
+            if (mainAudioEndpoint)
+            {
+                mainAudioEndpointPeakTimer.Start();
+                VolumeStoryboard().Begin();
+            }
+
+            if (audioSessions.get())
+            {
+                audioSessionsPeakTimer.Start();
+            }
+        }
+
         ResourceLoader loader{};
         WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoAudioSessionsReloaded"));
     }
@@ -761,10 +775,10 @@ namespace winrt::SND_Vol::implementation
                 audioSessionsPeakTimer = DispatcherQueue().CreateTimer();
                 mainAudioEndpointPeakTimer = DispatcherQueue().CreateTimer();
 
-                audioSessionsPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(83)));
+                audioSessionsPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(100)));
                 audioSessionsPeakTimer.Tick({ this, &MainWindow::UpdatePeakMeters });
 
-                mainAudioEndpointPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(83)));
+                mainAudioEndpointPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(100)));
                 mainAudioEndpointPeakTimer.Tick([&](auto, auto)
                 {
                     if (!loaded)
@@ -810,6 +824,8 @@ namespace winrt::SND_Vol::implementation
         }
 
         // Check for duplicates, multiple audio sessions might be grouped under one by the app/system owning the sessions.
+        //checkForDuplicates = false;
+        if (audioSession->State() != ::AudioSessionState::AudioSessionStateActive)
         {
             unique_lock lock{ audioSessionsMutex };
 
@@ -830,7 +846,15 @@ namespace winrt::SND_Vol::implementation
         audioSessionVolumeChanged.insert({ audioSession->Id(), audioSession->VolumeChanged({ this, &MainWindow::AudioSession_VolumeChanged }) });
         audioSessionsStateChanged.insert({ audioSession->Id(), audioSession->StateChanged({ this, &MainWindow::AudioSession_StateChanged }) });
 
-        AudioSessionView view{ audioSession->Name(), audioSession->Volume() * 100.0 };
+        AudioSessionView view = nullptr;
+        if (audioSession->LogoPath().empty())
+        {
+            view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0);
+        }
+        else
+        {
+            view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0, audioSession->LogoPath());
+        }
         view.Id(guid(audioSession->Id()));
         view.Muted(audioSession->Muted());
         view.SetState((AudioSessionState)audioSession->State());
@@ -1301,7 +1325,6 @@ namespace winrt::SND_Vol::implementation
         {
             audioSessionsPeakTimer.Stop();
         }
-
         if (mainAudioEndpointPeakTimer && mainAudioEndpointPeakTimer.IsRunning())
         {
             mainAudioEndpointPeakTimer.Stop();
@@ -1336,6 +1359,7 @@ namespace winrt::SND_Vol::implementation
             for (size_t i = 0; i < audioSessions->size(); i++)
             {
                 audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[audioSessions->at(i)->Id()]);
+                audioSessions->at(i)->StateChanged(audioSessionsStateChanged[audioSessions->at(i)->Id()]);
                 audioSessions->at(i)->Unregister();
                 audioSessions->at(i)->Release();
             }
