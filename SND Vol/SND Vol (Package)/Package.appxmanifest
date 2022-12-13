@@ -10,7 +10,7 @@
   <Identity
     Name="d638911b-ba40-4581-8fed-b7f8d0093ef9"
     Publisher="CN=psyKomicron"
-    Version="2.12.0.0" />
+    Version="2.12.3.0" />
 
   <Properties>
     <DisplayName>Croak (Package)</DisplayName>
@@ -44,12 +44,12 @@
       <Extensions>
         <desktop:Extension
           Category="windows.startupTask"
-          Executable="Croak.exe"
+          Executable="SND_Vol.exe"
           EntryPoint="Windows.FullTrustApplication">
             <desktop:StartupTask
               TaskId="CroakStartupTaskId"
-            Enabled="false"
-            DisplayName="Croak" />
+                Enabled="false"
+                DisplayName="Croak" />
         </desktop:Extension>
       </Extensions>
     </Application>
