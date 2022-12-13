@@ -12,7 +12,7 @@
     MaxHeight="{ThemeResource AudioSessionViewMaxHeight}"
     Background="{ThemeResource ExpanderBackground}"
     ToolTipService.ToolTip="{x:Bind Header, Mode=OneWay}"
-    Height="230"
+    Height="270"
     Width="85"
     CornerRadius="5"
     HorizontalAlignment="Stretch"
@@ -26,6 +26,11 @@
             <MenuFlyoutItem x:Uid="AudioSessionViewHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click"/>
         </MenuFlyout>
     </UserControl.ContextFlyout>
+    <UserControl.Transitions>
+        <TransitionCollection>
+            <RepositionThemeTransition IsStaggeringEnabled="False"/>
+        </TransitionCollection>
+    </UserControl.Transitions>
 
     <Grid
         x:Name="RootGrid"
@@ -49,7 +54,11 @@
                     Storyboard.TargetName="BorderClippingLeftCompositeTransform"
                     Storyboard.TargetProperty="ScaleY"
                     To="0"
-                    Duration="{StaticResource AudioMeterAnimationDuration}"/>
+                    Duration="{StaticResource AudioMeterAnimationDuration}">
+                    <DoubleAnimation.EasingFunction>
+                        <QuadraticEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
             </Storyboard>
 
             <Storyboard x:Name="RightPeakStoryboard">
@@ -58,7 +67,11 @@
                     Storyboard.TargetName="BorderClippingRightCompositeTransform"
                     Storyboard.TargetProperty="ScaleY"
                     To="0"
-                    Duration="{StaticResource AudioMeterAnimationDuration}"/>
+                    Duration="{StaticResource AudioMeterAnimationDuration}">
+                    <DoubleAnimation.EasingFunction>
+                        <QuadraticEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
             </Storyboard>
         </Grid.Resources>
         <Grid.RowDefinitions>
@@ -105,25 +118,34 @@
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
+
+            <VisualStateGroup>
+                <VisualState x:Name="UsingHeader"/>
+
+                <VisualState x:Name="UsingLogo">
+                    <VisualState.Setters>
+                        <Setter Target="HeaderTextBlock.Visibility" Value="Collapsed"/>
+                        <Setter Target="AudioSessionAppLogo.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
         <Border
             x:Name="VolumePeakBorderLeft"
             Background="{StaticResource AudioMeterBackground}"
             Opacity="{StaticResource PeakBorderOpacity}"
-            CornerRadius="0"
-            Height="171"
+            CornerRadius="5,0,0,5"
             Width="7"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Center"
-            Margin="0,-5,0,-3"
-            Grid.RowSpan="4"
-            Translation="-6,-5,0">
+            VerticalAlignment="Stretch"
+            Grid.Row="2"
+            Translation="-5,0,0">
 
             <Border.Clip>
-                <RectangleGeometry x:Name="BorderClippingLeft" Rect="0 0 10 171">
+                <RectangleGeometry x:Name="BorderClippingLeft">
                     <RectangleGeometry.Transform>
-                        <CompositeTransform x:Name="BorderClippingLeftCompositeTransform" ScaleY="0" Rotation="180" TranslateY="171" TranslateX="10"/>
+                        <CompositeTransform x:Name="BorderClippingLeftCompositeTransform" ScaleY="0" Rotation="180" TranslateX="7"/>
                     </RectangleGeometry.Transform>
                 </RectangleGeometry>
             </Border.Clip>
@@ -133,19 +155,17 @@
             x:Name="VolumePeakBorderRight"
             Background="{StaticResource AudioMeterBackground}"
             Opacity="{StaticResource PeakBorderOpacity}"
-            CornerRadius="0"
-            Height="171"
+            CornerRadius="0,5,5,0"
             Width="7"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Center"
-            Margin="0,-5,0,-3"
-            Grid.RowSpan="4"
-            Translation="7,-5,0">
+            VerticalAlignment="Stretch"
+            Grid.Row="2"
+            Translation="7,0,0">
 
             <Border.Clip>
-                <RectangleGeometry x:Name="BorderClippingRight" Rect="0 0 10 171">
+                <RectangleGeometry x:Name="BorderClippingRight">
                     <RectangleGeometry.Transform>
-                        <CompositeTransform x:Name="BorderClippingRightCompositeTransform" ScaleY="0" Rotation="180" TranslateY="171" TranslateX="10"/>
+                        <CompositeTransform x:Name="BorderClippingRightCompositeTransform" ScaleY="0" Rotation="180" TranslateX="7"/>
                     </RectangleGeometry.Transform>
                 </RectangleGeometry>
             </Border.Clip>
@@ -163,6 +183,15 @@
             TextTrimming="CharacterEllipsis"
             MaxLines="1"
             Grid.Row="0"/>
+
+        <Image
+            x:Name="AudioSessionAppLogo"
+            Stretch="Uniform"
+            Grid.Row="0"
+            Visibility="Collapsed"
+            Height="35"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"/>
 
         <Slider
             x:Name="VolumeSlider"

@@ -12,6 +12,7 @@ namespace winrt::SND_Vol::implementation
     public:
         AudioSessionView();
         AudioSessionView(winrt::hstring const& header, double const& volume);
+        AudioSessionView(winrt::hstring const& header, double const& volume, const winrt::hstring& logoPath);
 
         winrt::hstring Header();
         void Header(winrt::hstring const& value);

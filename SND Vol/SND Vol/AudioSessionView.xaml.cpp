@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <limits>
+using namespace winrt::Microsoft::UI::Xaml::Media::Imaging;
 
 using namespace winrt;
 
@@ -30,6 +31,21 @@ namespace winrt::SND_Vol::implementation
         _header = header;
         _volume = round(volume);
         SetGlyph();
+    }
+
+    AudioSessionView::AudioSessionView(winrt::hstring const& header, double const& volume, const winrt::hstring& logoPath) :
+        AudioSessionView(header, volume)
+    {
+        try
+        {
+            BitmapImage imageSource{ Uri(logoPath) };
+            AudioSessionAppLogo().Source(imageSource);
+            VisualStateManager::GoToState(*this, L"UsingLogo", false);
+        }
+        catch (const hresult_error& err)
+        {
+            OutputDebugHString(err.message());
+        }
     }
 
 
@@ -166,23 +182,6 @@ namespace winrt::SND_Vol::implementation
     void AudioSessionView::SetPeak(float peak)
     {
         if (!isActive) return;
-        
-        /*if (peak > 0.9f)
-        {
-            StatusEllipse().Fill(SolidColorBrush(Colors::LimeGreen()));
-        }
-        else if (peak > 0.5f)
-        {
-            StatusEllipse().Fill(SolidColorBrush(Colors::Green()));
-        }
-        else if (peak > 0.2f)
-        {
-            StatusEllipse().Fill(SolidColorBrush(Colors::DarkGreen()));
-        }
-        else
-        {
-            StatusEllipse().Fill(SolidColorBrush(Colors::Transparent()));
-        }*/
 
         LeftPeakAnimation().To(static_cast<double>(peak));
         LeftPeakStoryboard().Begin();
@@ -234,11 +233,10 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        /*double height = CenterRow().ActualHeight();
-        VolumePeakBorder().Height(height);
-        ::Numerics::float3 translation = VolumePeakBorder().Translation();
-        translation.y = height;
-        VolumePeakBorder().Translation(translation);*/
+        BorderClippingLeft().Rect(Rect(0, 0, VolumePeakBorderLeft().ActualWidth(), VolumePeakBorderLeft().ActualHeight()));
+        BorderClippingRight().Rect(Rect(0, 0, VolumePeakBorderRight().ActualWidth(), VolumePeakBorderRight().ActualHeight()));
+        BorderClippingLeftCompositeTransform().TranslateY(VolumePeakBorderLeft().ActualHeight());
+        BorderClippingRightCompositeTransform().TranslateY(VolumePeakBorderRight().ActualHeight());
     }
 
     void AudioSessionView::RootGrid_PointerEntered(winrt::Windows::Foundation::IInspectable const&, PointerRoutedEventArgs const&)
