@@ -11,7 +11,8 @@
     <LinearGradientBrush x:Name="AudioMeterBackground">
         <GradientStopCollection>
             <GradientStop Color="Red" Offset="0"/>
-            <GradientStop Color="#9D5D00" Offset="0.2"/>
+            <GradientStop Color="#9D5D00" Offset="0.1"/>
+            <GradientStop Color="Yellow" Offset="0.25"/>
             <GradientStop Color="LimeGreen" Offset="0.4"/>
             <GradientStop Color="LimeGreen" Offset="0.6"/>
             <GradientStop Color="#0F7B0F" Offset="0.8"/>
@@ -22,6 +23,7 @@
             <GradientStop Color="#0F7B0F" Offset="0.2"/>
             <GradientStop Color="LimeGreen" Offset="0.3"/>
             <GradientStop Color="LimeGreen" Offset="0.5"/>
+            <GradientStop Color="Yellow" Offset="0.70"/>
             <GradientStop Color="#9D5D00" Offset="0.8"/>
             <GradientStop Color="Red" Offset="0.9"/>
         </GradientStopCollection>
@@ -38,10 +40,10 @@
     <x:Double x:Key="BackdropSecondaryTintOpacity">0.75</x:Double>
     <x:Double x:Key="BackdropSecondaryLuminosityOpacity">0.95</x:Double>
     <x:Double x:Key="AudioSessionViewMinHeight">245</x:Double>
-    <x:Double x:Key="AudioSessionViewMaxHeight">260</x:Double>
+    <x:Double x:Key="AudioSessionViewMaxHeight">290</x:Double>
     <x:Double x:Key="FontIconHeight">15</x:Double>
     <x:Double x:Key="SettingHostControlMinHeight">70</x:Double>
-    <x:Double x:Key="PeakBorderOpacity">0.65</x:Double>
+    <x:Double x:Key="PeakBorderOpacity">0.55</x:Double>
     
     <x:Int32 x:Key="WindowWidth">300</x:Int32>
     <x:Int32 x:Key="WindowHeight">500</x:Int32>
