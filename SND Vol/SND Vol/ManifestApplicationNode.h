@@ -67,6 +67,8 @@ namespace System::AppX
 		std::wstring foregroundText;
 		std::wstring shortName;
 		std::wstring square70x70Logo;
+
+		std::wstring GetScale(std::wstring path);
 	};
 }
 
