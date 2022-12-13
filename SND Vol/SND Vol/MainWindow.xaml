@@ -182,14 +182,24 @@
                                 Storyboard.TargetName="BorderLeftClippingCompositeTransform"
                                 Storyboard.TargetProperty="ScaleX"
                                 To="0"
-                                Duration="{StaticResource AudioMeterAnimationDuration}"/>
+                                Duration="{StaticResource AudioMeterAnimationDuration}">
+                                
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
 
                             <DoubleAnimation 
                                 x:Name="RightVolumeAnimation"
                                 Storyboard.TargetName="BorderRightClippingCompositeTransform"
                                 Storyboard.TargetProperty="ScaleX"
                                 To="0"
-                                Duration="{StaticResource AudioMeterAnimationDuration}"/>
+                                Duration="{StaticResource AudioMeterAnimationDuration}">
+
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
                         </Storyboard>
                     </Grid.Resources>
 
@@ -205,12 +215,14 @@
                         x:Name="SystemVolumeActivityBorderLeft"
                         Grid.Column="1"
                         Background="{StaticResource AudioMeterReversedBackground}"
-                        Opacity="{StaticResource PeakBorderOpacity}"
-                        Height="6"
+                        Opacity="{ThemeResource PeakBorderOpacity}"
+                        CornerRadius="5,0,5,0"
+                        Height="7"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
-                        Translation="0,-6,0"
+                        Translation="0,-5.4,0"
                         SizeChanged="SystemVolumeActivityBorder_SizeChanged">
+                        
                         <Border.Clip>
                             <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingLeft">
                                 <RectangleGeometry.Transform>
@@ -224,11 +236,13 @@
                         x:Name="SystemVolumeActivityBorderRight"
                         Grid.Column="1"
                         Background="{StaticResource AudioMeterReversedBackground}"
-                        Opacity="{StaticResource PeakBorderOpacity}"
-                        Height="6"
+                        Opacity="{ThemeResource PeakBorderOpacity}"
+                        CornerRadius="0,0,5,5"
+                        Height="7"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
-                        Translation="0,6,0">
+                        Translation="0,6.4,0">
+                        
                         <Border.Clip>
                             <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingRight">
                                 <RectangleGeometry.Transform>
@@ -329,6 +343,7 @@
                             <GridView.Resources>
                                 <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
                                     <Setter Property="AllowDrop" Value="False" />
+                                    <Setter Property="MaxHeight" Value="400"/>
                                 </Style>
                             </GridView.Resources>
                         </GridView>
