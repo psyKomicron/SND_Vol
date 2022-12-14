@@ -440,7 +440,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::KeepOnTopToggleMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        bool alwaysOnTop = KeepOnTopToggleMenuFlyoutItem().IsChecked();
+        bool alwaysOnTop = KeepOnTopToggleMenuFlyoutItem().IsChecked().GetBoolean();
         appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop(alwaysOnTop);
         ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
     }
@@ -550,10 +550,10 @@ namespace winrt::SND_Vol::implementation
         profilesMenuFlyout.Tag(box_value(L"Profiles"));
         profilesMenuFlyout.Text(L"Profiles");
 
-        if (SettingsButtonFlyout().Items().GetAt(0).Tag().try_as<hstring>() == L"Profiles")
+        /*if (SettingsCommandBarFlyout().SecondaryCommands().Items().GetAt(0).Tag().try_as<hstring>() == L"Profiles")
         {
             SettingsButtonFlyout().Items().RemoveAt(0);
-        }
+        }*/
 
         ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
         if (audioProfilesContainer)
@@ -573,7 +573,7 @@ namespace winrt::SND_Vol::implementation
             }
         }
 
-        SettingsButtonFlyout().Items().InsertAt(0, profilesMenuFlyout);
+        //SettingsButtonFlyout().Items().InsertAt(0, profilesMenuFlyout);
     }
     #pragma endregion
 
@@ -1283,6 +1283,7 @@ namespace winrt::SND_Vol::implementation
                         // HACK: Can we use INotifyPropertyChanged to raise that the vector has changed ?
                         AudioSessionsPanel().ItemsSource(audioSessionViews);
 
+                        // I18N: Loaded profile [profile name]
                         WindowMessageBar().EnqueueMessage(L"Loaded profile " + profileName);
                     }
                 }
@@ -1291,6 +1292,10 @@ namespace winrt::SND_Vol::implementation
                     // I18N: Failed to load profile [profile name]
                     WindowMessageBar().EnqueueMessage(L"Couldn't load profile " + profileName);
                     OutputDebugHString(error.message());
+                }
+                catch (const std::out_of_range& error)
+                {
+                    OutputDebugHString(to_hstring(error.what()));
                 }
             }
         }
