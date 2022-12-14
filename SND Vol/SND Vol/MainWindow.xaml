@@ -79,69 +79,83 @@
                     </Viewbox>
 
                     <Button.Flyout>
-                        <MenuFlyout x:Name="SettingsButtonFlyout" ShowMode="Transient" Opening="MenuFlyout_Opening">
+                        <CommandBarFlyout x:Name="SettingsCommandBarFlyout">
+                            <CommandBarFlyout.PrimaryCommands>
+                                <AppBarButton x:Uid="MainWindowReloadFlyoutItem" Icon="Refresh" Click="ReloadMenuFlyoutItem_Click">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control" Key="R"/>
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
 
-                            <!--<MenuFlyoutSubItem 
-                                x:Name="ProfilesMenuFlyoutItem" 
-                                Text="Profiles"/>-->
+                                <AppBarButton x:Uid="MainWindowHideFlyoutItem" Click="HideMenuFlyoutItem_Click">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control" Key="H"/>
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
 
-                            <MenuFlyoutSubItem x:Uid="MainWindowDisplayMenuFlyoutItem">
-                                <ToggleMenuFlyoutItem
-                                    x:Uid="MainWindowKeepOnTopToggleMenuFlyoutItem"
+                                <AppBarButton x:Uid="MainWindowSwitchStateFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control" Key="M"/>
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+
+                                <AppBarButton x:Uid="MainWindowRestartFlyoutItem" Click="RestartMenuFlyoutItem_Click">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control,Shift" Key="R" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+
+                                <AppBarElementContainer>
+                                    <ComboBox>
+                                        <FontIcon x:Uid="MainWindowLayoutMenuHorizontal" Glyph="&#xf0e2;"/>
+                                        <FontIcon x:Uid="MainWindowLayoutMenuVertical" Glyph="&#xea37;"/>
+                                        <FontIcon x:Uid="MainWindowLayoutMenuAuto" Glyph="&#xecaa;"/>
+                                    </ComboBox>
+                                </AppBarElementContainer>
+                            </CommandBarFlyout.PrimaryCommands>
+
+                            <CommandBarFlyout.SecondaryCommands>
+
+                                <AppBarToggleButton 
+                                    Label="1"
+                                    Click="DisableHotKeysMenuFlyoutItem_Click"/>
+
+                                <AppBarToggleButton 
                                     x:Name="KeepOnTopToggleMenuFlyoutItem"
+                                    Label="1"
                                     Click="KeepOnTopToggleMenuFlyoutItem_Click"/>
-                                <ToggleMenuFlyoutItem 
-                                    x:Uid="MainWindowDisableAnimationsMenuFlyoutItem"
+
+                                <AppBarToggleButton
                                     x:Name="DisableAnimationsMenuFlyoutItem"
+                                    Label="1"
                                     Click="DisableAnimationsToggleMenuFlyoutItem_Click"/>
-                                <ToggleMenuFlyoutItem 
-                                    x:Uid="MainWindowSwitchPresenterStyleMenuFlyoutItem"
+
+                                <AppBarToggleButton
                                     x:Name="SwitchPresenterStyleMenuFlyoutItem"
+                                    Label="1"
                                     Click="SwitchPresenterStyleMenuFlyoutItem_Click"/>
-                                <ToggleMenuFlyoutItem
-                                    x:Uid="MainWindowShowAppBarMenuFlyoutItem"
+
+                                <AppBarToggleButton
                                     x:Name="ShowAppBarMenuFlyoutItem"
+                                    Label="1"
                                     Click="ShowAppBarMenuFlyoutItem_Click"/>
-                            </MenuFlyoutSubItem>
 
-                            <MenuFlyoutSubItem x:Uid="MainWindowLayoutMenuFlyoutItem">
-                                <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemHorizontal" Click="HorizontalViewMenuFlyoutItem_Click"/>
-                                <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemVertical" Click="VerticalViewMenuFlyoutItem_Click"/>
-                                <MenuFlyoutItem x:Uid="MainWindowLayoutMenuFlyoutItemAuto" Click="AutoViewMenuFlyoutItem_Click"/>
-                            </MenuFlyoutSubItem>
+                                <AppBarSeparator/>
 
-                            <MenuFlyoutSeparator/>
-
-                            <MenuFlyoutItem x:Uid="MainWindowHideMenuFlyoutItem" Click="HideMenuFlyoutItem_Click">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="H" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
-                            </MenuFlyoutItem>
-
-                            <MenuFlyoutItem x:Uid="MainWindowRestartMenuFlyoutItem" Click="RestartMenuFlyoutItem_Click">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
-                            </MenuFlyoutItem>
-
-                            <MenuFlyoutItem x:Uid="MainWindowSwitchStateMenuFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="M" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
-                            </MenuFlyoutItem>
-
-                            <MenuFlyoutItem x:Uid="MainWindowReloadMenuFlyoutItem" Click="ReloadMenuFlyoutItem_Click">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="R" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
-                            </MenuFlyoutItem>
-
-                            <MenuFlyoutItem x:Uid="MainWindowDisableHotKeysMenuFlyoutItem" Click="DisableHotKeysMenuFlyoutItem_Click"/>
-
-                            <MenuFlyoutSeparator/>
-
-                            <MenuFlyoutItem x:Uid="MainWindowSettingsMenuFlyoutItem" x:Name="SettingsMenuFlyoutItem" Click="SettingsMenuFlyoutItem_Click"/>
-                        </MenuFlyout>
+                                <AppBarButton
+                                    x:Name="SettingsMenuFlyoutItem"
+                                    Label="1"
+                                    Click="SettingsMenuFlyoutItem_Click" Icon="Setting"/>
+                                <!--
+                                    x:Uid="MainWindowDisableHotKeysFlyoutItem"
+                                    x:Uid="MainWindowKeepOnTopToggleFlyoutItem"
+                                    x:Uid="MainWindowDisableAnimationsFlyoutItem"
+                                    x:Uid="MainWindowSwitchPresenterStyleFlyoutItem"
+                                    x:Uid="MainWindowShowAppBarFlyoutItem"
+                                    x:Uid="MainWindowSettingsMenuFlyoutItem"
+                                -->
+                            </CommandBarFlyout.SecondaryCommands>
+                        </CommandBarFlyout>
                     </Button.Flyout>
                 </Button>
 
