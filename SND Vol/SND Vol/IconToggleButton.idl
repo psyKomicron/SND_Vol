@@ -1,0 +1,21 @@
+namespace SND_Vol
+{
+    [default_interface]
+    runtimeclass IconToggleButton : Microsoft.UI.Xaml.Controls.Control
+    {
+        IconToggleButton();
+
+        static Microsoft.UI.Xaml.DependencyProperty OnContentProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty OffContentProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty GlyphProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty IconStyleProperty{ get; };
+
+        IInspectable OnContent;
+        IInspectable OffContent;
+        String Glyph;
+        Boolean IsOn;
+        Microsoft.UI.Xaml.Style IconStyle;
+
+        event Windows.Foundation.TypedEventHandler<IconToggleButton, Microsoft.UI.Xaml.RoutedEventArgs> Click;
+    }
+}
