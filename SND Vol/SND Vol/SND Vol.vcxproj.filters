@@ -85,6 +85,9 @@
     <ClCompile Include="ManifestApplicationNode.cpp">
       <Filter>System\AppX</Filter>
     </ClCompile>
+    <ClCompile Include="IconToggleButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
