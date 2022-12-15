@@ -18,37 +18,37 @@ namespace winrt::SND_Vol::implementation
     {
         InitializeComponent();
 
-        audioProfiles.VectorChanged([this](auto sender, IVectorChangedEventArgs args)
-        {
-            static bool reordering = false;
+        //audioProfiles.VectorChanged([this](auto sender, IVectorChangedEventArgs args)
+        //{
+        //    static bool reordering = false;
 
-            if (args.CollectionChange() == CollectionChange::ItemInserted && reordering)
-            {
-                if (audioProfiles.Size() > 0)
-                {
-                    audioProfiles.GetAt(0).IsDefaultProfile(true);
-                    // Save the new default profile.
-                    ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
-                    audioProfiles.GetAt(0).Save(audioProfilesContainer);
+        //    if (args.CollectionChange() == CollectionChange::ItemInserted && reordering)
+        //    {
+        //        if (audioProfiles.Size() > 0)
+        //        {
+        //            audioProfiles.GetAt(0).IsDefaultProfile(true);
+        //            // Save the new default profile.
+        //            ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
+        //            audioProfiles.GetAt(0).Save(audioProfilesContainer);
 
-                    for (uint32_t i = 1; i < audioProfiles.Size(); i++)
-                    {
-                        audioProfiles.GetAt(i).IsDefaultProfile(false);
-                        // Save the newly edited profile.
-                        audioProfiles.GetAt(i).Save(audioProfilesContainer);
-                    }
-                }
-            }
+        //            for (uint32_t i = 1; i < audioProfiles.Size(); i++)
+        //            {
+        //                audioProfiles.GetAt(i).IsDefaultProfile(false);
+        //                // Save the newly edited profile.
+        //                audioProfiles.GetAt(i).Save(audioProfilesContainer);
+        //            }
+        //        }
+        //    }
 
-            if (args.CollectionChange() == CollectionChange::ItemRemoved && !reordering)
-            {
-                reordering = true;
-            }
-            else
-            {
-                reordering = false;
-            }
-        });
+        //    if (args.CollectionChange() == CollectionChange::ItemRemoved && !reordering)
+        //    {
+        //        reordering = true;
+        //    }
+        //    else
+        //    {
+        //        reordering = false;
+        //    }
+        //});
 
         ProfilesListView().ItemsSource(audioProfiles);
     }
@@ -75,23 +75,6 @@ namespace winrt::SND_Vol::implementation
                 }
                 catch (const hresult_error&)
                 {
-                }
-            }
-
-            if (audioProfiles.Size() == 1)
-            {
-                audioProfiles.GetAt(0).IsDefaultProfile(true);
-            }
-            else
-            {
-                for (uint32_t i = 0; i < static_cast<uint32_t>(audioProfiles.Size()); i++)
-                {
-                    if (audioProfiles.GetAt(i).IsDefaultProfile())
-                    {
-                        AudioProfile audioProfile = audioProfiles.GetAt(i);
-                        audioProfiles.RemoveAt(i);
-                        audioProfiles.InsertAt(0, audioProfile);
-                    }
                 }
             }
         }
@@ -130,18 +113,6 @@ namespace winrt::SND_Vol::implementation
 
     void AudioProfilesPage::Page_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
-        DefaultProfileTeachingTip().Target(ProfilesListView());
-
-        ApplicationDataContainer teachingTips = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"TeachingTips");
-        if (!teachingTips)
-        {
-            teachingTips = ApplicationData::Current().LocalSettings().CreateContainer(L"TeachingTips", ApplicationDataCreateDisposition::Always);
-        }
-        if (!teachingTips.Values().HasKey(L"ShowDefaultProfileTeachingTip"))
-        {
-            DefaultProfileTeachingTip().IsOpen(true);
-            teachingTips.Values().Insert(L"ShowDefaultProfileTeachingTip", IReference<bool>(false));
-        }
     }
 
     void AudioProfilesPage::AddProfileButton_Click(IInspectable const&, RoutedEventArgs const&)
