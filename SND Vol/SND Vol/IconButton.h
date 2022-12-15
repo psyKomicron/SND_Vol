@@ -12,25 +12,44 @@ namespace winrt::SND_Vol::implementation
     public:
         IconButton();
 
-        winrt::hstring Glyph() const { return glyph; };
-        void Glyph(const winrt::hstring& value) { glyph = value; };
-        winrt::hstring Text() const { return text; };
-        void Text(const winrt::hstring& value) { text = value; };
+        winrt::hstring Glyph() const;
+        void Glyph(const winrt::hstring& value);
+        winrt::hstring Text() const;
+        void Text(const winrt::hstring& value);
 
-        inline winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
+        static Microsoft::UI::Xaml::DependencyProperty GlyphProperty()
         {
-            return e_propertyChanged.add(handler);
+            return _glyphProperty;
         };
-        inline void PropertyChanged(winrt::event_token const& token)
+
+        static Microsoft::UI::Xaml::DependencyProperty TextProperty()
         {
-            e_propertyChanged.remove(token);
+            return _textNameProperty;
         };
+
+        inline winrt::event_token Click(const Windows::Foundation::TypedEventHandler<winrt::SND_Vol::IconButton, Microsoft::UI::Xaml::RoutedEventArgs>& handler)
+        {
+            return e_click.add(handler);
+        };
+
+        inline void Click(const winrt::event_token token)
+        {
+            e_click.remove(token);
+        };
+
+        void OnPointerEntered(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args);
+        void OnPointerExited(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args);
+        void OnPointerPressed(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args);
+        void OnPointerReleased(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args);
 
     private:
-        winrt::hstring glyph = L"";
-        winrt::hstring text = L"";
+        static Microsoft::UI::Xaml::DependencyProperty _glyphProperty;
+        static Microsoft::UI::Xaml::DependencyProperty _textNameProperty;
 
-        winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged {};
+        bool pointerExited = false;
+        bool enabled = true;
+
+        winrt::event<Windows::Foundation::TypedEventHandler<winrt::SND_Vol::IconButton, Microsoft::UI::Xaml::RoutedEventArgs>> e_click {};
     };
 }
 

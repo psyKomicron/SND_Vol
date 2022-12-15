@@ -1,11 +1,16 @@
 namespace SND_Vol
 {
     [default_interface]
-    runtimeclass IconButton : Microsoft.UI.Xaml.Controls.Control, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    runtimeclass IconButton : Microsoft.UI.Xaml.Controls.Control
     {
         IconButton();
 
-        String Glyph{ get; set; };
-        String Text{ get; set; };
+        String Glyph;
+        String Text;
+
+        static Microsoft.UI.Xaml.DependencyProperty GlyphProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty TextProperty{ get; };
+
+        event Windows.Foundation.TypedEventHandler<IconButton, Microsoft.UI.Xaml.RoutedEventArgs> Click;
     }
 }
