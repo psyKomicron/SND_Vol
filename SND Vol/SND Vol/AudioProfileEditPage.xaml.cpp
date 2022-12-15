@@ -152,13 +152,7 @@ namespace winrt::SND_Vol::implementation
                 bool muted = audioProfile.AudioStates().Lookup(pair.Key());
                 uint32_t index = audioProfile.SessionsIndexes().Lookup(pair.Key());
 
-                AudioSessionView view{};
-                view.Header(sessionName);
-                view.Volume(volume);
-                view.Muted(muted);
-                view.ContextFlyout(nullptr);
-
-                views[index] = view;
+                views[index] = CreateAudioSessionView(sessionName, volume, muted);
             }
 
             audioSessions = single_threaded_observable_vector<AudioSessionView>(std::move(views));
@@ -170,13 +164,7 @@ namespace winrt::SND_Vol::implementation
             for (size_t i = 0; i < audioSessionsPtr->size(); i++)
             {
                 // Create view.
-                AudioSessionView view{};
-                view.Header(audioSessionsPtr->at(i)->Name());
-                view.Volume(audioSessionsPtr->at(i)->Volume() * 100.);
-                view.Muted(audioSessionsPtr->at(i)->Muted());
-                view.ContextFlyout(nullptr);
-
-                AudioSessions().Append(view);
+                audioSessions.Append(CreateAudioSessionView(audioSessionsPtr->at(i)->Name(), audioSessionsPtr->at(i)->Volume() * 100., audioSessionsPtr->at(i)->Muted()));
 
                 audioSessionsPtr->at(i)->Release(); // Directly release the AudioSession and release COM resources.
             }
@@ -264,6 +252,32 @@ namespace winrt::SND_Vol::implementation
         ProfileAddGridView().Items().Clear();
     }
 
+    void AudioProfileEditPage::LockSessionAppBarButton_Click(IInspectable const& sender, RoutedEventArgs const&)
+    {
+        hstring header = sender.as<FrameworkElement>().Tag().as<hstring>();
+        for (uint32_t i = 0; i < audioSessions.Size(); i++)
+        {
+            if (audioSessions.GetAt(i).Header() == header)
+            {
+                VisualStateManager::GoToState(audioSessions.GetAt(i), L"Locked", true);
+                break;
+            }
+        }
+    }
+
+    void AudioProfileEditPage::RemoveSessionAppBarButton_Click(IInspectable const& sender, RoutedEventArgs const&)
+    {
+        hstring header = sender.as<FrameworkElement>().Tag().as<hstring>();
+        for (uint32_t i = 0; i < audioSessions.Size(); i++)
+        {
+            if (audioSessions.GetAt(i).Header() == header)
+            {
+                audioSessions.RemoveAt(i);
+                break;
+            }
+        }
+    }
+
 
     void AudioProfileEditPage::SaveProfile()
     {
@@ -303,5 +317,43 @@ namespace winrt::SND_Vol::implementation
         }
 
         audioProfile.Save(audioProfilesContainer);
+    }
+
+    winrt::SND_Vol::AudioSessionView AudioProfileEditPage::CreateAudioSessionView(hstring header, float volume, bool muted)
+    {
+        winrt::SND_Vol::AudioSessionView view{};
+        view.Header(header);
+        view.Volume(volume);
+        view.Muted(muted);
+
+        CommandBarFlyout flyout{};
+
+        TextBlock text{};
+        FontIcon icon{};
+        AppBarButton button{};
+        text.Text(L"Lock");
+        icon.Glyph(L"\ue72e");
+        button.Content(std::move(text));
+        button.Icon(std::move(icon));
+        button.Click({ this, &AudioProfileEditPage::LockSessionAppBarButton_Click });
+        button.Tag(box_value(header));
+        flyout.PrimaryCommands().Append(std::move(button));
+
+        text = TextBlock();
+        icon = FontIcon();
+        button = AppBarButton();
+        text.Text(L"Remove");
+        icon.Glyph(L"\ue74d");
+        button.Content(std::move(text));
+        button.Icon(std::move(icon));
+        button.Click({ this, &AudioProfileEditPage::RemoveSessionAppBarButton_Click });
+        button.Tag(box_value(header));
+        flyout.PrimaryCommands().Append(button);
+
+        flyout.SecondaryCommands().Append(AppBarButton());
+
+        view.ContextFlyout(flyout);
+
+        return view;
     }
 }

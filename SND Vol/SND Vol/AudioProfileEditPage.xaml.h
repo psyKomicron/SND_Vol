@@ -34,6 +34,8 @@ namespace winrt::SND_Vol::implementation
         void ProfileNameEditTextBox_TextChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs const& e);
         winrt::Windows::Foundation::IAsyncAction CreateAudioSessionButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         winrt::Windows::Foundation::IAsyncAction AddAudioSessionButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void LockSessionAppBarButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void RemoveSessionAppBarButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
         winrt::SND_Vol::AudioProfile audioProfile{ nullptr };
@@ -44,6 +46,7 @@ namespace winrt::SND_Vol::implementation
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
 
         void SaveProfile();
+        winrt::SND_Vol::AudioSessionView CreateAudioSessionView(winrt::hstring header, float volume, bool muted);
     };
 }
 

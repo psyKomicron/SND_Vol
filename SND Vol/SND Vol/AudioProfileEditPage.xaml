@@ -28,7 +28,7 @@
                             Duration="0:0:0.440">
 
                             <DoubleAnimation.EasingFunction>
-                                <ExponentialEase EasingMode="EaseInOut" Exponent="3"/>
+                                <SineEase EasingMode="EaseInOut" />
                             </DoubleAnimation.EasingFunction>
                         </DoubleAnimation>
                     </Storyboard>
