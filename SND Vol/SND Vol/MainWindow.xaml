@@ -3,7 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:snd_vol="using:SND_Vol"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:s="using:SND_Vol"
     mc:Ignorable="d"
     Activated="Window_Activated">
 
@@ -79,83 +80,123 @@
                     </Viewbox>
 
                     <Button.Flyout>
-                        <CommandBarFlyout x:Name="SettingsCommandBarFlyout">
-                            <CommandBarFlyout.PrimaryCommands>
-                                <AppBarButton x:Uid="MainWindowReloadFlyoutItem" Icon="Refresh" Click="ReloadMenuFlyoutItem_Click">
-                                    <AppBarButton.KeyboardAccelerators>
-                                        <KeyboardAccelerator Modifiers="Control" Key="R"/>
-                                    </AppBarButton.KeyboardAccelerators>
-                                </AppBarButton>
+                        <Flyout x:Name="SettingsButtonFlyout">
+                            <Grid Margin="-16,-17" CornerRadius="{StaticResource ControlCornerRadius}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
 
-                                <AppBarButton x:Uid="MainWindowHideFlyoutItem" Click="HideMenuFlyoutItem_Click">
-                                    <AppBarButton.KeyboardAccelerators>
-                                        <KeyboardAccelerator Modifiers="Control" Key="H"/>
-                                    </AppBarButton.KeyboardAccelerators>
-                                </AppBarButton>
+                                <Grid Grid.Row="0" Padding="5,7,5,5" VerticalAlignment="Center">
+                                    <Grid.Background>
+                                        <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorSecondary}" Opacity="0.4"/>
+                                    </Grid.Background>
+                                    <Grid.Resources>
+                                        <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                                            <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Height" Value="34"/>
+                                            <Setter Property="Width" Value="37"/>
+                                            <Setter Property="Margin" Value="0" />
+                                        </Style>
+                                        <Style TargetType="FontIcon">
+                                            <Setter Property="FontSize" Value="16"/>
+                                        </Style>
+                                    </Grid.Resources>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <AppBarButton x:Uid="MainWindowSwitchStateFlyoutItem" Click="SwitchStateMenuFlyoutItem_Click">
-                                    <AppBarButton.KeyboardAccelerators>
-                                        <KeyboardAccelerator Modifiers="Control" Key="M"/>
-                                    </AppBarButton.KeyboardAccelerators>
-                                </AppBarButton>
+                                    <VariableSizedWrapGrid
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        ItemHeight="35"
+                                        ItemWidth="40"
+                                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                        MaxWidth="300">
 
-                                <AppBarButton x:Uid="MainWindowRestartFlyoutItem" Click="RestartMenuFlyoutItem_Click">
-                                    <AppBarButton.KeyboardAccelerators>
-                                        <KeyboardAccelerator Modifiers="Control,Shift" Key="R" />
-                                    </AppBarButton.KeyboardAccelerators>
-                                </AppBarButton>
+                                        <Button>
+                                            <FontIcon Glyph="&#xe72c;"/>
 
-                                <AppBarElementContainer>
-                                    <ComboBox>
-                                        <FontIcon x:Uid="MainWindowLayoutMenuHorizontal" Glyph="&#xf0e2;"/>
-                                        <FontIcon x:Uid="MainWindowLayoutMenuVertical" Glyph="&#xea37;"/>
-                                        <FontIcon x:Uid="MainWindowLayoutMenuAuto" Glyph="&#xecaa;"/>
-                                    </ComboBox>
-                                </AppBarElementContainer>
-                            </CommandBarFlyout.PrimaryCommands>
+                                            <Button.Flyout>
+                                                <MenuFlyout Placement="Bottom">
+                                                    <MenuFlyoutItem Text="Restart application" Click="RestartMenuFlyoutItem_Click">
+                                                        <MenuFlyoutItem.KeyboardAccelerators>
+                                                            <KeyboardAccelerator Modifiers="Control" Key="R"/>
+                                                        </MenuFlyoutItem.KeyboardAccelerators>
+                                                    </MenuFlyoutItem>
 
-                            <CommandBarFlyout.SecondaryCommands>
+                                                    <MenuFlyoutItem Text="Reload audio sessions" Click="ReloadMenuFlyoutItem_Click">
+                                                        <MenuFlyoutItem.KeyboardAccelerators>
+                                                            <KeyboardAccelerator Modifiers="Control,Shift" Key="R" />
+                                                        </MenuFlyoutItem.KeyboardAccelerators>
+                                                    </MenuFlyoutItem>
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                        </Button>
 
-                                <AppBarToggleButton 
-                                    Label="1"
-                                    Click="DisableHotKeysMenuFlyoutItem_Click"/>
+                                        <Button>
+                                            <FontIcon Glyph="&#xe74f;"/>
+                                        </Button>
 
-                                <AppBarToggleButton 
-                                    x:Name="KeepOnTopToggleMenuFlyoutItem"
-                                    Label="1"
-                                    Click="KeepOnTopToggleMenuFlyoutItem_Click"/>
+                                        <Button>
+                                            <FontIcon Glyph="&#xe7b3;"/>
+                                        </Button>
+                                    </VariableSizedWrapGrid>
 
-                                <AppBarToggleButton
-                                    x:Name="DisableAnimationsMenuFlyoutItem"
-                                    Label="1"
-                                    Click="DisableAnimationsToggleMenuFlyoutItem_Click"/>
+                                    <Button Grid.Column="1" Click="ExpandFlyoutButton_Click">
+                                        <Button.Transitions>
+                                            <RepositionThemeTransition/>
+                                        </Button.Transitions>
+                                        <FontIcon Glyph="&#xe712;"/>
+                                    </Button>
+                                </Grid>
 
-                                <AppBarToggleButton
-                                    x:Name="SwitchPresenterStyleMenuFlyoutItem"
-                                    Label="1"
-                                    Click="SwitchPresenterStyleMenuFlyoutItem_Click"/>
+                                <StackPanel 
+                                    x:Name="MoreFlyoutStackpanel"
+                                    HorizontalAlignment="Stretch" 
+                                    Orientation="Vertical" 
+                                    Grid.Row="1" 
+                                    Spacing="4" 
+                                    Padding="2,7" 
+                                    Visibility="Visible"
+                                    BorderThickness="0,1,0,0"
+                                    BorderBrush="{ThemeResource SubtleFillColorSecondaryBrush}">
+                                    <StackPanel.Resources>
+                                        <Style TargetType="s:IconButton">
+                                            <Setter Property="Padding" Value="10,7" />
+                                            <Setter Property="Margin" Value="1,0" />
+                                        </Style>
+                                        <Style TargetType="s:IconToggleButton">
+                                            <Setter Property="Padding" Value="10,7" />
+                                            <Setter Property="Margin" Value="1,0" />
+                                        </Style>
+                                    </StackPanel.Resources>
+                                    <StackPanel.Transitions>
+                                        <RepositionThemeTransition/>
+                                    </StackPanel.Transitions>
 
-                                <AppBarToggleButton
-                                    x:Name="ShowAppBarMenuFlyoutItem"
-                                    Label="1"
-                                    Click="ShowAppBarMenuFlyoutItem_Click"/>
-
-                                <AppBarSeparator/>
-
-                                <AppBarButton
-                                    x:Name="SettingsMenuFlyoutItem"
-                                    Label="1"
-                                    Click="SettingsMenuFlyoutItem_Click" Icon="Setting"/>
-                                <!--
-                                    x:Uid="MainWindowDisableHotKeysFlyoutItem"
-                                    x:Uid="MainWindowKeepOnTopToggleFlyoutItem"
-                                    x:Uid="MainWindowDisableAnimationsFlyoutItem"
-                                    x:Uid="MainWindowSwitchPresenterStyleFlyoutItem"
-                                    x:Uid="MainWindowShowAppBarFlyoutItem"
-                                    x:Uid="MainWindowSettingsMenuFlyoutItem"
-                                -->
-                            </CommandBarFlyout.SecondaryCommands>
-                        </CommandBarFlyout>
+                                    <s:IconToggleButton 
+                                        x:Name="DisableAnimationsIconToggleButton"
+                                        OffContent="Enable animations" OnContent="Disable animations" Glyph="&#xf4a5;" Click="DisableAnimationsIconButton_Click" />
+                                    <s:IconToggleButton OffContent="Disable hot keys" OnContent="Enable hot keys" Glyph="&#xe765;" Click="DisableHotKeysIconButton_Click"/>
+                                    <s:IconToggleButton
+                                        x:Name="KeepOnTopToggleButton"
+                                        OffContent="Pin window" OnContent="Unpin window" Glyph="&#xe718;" Click="KeepOnTopIconButton_Click"/>
+                                    <s:IconButton Text="Show additional buttons" Glyph="&#xe710;" Click="ShowWindowButtonsIconButton_Click"/>
+                                    <s:IconToggleButton 
+                                        x:Name="ShowAppBarIconToggleButton"
+                                        OffContent="Show app menu bar" OnContent="Hide app menu bar" Glyph="&#xede3;" Click="ShowAppBarIconButton_Click"/>
+                                    <Border Style="{StaticResource BorderFlyoutSeparatorStyle}" />
+                                    <s:IconButton Text="Settings" Glyph="&#xe713;" Click="SettingsIconButton_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Flyout>
                     </Button.Flyout>
                 </Button>
 
@@ -230,13 +271,13 @@
                         Grid.Column="1"
                         Background="{StaticResource AudioMeterReversedBackground}"
                         Opacity="{ThemeResource PeakBorderOpacity}"
-                        CornerRadius="5,0,5,0"
+                        CornerRadius="5,5,0,0"
                         Height="7"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
-                        Translation="0,-5.4,0"
+                        Translation="0,-5,0"
                         SizeChanged="SystemVolumeActivityBorder_SizeChanged">
-                        
+
                         <Border.Clip>
                             <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingLeft">
                                 <RectangleGeometry.Transform>
@@ -255,7 +296,7 @@
                         Height="7"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
-                        Translation="0,6.4,0">
+                        Translation="0,6.5,0">
                         
                         <Border.Clip>
                             <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingRight">
@@ -363,7 +404,7 @@
                         </GridView>
                     </ScrollViewer>
 
-                    <snd_vol:MessageBar
+                    <s:MessageBar
                         x:Name="WindowMessageBar"
                         Grid.Row="0" 
                         VerticalAlignment="Top"
@@ -372,21 +413,21 @@
                 </Grid>
             </Grid>
 
-            <snd_vol:SplashScreen
+            <s:SplashScreen
                 x:Name="WindowSplashScreen"
                 Grid.Row="2"
                 OnScreenTimeSpan="0:0:01"
                 Dismissed="SplashScreen_Dismissed">
-                <snd_vol:SplashScreen.Background>
+                <s:SplashScreen.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="0.6" ColorInterpolationMode="SRgbLinearInterpolation" MappingMode="RelativeToBoundingBox" SpreadMethod="Pad">
                         <LinearGradientBrush.GradientStops>
                             <GradientStop Color="{ThemeResource SolidBackgroundFillColorSecondary}" Offset="0.2"/>
                             <GradientStop Color="{ThemeResource SystemAccentColorDark1}" Offset="2.5"/>
                         </LinearGradientBrush.GradientStops>
                     </LinearGradientBrush>
-                </snd_vol:SplashScreen.Background>
+                </s:SplashScreen.Background>
             
-                <snd_vol:SplashScreen.TopContent>
+                <s:SplashScreen.TopContent>
                     <Grid VerticalAlignment="Top">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -396,18 +437,18 @@
                         <TextBlock Text="Croak" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"/>
                         <TextBlock x:Name="ApplicationVersionTextBlock" Style="{StaticResource TitleTextBlockStyle}" Grid.Column="1" VerticalAlignment="Center"/>
                     </Grid>
-                </snd_vol:SplashScreen.TopContent>
+                </s:SplashScreen.TopContent>
 
-                <snd_vol:SplashScreen.MainContent>
+                <s:SplashScreen.MainContent>
                     <Viewbox MaxHeight="80" MaxWidth="80">
                         <FontIcon Glyph="&#xe767;"/>
                     </Viewbox>
-                </snd_vol:SplashScreen.MainContent>
+                </s:SplashScreen.MainContent>
 
-                <snd_vol:SplashScreen.BottomContent>
+                <s:SplashScreen.BottomContent>
                     <TextBlock Text="by psykomicron 🐢" FontStretch="UltraExpanded" Opacity="0.6"/>
-                </snd_vol:SplashScreen.BottomContent>
-            </snd_vol:SplashScreen>
+                </s:SplashScreen.BottomContent>
+            </s:SplashScreen>
 
             <TeachingTip
                 x:Name="SettingsButtonTeachingTip" 

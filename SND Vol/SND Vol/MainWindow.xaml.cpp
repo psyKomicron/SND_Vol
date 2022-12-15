@@ -88,19 +88,6 @@ namespace winrt::SND_Vol::implementation
         loaded = true;
 
         #if USE_TIMER
-        if (!DisableAnimationsMenuFlyoutItem().IsChecked())
-        {
-            if (mainAudioEndpoint)
-            {
-                mainAudioEndpointPeakTimer.Start();
-                VolumeStoryboard().Begin();
-            }
-
-            if (audioSessions.get())
-            {
-                audioSessionsPeakTimer.Start();
-            }
-        }
         #endif // USE_TIMER
 
         // Generate size changed event to get correct clipping rectangle size
@@ -420,7 +407,7 @@ namespace winrt::SND_Vol::implementation
 
         // Reload content
         LoadContent();
-        if (!DisableAnimationsMenuFlyoutItem().IsChecked())
+        /*if (!DisableAnimationsMenuFlyoutItem().IsChecked())
         {
             if (mainAudioEndpoint)
             {
@@ -432,20 +419,13 @@ namespace winrt::SND_Vol::implementation
             {
                 audioSessionsPeakTimer.Start();
             }
-        }
+        }*/
 
         ResourceLoader loader{};
         WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoAudioSessionsReloaded"));
     }
 
-    void MainWindow::KeepOnTopToggleMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        bool alwaysOnTop = KeepOnTopToggleMenuFlyoutItem().IsChecked().GetBoolean();
-        appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop(alwaysOnTop);
-        ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
-    }
-
-    void MainWindow::SettingsMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
+    void MainWindow::SettingsIconButton_Click(IconButton const& /*sender*/, RoutedEventArgs const& /*args*/)
     {
         if (!secondWindow)
         {
@@ -458,13 +438,51 @@ namespace winrt::SND_Vol::implementation
         secondWindow.Activate();
     }
 
-    void MainWindow::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
+    void MainWindow::DisableHotKeysIconButton_Click(IconToggleButton const& /*sender*/, RoutedEventArgs const& /*args*/)
     {
-        mainAudioEndpoint->SetMute(!mainAudioEndpoint->Muted());
-        MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
+#if ENABLE_HOTKEYS
+        volumeUpHotKeyPtr.Enabled(!volumeUpHotKeyPtr.Enabled());
+        volumeDownHotKeyPtr.Enabled(!volumeDownHotKeyPtr.Enabled());
+        volumePageUpHotKeyPtr.Enabled(!volumePageUpHotKeyPtr.Enabled());
+        volumePageDownHotKeyPtr.Enabled(!volumePageDownHotKeyPtr.Enabled());
+        muteHotKeyPtr.Enabled(!muteHotKeyPtr.Enabled());
+
+        ResourceLoader loader{};
+        if (muteHotKeyPtr.Enabled())
+        {
+            WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysEnabled"));
+        }
+        else
+        {
+            WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysDisabled"));
+        }
+#endif // ENABLE_HOTKEYS
     }
 
-    void MainWindow::DisableAnimationsToggleMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
+    void MainWindow::KeepOnTopIconButton_Click(IconToggleButton const& /*sender*/, RoutedEventArgs const& /*args*/)
+    {
+        bool alwaysOnTop = KeepOnTopToggleButton().IsOn();
+        appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop(alwaysOnTop);
+        ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
+    }
+
+    void MainWindow::ShowWindowButtonsIconButton_Click(IconButton const& /*sender*/, RoutedEventArgs const& /*args*/)
+    {
+        OverlappedPresenter presenter = appWindow.Presenter().as<OverlappedPresenter>();
+        presenter.IsMaximizable(!presenter.IsMaximizable());
+        presenter.IsMinimizable(!presenter.IsMinimizable());
+
+        RightPaddingColumn().Width(GridLengthHelper::FromPixels(
+            presenter.IsMinimizable() ? 135 : 45
+        ));
+    }
+
+    void MainWindow::ShowAppBarIconButton_Click(IconToggleButton const& /*sender*/, RoutedEventArgs const& /*args*/)
+    {
+        AppBarGrid().Visibility(AppBarGrid().Visibility() == Visibility::Visible ? Visibility::Collapsed : Visibility::Visible);
+    }
+
+    void MainWindow::DisableAnimationsIconButton_Click(IconToggleButton const& /*sender*/, RoutedEventArgs const& /*args*/)
     {
         if (audioSessionsPeakTimer.IsRunning())
         {
@@ -495,53 +513,20 @@ namespace winrt::SND_Vol::implementation
         }
     }
 
-    void MainWindow::SwitchPresenterStyleMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
+    void MainWindow::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        OverlappedPresenter presenter = appWindow.Presenter().as<OverlappedPresenter>();
-        presenter.IsMaximizable(!presenter.IsMaximizable());
-        presenter.IsMinimizable(!presenter.IsMinimizable());
-
-        RightPaddingColumn().Width(GridLengthHelper::FromPixels(
-            presenter.IsMinimizable() ? 135 : 45
-        ));
+        mainAudioEndpoint->SetMute(!mainAudioEndpoint->Muted());
+        MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
     }
 
     void MainWindow::ViewHotKeysHyperlinkButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        SettingsMenuFlyoutItem_Click(nullptr, nullptr);
     }
 
     void MainWindow::SplashScreen_Dismissed(winrt::SND_Vol::SplashScreen const&, IInspectable const&)
     {
         WindowSplashScreen().Visibility(Visibility::Collapsed);
         ContentGrid().Visibility(Visibility::Visible);
-    }
-
-    void MainWindow::ShowAppBarMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        AppBarGrid().Visibility(AppBarGrid().Visibility() == Visibility::Visible ? Visibility::Collapsed : Visibility::Visible);
-    }
-
-    void MainWindow::DisableHotKeysMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-#if ENABLE_HOTKEYS
-        volumeUpHotKeyPtr.Enabled(!volumeUpHotKeyPtr.Enabled());
-        volumeDownHotKeyPtr.Enabled(!volumeDownHotKeyPtr.Enabled());
-        volumePageUpHotKeyPtr.Enabled(!volumePageUpHotKeyPtr.Enabled());
-        volumePageDownHotKeyPtr.Enabled(!volumePageDownHotKeyPtr.Enabled());
-        muteHotKeyPtr.Enabled(!muteHotKeyPtr.Enabled());
-
-        ResourceLoader loader{};
-        if (muteHotKeyPtr.Enabled())
-        {
-            WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysEnabled"));
-        }
-        else
-        {
-            WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysDisabled"));
-        }
-#endif // ENABLE_HOTKEYS
-
     }
         
     void MainWindow::MenuFlyout_Opening(IInspectable const&, IInspectable const&)
@@ -574,6 +559,11 @@ namespace winrt::SND_Vol::implementation
         }
 
         //SettingsButtonFlyout().Items().InsertAt(0, profilesMenuFlyout);
+    }
+
+    void MainWindow::ExpandFlyoutButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        MoreFlyoutStackpanel().Visibility(MoreFlyoutStackpanel().Visibility() == Visibility::Visible ? Visibility::Collapsed : Visibility::Visible);
     }
     #pragma endregion
 
@@ -1083,7 +1073,7 @@ namespace winrt::SND_Vol::implementation
                 break;*/
         }
 
-        SwitchPresenterStyleMenuFlyoutItem().IsChecked(additionalButtons);
+        /*SwitchPresenterStyleMenuFlyoutItem().IsChecked(additionalButtons);
         KeepOnTopToggleMenuFlyoutItem().IsChecked(alwaysOnTop);
         DisableAnimationsMenuFlyoutItem().IsChecked(unbox_value_or(settings.TryLookup(L"DisableAnimations"), false));
         bool showMenu = unbox_value_or(settings.TryLookup(L"ShowAppBar"), false);
@@ -1091,7 +1081,7 @@ namespace winrt::SND_Vol::implementation
         if (showMenu)
         {
             AppBarGrid().Visibility(Visibility::Visible);
-        }
+        }*/
     }
 
     void MainWindow::SaveSettings()
@@ -1107,9 +1097,9 @@ namespace winrt::SND_Vol::implementation
         settings.Insert(L"ShowAdditionalWindowButtons", box_value(presenter.IsMinimizable()));
         settings.Insert(L"PresenterState", box_value(static_cast<int32_t>(presenter.State())));
 
-        settings.Insert(L"DisableAnimations", box_value(DisableAnimationsMenuFlyoutItem().IsChecked()));
+        settings.Insert(L"DisableAnimations", box_value(DisableAnimationsIconToggleButton().IsOn()));
         settings.Insert(L"SessionsLayout", IReference<int32_t>(layout));
-        settings.Insert(L"ShowAppBar", box_value(ShowAppBarMenuFlyoutItem().IsChecked()));
+        settings.Insert(L"ShowAppBar", box_value(ShowAppBarIconToggleButton().IsOn()));
         if (currentAudioProfile)
         {
             settings.Insert(L"AudioProfile", box_value(currentAudioProfile.ProfileName()));
@@ -1175,7 +1165,7 @@ namespace winrt::SND_Vol::implementation
 
                         if (disableAnimations)
                         {
-                            DisableAnimationsToggleMenuFlyoutItem_Click(nullptr, nullptr);
+                            DisableAnimationsIconButton_Click(nullptr, nullptr);
                         }
 
                         if (OverlappedPresenter presenter = appWindow.Presenter().try_as<OverlappedPresenter>())
@@ -1189,7 +1179,7 @@ namespace winrt::SND_Vol::implementation
 
                         if (showMenu)
                         {
-                            ShowAppBarMenuFlyoutItem_Click(nullptr, nullptr);
+                            ShowAppBarIconButton_Click(nullptr, nullptr);
                         }
 
                         switch (windowLayout)

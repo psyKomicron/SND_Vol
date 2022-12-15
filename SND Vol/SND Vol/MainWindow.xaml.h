@@ -58,16 +58,17 @@ namespace winrt::SND_Vol::implementation
         void VerticalViewMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void AutoViewMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ReloadMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void KeepOnTopToggleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void SettingsMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void DisableAnimationsToggleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void SwitchPresenterStyleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ViewHotKeysHyperlinkButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SplashScreen_Dismissed(winrt::SND_Vol::SplashScreen const& sender, winrt::Windows::Foundation::IInspectable const& args);
-        void ShowAppBarMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void DisableHotKeysMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void MenuFlyout_Opening(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Foundation::IInspectable const& e);
+        void SettingsIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void DisableHotKeysIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void KeepOnTopIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ShowWindowButtonsIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ShowAppBarIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ExpandFlyoutButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void DisableAnimationsIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
 
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
@@ -114,6 +115,7 @@ namespace winrt::SND_Vol::implementation
         };
         winrt::Microsoft::UI::Xaml::Window secondWindow{ nullptr };
         winrt::SND_Vol::AudioProfile currentAudioProfile{ nullptr };
+        bool checkForDuplicates = true;
 
         void InitializeWindow();
         void SetBackground();
