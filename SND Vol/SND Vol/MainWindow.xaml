@@ -101,8 +101,26 @@
                                             <Setter Property="Padding" Value="0"/>
                                             <Setter Property="Height" Value="34"/>
                                             <Setter Property="Width" Value="37"/>
-                                            <Setter Property="Margin" Value="0" />
                                         </Style>
+                                        <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}">
+                                            <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Height" Value="34"/>
+                                            <Setter Property="Width" Value="37"/>
+                                        </Style>
+                                        <Style TargetType="DropDownButton" >
+                                            <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                            <Setter Property="Height" Value="34"/>
+                                        </Style>
+                                        
                                         <Style TargetType="FontIcon">
                                             <Setter Property="FontSize" Value="16"/>
                                         </Style>
@@ -112,33 +130,38 @@
                                         <ColumnDefinition Width="40"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <VariableSizedWrapGrid
+                                    <StackPanel
                                         VerticalAlignment="Center"
                                         Orientation="Horizontal"
-                                        ItemHeight="35"
-                                        ItemWidth="40"
+                                        Spacing="3"
                                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                         MaxWidth="300">
 
-                                        <Button>
-                                            <FontIcon Glyph="&#xe72c;"/>
+                                        <DropDownButton x:Name="LayoutDropDownButton" Background="{ThemeResource SubtleFillColorTransparentBrush}">
+                                            <FontIcon Glyph="&#xf0e2;"/>
 
-                                            <Button.Flyout>
-                                                <MenuFlyout Placement="Bottom">
-                                                    <MenuFlyoutItem Text="Restart application" Click="RestartMenuFlyoutItem_Click">
-                                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                                            <KeyboardAccelerator Modifiers="Control" Key="R"/>
-                                                        </MenuFlyoutItem.KeyboardAccelerators>
+                                            <DropDownButton.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem Text="Vertical">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xe8c0;" />
+                                                        </MenuFlyoutItem.Icon>
                                                     </MenuFlyoutItem>
 
-                                                    <MenuFlyoutItem Text="Reload audio sessions" Click="ReloadMenuFlyoutItem_Click">
-                                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                                            <KeyboardAccelerator Modifiers="Control,Shift" Key="R" />
-                                                        </MenuFlyoutItem.KeyboardAccelerators>
+                                                    <MenuFlyoutItem Text="Horizontal">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xe8c0;" Rotation="170" Translation="0,0,0" />
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
+
+                                                    <MenuFlyoutItem Text="Auto">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xf0e2;" />
+                                                        </MenuFlyoutItem.Icon>
                                                     </MenuFlyoutItem>
                                                 </MenuFlyout>
-                                            </Button.Flyout>
-                                        </Button>
+                                            </DropDownButton.Flyout>
+                                        </DropDownButton>
 
                                         <Button>
                                             <FontIcon Glyph="&#xe74f;"/>
@@ -147,7 +170,11 @@
                                         <Button>
                                             <FontIcon Glyph="&#xe7b3;"/>
                                         </Button>
-                                    </VariableSizedWrapGrid>
+
+                                        <ToggleButton x:Name="KeepOnTopToggleButton" Click="KeepOnTopToggleButton_Click">
+                                            <FontIcon Glyph="&#xee49;" />
+                                        </ToggleButton>
+                                    </StackPanel>
 
                                     <Button Grid.Column="1" Click="ExpandFlyoutButton_Click">
                                         <Button.Transitions>
@@ -183,16 +210,28 @@
 
                                     <s:IconToggleButton 
                                         x:Name="DisableAnimationsIconToggleButton"
-                                        OffContent="Enable animations" OnContent="Disable animations" Glyph="&#xf4a5;" Click="DisableAnimationsIconButton_Click" />
+                                        OnContent="Enable animations" OffContent="Disable animations" Glyph="&#xf4a5;" Click="DisableAnimationsIconButton_Click" />
+
                                     <s:IconToggleButton OffContent="Disable hot keys" OnContent="Enable hot keys" Glyph="&#xe765;" Click="DisableHotKeysIconButton_Click"/>
-                                    <s:IconToggleButton
-                                        x:Name="KeepOnTopToggleButton"
-                                        OffContent="Pin window" OnContent="Unpin window" Glyph="&#xe718;" Click="KeepOnTopIconButton_Click"/>
-                                    <s:IconButton Text="Show additional buttons" Glyph="&#xe710;" Click="ShowWindowButtonsIconButton_Click"/>
+
                                     <s:IconToggleButton 
                                         x:Name="ShowAppBarIconToggleButton"
                                         OffContent="Show app menu bar" OnContent="Hide app menu bar" Glyph="&#xede3;" Click="ShowAppBarIconButton_Click"/>
+
+                                    <s:IconButton Text="Reload audio sessions" Glyph="&#xe895;" Click="ReloadSessionsIconButton_Click">
+                                        <s:IconButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Modifiers="Control,Shift" Key="R" />
+                                        </s:IconButton.KeyboardAccelerators>
+                                    </s:IconButton>
+
+                                    <s:IconButton Text="Restart application" Glyph="&#xe72c;" Click="RestartIconButton_Click">
+                                        <s:IconButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Modifiers="Control" Key="R" />
+                                        </s:IconButton.KeyboardAccelerators>
+                                    </s:IconButton>
+
                                     <Border Style="{StaticResource BorderFlyoutSeparatorStyle}" />
+
                                     <s:IconButton Text="Settings" Glyph="&#xe713;" Click="SettingsIconButton_Click"/>
                                 </StackPanel>
                             </Grid>

@@ -88,6 +88,19 @@ namespace winrt::SND_Vol::implementation
         loaded = true;
 
         #if USE_TIMER
+        if (!DisableAnimationsIconToggleButton().IsOn())
+        {
+            if (mainAudioEndpoint)
+            {
+                mainAudioEndpointPeakTimer.Start();
+                VolumeStoryboard().Begin();
+            }
+
+            if (audioSessions.get())
+            {
+                audioSessionsPeakTimer.Start();
+            }
+        }
         #endif // USE_TIMER
 
         // Generate size changed event to get correct clipping rectangle size
@@ -263,15 +276,6 @@ namespace winrt::SND_Vol::implementation
         appWindow.Presenter().as<OverlappedPresenter>().Minimize();
     }
 
-    void MainWindow::RestartMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(L"") != AppRestartFailureReason::RestartPending)
-        {
-            ResourceLoader loader{};
-            WindowMessageBar().EnqueueMessage(loader.GetString(L"ErrorAppFailedRestart"));
-        }
-    }
-
     void MainWindow::SwitchStateMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
         bool setMute = false;
@@ -360,71 +364,6 @@ namespace winrt::SND_Vol::implementation
         layout = 0;
     }
 
-    void MainWindow::ReloadMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        if (audioSessionsPeakTimer.IsRunning())
-        {
-            audioSessionsPeakTimer.Stop();
-        }
-        if (mainAudioEndpointPeakTimer.IsRunning())
-        {
-            mainAudioEndpointPeakTimer.Stop();
-        }
-
-        audioSessionViews.Clear();
-        VolumeStoryboard().Stop();
-
-        // Clean up ComPtr/IUnknown objects
-        if (audioController)
-        {
-            if (mainAudioEndpoint)
-            {
-                mainAudioEndpoint->VolumeChanged(mainAudioEndpointVolumeChangedToken);
-                mainAudioEndpoint->Unregister();
-                mainAudioEndpoint->Release();
-            }
-
-            audioController->EndpointChanged(audioControllerEndpointChangedToken);
-            audioController->SessionAdded(audioControllerSessionAddedToken);
-
-            audioController->Unregister();
-            audioController->Release();
-        }
-
-        // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
-        {
-            unique_lock lock{ audioSessionsMutex };
-            for (size_t i = 0; i < audioSessions->size(); i++)
-            {
-                audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[audioSessions->at(i)->Id()]);
-                audioSessions->at(i)->StateChanged(audioSessionsStateChanged[audioSessions->at(i)->Id()]);
-                audioSessions->at(i)->Unregister();
-                audioSessions->at(i)->Release();
-            }
-            audioSessions->clear();
-        }
-
-
-        // Reload content
-        LoadContent();
-        /*if (!DisableAnimationsMenuFlyoutItem().IsChecked())
-        {
-            if (mainAudioEndpoint)
-            {
-                mainAudioEndpointPeakTimer.Start();
-                VolumeStoryboard().Begin();
-            }
-
-            if (audioSessions.get())
-            {
-                audioSessionsPeakTimer.Start();
-            }
-        }*/
-
-        ResourceLoader loader{};
-        WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoAudioSessionsReloaded"));
-    }
-
     void MainWindow::SettingsIconButton_Click(IconButton const& /*sender*/, RoutedEventArgs const& /*args*/)
     {
         if (!secondWindow)
@@ -457,24 +396,6 @@ namespace winrt::SND_Vol::implementation
             WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysDisabled"));
         }
 #endif // ENABLE_HOTKEYS
-    }
-
-    void MainWindow::KeepOnTopIconButton_Click(IconToggleButton const& /*sender*/, RoutedEventArgs const& /*args*/)
-    {
-        bool alwaysOnTop = KeepOnTopToggleButton().IsOn();
-        appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop(alwaysOnTop);
-        ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
-    }
-
-    void MainWindow::ShowWindowButtonsIconButton_Click(IconButton const& /*sender*/, RoutedEventArgs const& /*args*/)
-    {
-        OverlappedPresenter presenter = appWindow.Presenter().as<OverlappedPresenter>();
-        presenter.IsMaximizable(!presenter.IsMaximizable());
-        presenter.IsMinimizable(!presenter.IsMinimizable());
-
-        RightPaddingColumn().Width(GridLengthHelper::FromPixels(
-            presenter.IsMinimizable() ? 135 : 45
-        ));
     }
 
     void MainWindow::ShowAppBarIconButton_Click(IconToggleButton const& /*sender*/, RoutedEventArgs const& /*args*/)
@@ -564,6 +485,95 @@ namespace winrt::SND_Vol::implementation
     void MainWindow::ExpandFlyoutButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
         MoreFlyoutStackpanel().Visibility(MoreFlyoutStackpanel().Visibility() == Visibility::Visible ? Visibility::Collapsed : Visibility::Visible);
+    }
+
+    void MainWindow::KeepOnTopToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        OverlappedPresenter presenter = appWindow.Presenter().as<OverlappedPresenter>();
+        presenter.IsMaximizable(!presenter.IsMaximizable());
+        presenter.IsMinimizable(!presenter.IsMinimizable());
+
+        RightPaddingColumn().Width(GridLengthHelper::FromPixels(
+            presenter.IsMinimizable() ? 135 : 45
+        ));
+
+        bool alwaysOnTop = KeepOnTopToggleButton().IsChecked().GetBoolean();
+        appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop(alwaysOnTop);
+        ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
+    }
+
+    void MainWindow::ReloadSessionsIconButton_Click(IconButton const&, RoutedEventArgs const&)
+    {
+        if (audioSessionsPeakTimer.IsRunning())
+        {
+            audioSessionsPeakTimer.Stop();
+        }
+        if (mainAudioEndpointPeakTimer.IsRunning())
+        {
+            mainAudioEndpointPeakTimer.Stop();
+        }
+
+        audioSessionViews.Clear();
+        VolumeStoryboard().Stop();
+
+        // Clean up ComPtr/IUnknown objects
+        if (audioController)
+        {
+            if (mainAudioEndpoint)
+            {
+                mainAudioEndpoint->VolumeChanged(mainAudioEndpointVolumeChangedToken);
+                mainAudioEndpoint->Unregister();
+                mainAudioEndpoint->Release();
+            }
+
+            audioController->EndpointChanged(audioControllerEndpointChangedToken);
+            audioController->SessionAdded(audioControllerSessionAddedToken);
+
+            audioController->Unregister();
+            audioController->Release();
+        }
+
+        // Unregister VolumeChanged event handler & unregister audio sessions from audio events and release com ptrs.
+        {
+            unique_lock lock{ audioSessionsMutex };
+            for (size_t i = 0; i < audioSessions->size(); i++)
+            {
+                audioSessions->at(i)->VolumeChanged(audioSessionVolumeChanged[audioSessions->at(i)->Id()]);
+                audioSessions->at(i)->StateChanged(audioSessionsStateChanged[audioSessions->at(i)->Id()]);
+                audioSessions->at(i)->Unregister();
+                audioSessions->at(i)->Release();
+            }
+            audioSessions->clear();
+        }
+
+
+        // Reload content
+        LoadContent();
+        if (!DisableAnimationsIconToggleButton().IsOn())
+        {
+            if (mainAudioEndpoint)
+            {
+                mainAudioEndpointPeakTimer.Start();
+                VolumeStoryboard().Begin();
+            }
+
+            if (audioSessions.get())
+            {
+                audioSessionsPeakTimer.Start();
+            }
+        }
+
+        ResourceLoader loader{};
+        WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoAudioSessionsReloaded"));
+    }
+
+    void MainWindow::RestartIconButton_Click(IconButton const&, RoutedEventArgs const&)
+    {
+        if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(L"") != AppRestartFailureReason::RestartPending)
+        {
+            ResourceLoader loader{};
+            WindowMessageBar().EnqueueMessage(loader.GetString(L"ErrorAppFailedRestart"));
+        }
     }
     #pragma endregion
 
@@ -1037,7 +1047,6 @@ namespace winrt::SND_Vol::implementation
         auto&& presenter = appWindow.Presenter().as<OverlappedPresenter>();
 
         bool alwaysOnTop = unbox_value_or(settings.TryLookup(L"IsAlwaysOnTop"), true);
-        bool additionalButtons = unbox_value_or(settings.TryLookup(L"ShowAdditionalWindowButtons"), true);
         OverlappedPresenterState presenterState = static_cast<OverlappedPresenterState>(unbox_value_or(settings.TryLookup(L"PresenterState"), 2));
         switch (presenterState)
         {
@@ -1052,10 +1061,10 @@ namespace winrt::SND_Vol::implementation
                 break;*/
         }
 
-        presenter.IsMaximizable(additionalButtons);
-        presenter.IsMinimizable(additionalButtons);
+        presenter.IsMaximizable(!alwaysOnTop);
+        presenter.IsMinimizable(!alwaysOnTop);
         RightPaddingColumn().Width(GridLengthHelper::FromPixels(
-            additionalButtons ? 135 : 45
+            alwaysOnTop ? 45 : 135
         ));
         presenter.IsAlwaysOnTop(alwaysOnTop);
 
@@ -1073,15 +1082,14 @@ namespace winrt::SND_Vol::implementation
                 break;*/
         }
 
-        /*SwitchPresenterStyleMenuFlyoutItem().IsChecked(additionalButtons);
-        KeepOnTopToggleMenuFlyoutItem().IsChecked(alwaysOnTop);
-        DisableAnimationsMenuFlyoutItem().IsChecked(unbox_value_or(settings.TryLookup(L"DisableAnimations"), false));
+        KeepOnTopToggleButton().IsChecked(alwaysOnTop);
+        DisableAnimationsIconToggleButton().IsOn(unbox_value_or(settings.TryLookup(L"DisableAnimations"), false));
         bool showMenu = unbox_value_or(settings.TryLookup(L"ShowAppBar"), false);
-        ShowAppBarMenuFlyoutItem().IsChecked(showMenu);
+        ShowAppBarIconToggleButton().IsOn(showMenu);
         if (showMenu)
         {
             AppBarGrid().Visibility(Visibility::Visible);
-        }*/
+        }
     }
 
     void MainWindow::SaveSettings()
@@ -1094,7 +1102,6 @@ namespace winrt::SND_Vol::implementation
 
         auto presenter = appWindow.Presenter().as<OverlappedPresenter>();
         settings.Insert(L"IsAlwaysOnTop", box_value(presenter.IsAlwaysOnTop()));
-        settings.Insert(L"ShowAdditionalWindowButtons", box_value(presenter.IsMinimizable()));
         settings.Insert(L"PresenterState", box_value(static_cast<int32_t>(presenter.State())));
 
         settings.Insert(L"DisableAnimations", box_value(DisableAnimationsIconToggleButton().IsOn()));
@@ -1128,7 +1135,6 @@ namespace winrt::SND_Vol::implementation
                         auto audioLevels = currentAudioProfile.AudioLevels();
                         auto audioStates = currentAudioProfile.AudioStates();
                         bool disableAnimations = currentAudioProfile.DisableAnimations();
-                        bool showAdditionalButtons = currentAudioProfile.ShowAdditionalButtons();
                         bool keepOnTop = currentAudioProfile.KeepOnTop();
                         bool showMenu = currentAudioProfile.ShowMenu();
                         uint32_t windowLayout = currentAudioProfile.Layout();
@@ -1171,10 +1177,10 @@ namespace winrt::SND_Vol::implementation
                         if (OverlappedPresenter presenter = appWindow.Presenter().try_as<OverlappedPresenter>())
                         {
                             presenter.IsAlwaysOnTop(keepOnTop);
-                            presenter.IsMinimizable(showAdditionalButtons);
-                            presenter.IsMinimizable(showAdditionalButtons);
+                            presenter.IsMinimizable(!keepOnTop);
+                            presenter.IsMinimizable(!keepOnTop);
 
-                            RightPaddingColumn().Width(GridLengthHelper::FromPixels(showAdditionalButtons ? 135 : 45));
+                            RightPaddingColumn().Width(GridLengthHelper::FromPixels(!keepOnTop ? 135 : 45));
                         }
 
                         if (showMenu)
