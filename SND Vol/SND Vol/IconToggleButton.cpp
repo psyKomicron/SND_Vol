@@ -32,17 +32,35 @@ namespace winrt::SND_Vol::implementation
         xaml_typename<SND_Vol::IconToggleButton>(),
         PropertyMetadata(box_value(L""))
     );
-    DependencyProperty IconToggleButton::_iconStyleProperty = DependencyProperty::Register(
-        L"IconStyle",
-        xaml_typename<::Style>(),
+    DependencyProperty IconToggleButton::_onIconProperty = DependencyProperty::Register(
+        L"OnIcon",
+        xaml_typename<hstring>(),
         xaml_typename<SND_Vol::IconToggleButton>(),
-        PropertyMetadata(nullptr)
+        PropertyMetadata(box_value(L""))
+    );
+    DependencyProperty IconToggleButton::_offIconProperty = DependencyProperty::Register(
+        L"OffIcon",
+        xaml_typename<hstring>(),
+        xaml_typename<SND_Vol::IconToggleButton>(),
+        PropertyMetadata(box_value(L""))
     );
 
     IconToggleButton::IconToggleButton()
     {
         DefaultStyleKey(winrt::box_value(L"SND_Vol.IconToggleButton"));
         VisualStateManager::GoToState(*this, L"Off", true);
+
+        loadedRevoker = Loaded(auto_revoke, [this](IInspectable const&, RoutedEventArgs const&)
+        {
+            if (isOn)
+            {
+                VisualStateManager::GoToState(*this, L"On", true);
+            }
+            else
+            {
+                VisualStateManager::GoToState(*this, L"Off", true);
+            }
+        });
     }
 
 
@@ -98,14 +116,33 @@ namespace winrt::SND_Vol::implementation
         isOn = value;
     }
 
-    inline winrt::Microsoft::UI::Xaml::Style IconToggleButton::IconStyle()
+    inline winrt::hstring IconToggleButton::OnIcon()
     {
-        return unbox_value<::Style>(GetValue(_iconStyleProperty));
+        return unbox_value<hstring>(GetValue(_onIconProperty));
     }
 
-    inline void IconToggleButton::IconStyle(const winrt::Microsoft::UI::Xaml::Style& value)
+    inline void IconToggleButton::OnIcon(const winrt::hstring& value)
     {
-        SetValue(_iconStyleProperty, box_value(value));
+        SetValue(_onIconProperty, box_value(value));
+    }
+
+    inline winrt::hstring IconToggleButton::OffIcon()
+    {
+        return unbox_value<hstring>(GetValue(_offIconProperty));
+    }
+
+    inline void IconToggleButton::OffIcon(const winrt::hstring& value)
+    {
+        SetValue(_offIconProperty, box_value(value));
+    }
+
+    inline bool IconToggleButton::Compact()
+    {
+        return false;
+    }
+
+    inline void IconToggleButton::Compact(const bool& value)
+    {
     }
 
 

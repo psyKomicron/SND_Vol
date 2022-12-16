@@ -11,17 +11,6 @@ namespace winrt::SND_Vol::implementation
     {
         IconToggleButton();
 
-        inline winrt::Windows::Foundation::IInspectable OnContent();
-        inline void OnContent(const winrt::Windows::Foundation::IInspectable& value);
-        inline winrt::Windows::Foundation::IInspectable OffContent();
-        inline void OffContent(const winrt::Windows::Foundation::IInspectable& value);
-        inline winrt::hstring Glyph();
-        inline void Glyph(const winrt::hstring& value);
-        inline bool IsOn();
-        inline void IsOn(const bool& value);
-        inline winrt::Microsoft::UI::Xaml::Style IconStyle();
-        inline void IconStyle(const winrt::Microsoft::UI::Xaml::Style& value);
-
         static Microsoft::UI::Xaml::DependencyProperty OnContentProperty()
         {
             return _onContentProperty;
@@ -37,9 +26,14 @@ namespace winrt::SND_Vol::implementation
             return _glyphProperty;
         }
 
-        static Microsoft::UI::Xaml::DependencyProperty IconStyleProperty()
+        static Microsoft::UI::Xaml::DependencyProperty OnIconProperty()
         {
-            return _iconStyleProperty;
+            return _onIconProperty;
+        }
+
+        static Microsoft::UI::Xaml::DependencyProperty OffIconProperty()
+        {
+            return _offIconProperty;
         }
 
         inline winrt::event_token Click(const Windows::Foundation::TypedEventHandler<winrt::SND_Vol::IconToggleButton, Microsoft::UI::Xaml::RoutedEventArgs>& handler)
@@ -52,6 +46,21 @@ namespace winrt::SND_Vol::implementation
             e_click.remove(token);
         }
 
+        inline winrt::Windows::Foundation::IInspectable OnContent();
+        inline void OnContent(const winrt::Windows::Foundation::IInspectable& value);
+        inline winrt::Windows::Foundation::IInspectable OffContent();
+        inline void OffContent(const winrt::Windows::Foundation::IInspectable& value);
+        inline winrt::hstring Glyph();
+        inline void Glyph(const winrt::hstring& value);
+        inline bool IsOn();
+        inline void IsOn(const bool& value);
+        inline winrt::hstring OnIcon();
+        inline void OnIcon(const winrt::hstring& value);
+        inline winrt::hstring OffIcon();
+        inline void OffIcon(const winrt::hstring& value);
+        inline bool Compact();
+        inline void Compact(const bool& value);
+
         void OnPointerEntered(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args);
         void OnPointerExited(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args);
         void OnPointerPressed(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args);
@@ -61,8 +70,10 @@ namespace winrt::SND_Vol::implementation
         static Microsoft::UI::Xaml::DependencyProperty _onContentProperty;
         static Microsoft::UI::Xaml::DependencyProperty _offContentProperty;
         static Microsoft::UI::Xaml::DependencyProperty _glyphProperty;
-        static Microsoft::UI::Xaml::DependencyProperty _iconStyleProperty;
+        static Microsoft::UI::Xaml::DependencyProperty _onIconProperty;
+        static Microsoft::UI::Xaml::DependencyProperty _offIconProperty;
 
+        Loaded_revoker loadedRevoker;
         bool pointerExited = false;
         bool enabled = true;
         bool isOn = false;
