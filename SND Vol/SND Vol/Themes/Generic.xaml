@@ -1804,7 +1804,9 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <FontIcon x:Name="Icon" Glyph="{TemplateBinding Glyph}" Grid.Column="0" FontSize="14" />
+                        <FontIcon x:Name="Icon" Grid.Column="0" FontSize="14" Glyph="{TemplateBinding Glyph}" />
+                        <FontIcon x:Name="OnIcon" Grid.Column="0" FontSize="14" Glyph="{TemplateBinding OnIcon}" Visibility="Collapsed" />
+                        <FontIcon x:Name="OffIcon" Grid.Column="0" FontSize="14" Glyph="{TemplateBinding OnIcon}" Visibility="Collapsed" />
 
                         <ContentPresenter x:Name="OffContentPresenter" Visibility="Visible" Content="{TemplateBinding OffContent}" Grid.Column="1" Opacity="1" TextWrapping="Wrap">
                             <ContentPresenter.OpacityTransition>
