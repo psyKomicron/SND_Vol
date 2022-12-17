@@ -195,21 +195,36 @@ namespace winrt::SND_Vol::implementation
     void AudioProfileEditPage::ProfileNameEditTextBox_TextChanged(IInspectable const&, ::Controls::TextChangedEventArgs const&)
     {
         // TODO: Check if the profile name is already in use.
+        hstring newName = ProfileNameEditTextBox().Text();
+        for (AudioSessionView&& view : audioSessions)
+        {
+            if (view.Header() == newName)
+            {
+                ProfileNameEditTextBox().Foreground(
+                    Application::Current().Resources().Lookup(box_value(L"SystemErrorTextColor")).as<::Media::Brush>()
+                );
+                return;
+            }
+        }
+
+        ProfileNameEditTextBox().Foreground(
+            Application::Current().Resources().Lookup(box_value(L"ApplicationForegroundThemeBrush")).as<::Media::Brush>()
+        );
     }
 
     IAsyncAction AudioProfileEditPage::CreateAudioSessionButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
         if (co_await AudioProfileCreationDialog().ShowAsync() == ContentDialogResult::Primary)
         {
-            AudioSessionView view{};
             hstring sessionName = ProfileCreationTextBox().Text();
             double volume = ProfileCreationSlider().Value();
-            view.Header(sessionName);
-            view.Volume(volume);
-            view.Muted(ProfileCreationCheckBox().IsChecked().GetBoolean());
-            view.ContextFlyout(nullptr);
-
-            audioSessions.Append(view);
+            bool muted = ProfileCreationCheckBox().IsChecked().GetBoolean();
+            
+            AudioSessionView view = CreateAudioSessionView(sessionName, volume, muted);
+            if (view)
+            {
+                audioSessions.Append(view);
+            }
         }
     }
 
@@ -220,25 +235,15 @@ namespace winrt::SND_Vol::implementation
         std::vector<Audio::AudioSession*>* audioSessionsPtr = controllerPtr->GetSessions();
         for (size_t i = 0; i < audioSessionsPtr->size(); i++)
         {
-            bool enabled = true;
-            for (auto item : audioSessions)
-            {
-                AudioSessionView view = item.try_as<AudioSessionView>();
-                if (view && view.Header() == audioSessionsPtr->at(i)->Name())
-                {
-                    enabled = false;
-                }
-            }
+            // Create view.
+            AudioSessionView view = CreateAudioSessionView(
+                audioSessionsPtr->at(i)->Name(),
+                audioSessionsPtr->at(i)->Volume() * 100.,
+                audioSessionsPtr->at(i)->Muted()
+            );
 
-            if (enabled)
+            if (view)
             {
-                // Create view.
-                AudioSessionView view{};
-                view.Header(audioSessionsPtr->at(i)->Name());
-                view.Volume(audioSessionsPtr->at(i)->Volume() * 100.);
-                view.Muted(audioSessionsPtr->at(i)->Muted());
-                view.ContextFlyout(nullptr);
-
                 ProfileAddGridView().Items().Append(view);
             }
 
@@ -248,8 +253,7 @@ namespace winrt::SND_Vol::implementation
         controllerPtr->Release(); // Release audio controller and associated resources.
 
         co_await AudioProfileAddDialog().ShowAsync();
-
-        ProfileAddGridView().Items().Clear();
+        //TODO: Add the user selected audio sessions to audioSessions.
     }
 
     void AudioProfileEditPage::LockSessionAppBarButton_Click(IInspectable const& sender, RoutedEventArgs const&)
@@ -319,8 +323,16 @@ namespace winrt::SND_Vol::implementation
         audioProfile.Save(audioProfilesContainer);
     }
 
-    winrt::SND_Vol::AudioSessionView AudioProfileEditPage::CreateAudioSessionView(hstring header, float volume, bool muted)
+    AudioSessionView AudioProfileEditPage::CreateAudioSessionView(hstring header, float volume, bool muted)
     {
+        for (auto&& audioSession : audioSessions)
+        {
+            if (audioSession.Header() == header)
+            {
+                return nullptr;
+            }
+        }
+
         winrt::SND_Vol::AudioSessionView view{};
         view.Header(header);
         view.Volume(volume);
