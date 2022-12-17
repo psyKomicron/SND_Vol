@@ -55,7 +55,7 @@
     <Style x:Key="CustomFlyoutButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
         <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="Padding" Value="10,7"/>
         <Setter Property="Margin" Value="1,0" />
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -74,10 +74,12 @@
     <Style x:Key="IconButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
         <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="10,8"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="Width" Value="37"/>
     </Style>
     
     <Style x:Key="MuteToggleButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}">
@@ -1699,11 +1701,23 @@
 
                             </VisualStateGroup>
 
+                            <VisualStateGroup x:Name="ContentTypeStates">
+                                <VisualState x:Name="UsingText" />
+
+                                <VisualState x:Name="UsingPresenter">
+                                    <VisualState.Setters>
+                                        <Setter Target="TextControl.Visibility" Value="Collapsed" />
+                                        <Setter Target="Presenter.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
                         </VisualStateManager.VisualStateGroups>
 
 
                         <FontIcon FontSize="14" Glyph="{TemplateBinding Glyph}"/>
-                        <TextBlock Text="{TemplateBinding Text}" Grid.Column="1" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TextControl" Text="{TemplateBinding Text}" Grid.Column="1" TextWrapping="Wrap"/>
+                        <ContentPresenter x:Name="Presenter" Content="{TemplateBinding Content}" Grid.Column="1" Visibility="Collapsed"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
