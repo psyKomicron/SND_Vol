@@ -12,11 +12,6 @@ namespace winrt::SND_Vol::implementation
     public:
         IconButton();
 
-        winrt::hstring Glyph() const;
-        void Glyph(const winrt::hstring& value);
-        winrt::hstring Text() const;
-        void Text(const winrt::hstring& value);
-
         static Microsoft::UI::Xaml::DependencyProperty GlyphProperty()
         {
             return _glyphProperty;
@@ -26,6 +21,18 @@ namespace winrt::SND_Vol::implementation
         {
             return _textNameProperty;
         };
+
+        static Microsoft::UI::Xaml::DependencyProperty ContentProperty()
+        {
+            return _contentProperty;
+        }
+
+        inline winrt::hstring Glyph() const;
+        inline void Glyph(const winrt::hstring& value);
+        inline winrt::hstring Text() const;
+        inline void Text(const winrt::hstring& value);
+        inline winrt::Windows::Foundation::IInspectable Content();
+        inline void Content(const winrt::Windows::Foundation::IInspectable& value);
 
         inline winrt::event_token Click(const Windows::Foundation::TypedEventHandler<winrt::SND_Vol::IconButton, Microsoft::UI::Xaml::RoutedEventArgs>& handler)
         {
@@ -45,9 +52,11 @@ namespace winrt::SND_Vol::implementation
     private:
         static Microsoft::UI::Xaml::DependencyProperty _glyphProperty;
         static Microsoft::UI::Xaml::DependencyProperty _textNameProperty;
+        static Microsoft::UI::Xaml::DependencyProperty _contentProperty;
 
         bool pointerExited = false;
         bool enabled = true;
+        Loaded_revoker loadedRevoker;
 
         winrt::event<Windows::Foundation::TypedEventHandler<winrt::SND_Vol::IconButton, Microsoft::UI::Xaml::RoutedEventArgs>> e_click {};
     };

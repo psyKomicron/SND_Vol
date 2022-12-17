@@ -25,15 +25,22 @@ namespace winrt::SND_Vol::implementation
         xaml_typename<SND_Vol::IconButton>(),
         PropertyMetadata(box_value(L""))
     );
+    DependencyProperty IconButton::_contentProperty = DependencyProperty::Register(
+        L"Content",
+        xaml_typename<winrt::Windows::Foundation::IInspectable>(),
+        xaml_typename<SND_Vol::IconButton>(),
+        PropertyMetadata(nullptr)
+    );
 
     IconButton::IconButton()
     {
         DefaultStyleKey(winrt::box_value(L"SND_Vol.IconButton"));
-        auto&& userButton = FindName(L"UserButton");
-        if (userButton)
+        
+        loadedRevoker = Loaded(auto_revoke, [this](auto&&, auto&&)
         {
-            Button button = userButton.as<Button>();
-        }
+            // If the control has content, hide the text control.
+            VisualStateManager::GoToState(*this, Content() != nullptr ? L"UsingPresenter" : L"UsingText", false);
+        });
     }
 
     inline winrt::hstring IconButton::Glyph() const
@@ -54,6 +61,18 @@ namespace winrt::SND_Vol::implementation
     inline void IconButton::Text(const winrt::hstring& value)
     {
         SetValue(_textNameProperty, box_value(value));
+    }
+
+    inline winrt::Windows::Foundation::IInspectable IconButton::Content()
+    {
+        return GetValue(_contentProperty);
+    }
+
+    inline void IconButton::Content(const winrt::Windows::Foundation::IInspectable& value)
+    {
+        SetValue(_contentProperty, value);
+
+        VisualStateManager::GoToState(*this, value != nullptr ? L"UsingPresenter" : L"UsingText", false);
     }
 
     void IconButton::OnPointerPressed(const Microsoft::UI::Xaml::Input::PointerRoutedEventArgs& args)
