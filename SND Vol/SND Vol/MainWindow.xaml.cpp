@@ -341,6 +341,11 @@ namespace winrt::SND_Vol::implementation
             RootGrid().Resources().Lookup(box_value(L"GridViewHorizontalLayout")).as<Style>()
         );
         layout = 1;
+
+        // Set DropDownButton to mimic ComboBox selected item behavior.
+        FontIcon icon{};
+        icon.Glyph(L"\ue8c0");
+        LayoutDropDownButton().Content(icon);
     }
 
     void MainWindow::VerticalViewMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
@@ -351,6 +356,13 @@ namespace winrt::SND_Vol::implementation
             RootGrid().Resources().Lookup(box_value(L"GridViewVerticalLayout")).as<Style>()
         );
         layout = 2;
+
+        // Set DropDownButton to mimic ComboBox selected item behavior.
+        FontIcon icon{};
+        icon.Glyph(L"\ue8c0");
+        icon.Translation(::Numerics::float3(16, 0, 0));
+        icon.Rotation(90);
+        LayoutDropDownButton().Content(icon);
     }
 
     void MainWindow::AutoViewMenuFlyoutItem_Click(IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
@@ -362,6 +374,11 @@ namespace winrt::SND_Vol::implementation
             RootGrid().Resources().Lookup(box_value(L"GridViewHorizontalLayout")).as<Style>()
         );
         layout = 0;
+
+        // Set DropDownButton to mimic ComboBox selected item behavior.
+        FontIcon icon{};
+        icon.Glyph(L"\uf0e2");
+        LayoutDropDownButton().Content(icon);
     }
 
     void MainWindow::SettingsIconButton_Click(IconButton const& /*sender*/, RoutedEventArgs const& /*args*/)
@@ -449,38 +466,6 @@ namespace winrt::SND_Vol::implementation
         WindowSplashScreen().Visibility(Visibility::Collapsed);
         ContentGrid().Visibility(Visibility::Visible);
     }
-        
-    void MainWindow::MenuFlyout_Opening(IInspectable const&, IInspectable const&)
-    {
-        MenuFlyoutSubItem profilesMenuFlyout{};
-        profilesMenuFlyout.Tag(box_value(L"Profiles"));
-        profilesMenuFlyout.Text(L"Profiles");
-
-        /*if (SettingsCommandBarFlyout().SecondaryCommands().Items().GetAt(0).Tag().try_as<hstring>() == L"Profiles")
-        {
-            SettingsButtonFlyout().Items().RemoveAt(0);
-        }*/
-
-        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
-        if (audioProfilesContainer)
-        {
-            for (auto&& profile : audioProfilesContainer.Containers())
-            {
-                hstring key = profile.Key();
-                MenuFlyoutItem item{};
-                item.Text(key);
-                item.Tag(box_value(key));
-                item.Click([this](const IInspectable& sender, RoutedEventArgs)
-                    {
-                        LoadProfile(sender.as<FrameworkElement>().Tag().as<hstring>());
-                    });
-
-                profilesMenuFlyout.Items().Append(item);
-            }
-        }
-
-        //SettingsButtonFlyout().Items().InsertAt(0, profilesMenuFlyout);
-    }
 
     void MainWindow::ExpandFlyoutButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
@@ -493,13 +478,13 @@ namespace winrt::SND_Vol::implementation
         presenter.IsMaximizable(!presenter.IsMaximizable());
         presenter.IsMinimizable(!presenter.IsMinimizable());
 
+        bool alwaysOnTop = KeepOnTopToggleButton().IsChecked().GetBoolean();
+        presenter.IsAlwaysOnTop(alwaysOnTop);
+        ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
+
         RightPaddingColumn().Width(GridLengthHelper::FromPixels(
             presenter.IsMinimizable() ? 135 : 45
         ));
-
-        bool alwaysOnTop = KeepOnTopToggleButton().IsChecked().GetBoolean();
-        appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop(alwaysOnTop);
-        ApplicationData::Current().LocalSettings().Values().Insert(L"IsAlwaysOnTop", box_value(alwaysOnTop));
     }
 
     void MainWindow::ReloadSessionsIconButton_Click(IconButton const&, RoutedEventArgs const&)
@@ -574,6 +559,37 @@ namespace winrt::SND_Vol::implementation
             ResourceLoader loader{};
             WindowMessageBar().EnqueueMessage(loader.GetString(L"ErrorAppFailedRestart"));
         }
+    }
+
+    void MainWindow::OpenProfilesIconButton_Click(IconButton const&, RoutedEventArgs const&)
+    {
+        MoreFlyoutStackpanel().Visibility(Visibility::Collapsed);
+        ProfilesGrid().Visibility(Visibility::Visible);
+
+        ProfilesStackpanel().Children().Clear();
+        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
+        if (audioProfilesContainer)
+        {
+            for (auto&& profile : audioProfilesContainer.Containers())
+            {
+                hstring key = profile.Key();
+                Button item{};
+                item.Content(box_value(key));
+                item.Tag(box_value(key));
+                item.Click([this](const IInspectable& sender, RoutedEventArgs)
+                {
+                    LoadProfile(sender.as<FrameworkElement>().Tag().as<hstring>());
+                });
+
+                ProfilesStackpanel().Children().Append(item);
+            }
+        }
+    }
+
+    void MainWindow::CloseProfilesButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        MoreFlyoutStackpanel().Visibility(Visibility::Visible);
+        ProfilesGrid().Visibility(Visibility::Collapsed);
     }
     #pragma endregion
 
@@ -1068,7 +1084,7 @@ namespace winrt::SND_Vol::implementation
         ));
         presenter.IsAlwaysOnTop(alwaysOnTop);
 
-        layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 0u);
+        layout = unbox_value_or(settings.TryLookup(L"SessionsLayout"), 0);
         switch (layout)
         {
             case 1:
@@ -1177,8 +1193,9 @@ namespace winrt::SND_Vol::implementation
                         if (OverlappedPresenter presenter = appWindow.Presenter().try_as<OverlappedPresenter>())
                         {
                             presenter.IsAlwaysOnTop(keepOnTop);
+                            presenter.IsMaximizable(!keepOnTop);
                             presenter.IsMinimizable(!keepOnTop);
-                            presenter.IsMinimizable(!keepOnTop);
+                            KeepOnTopToggleButton().IsChecked(true);
 
                             RightPaddingColumn().Width(GridLengthHelper::FromPixels(!keepOnTop ? 135 : 45));
                         }
@@ -1205,19 +1222,16 @@ namespace winrt::SND_Vol::implementation
 
                         AudioSessionsPanel().ItemsSource(nullptr);
                         audioSessionViews.Clear();
+                        AudioSessionsPanelProgressRing().Visibility(Visibility::Visible);
 
                         // Remove duplicates.
                         vector<AudioSessionView> uniqueSessions{};
+                        for (size_t i = 0; i < audioSessions->size(); i++)
                         {
-                            unique_lock lock{ audioSessionsMutex };
-
-                            for (size_t i = 0; i < audioSessions->size(); i++)
+                            auto&& view = CreateAudioView(audioSessions->at(i), true);
+                            if (view)
                             {
-                                auto&& view = CreateAudioView(audioSessions->at(i), true);
-                                if (view)
-                                {
-                                    uniqueSessions.push_back(view);
-                                }
+                                uniqueSessions.push_back(view);
                             }
                         }
 
@@ -1274,6 +1288,30 @@ namespace winrt::SND_Vol::implementation
                                 }
                             }
                         }
+
+                        //HACK: Clear null values by passing another time through the view array.
+                        size_t finalSize = views.size();
+                        for (size_t i = 0; i < views.size(); i++)
+                        {
+                            if (views[i] == nullptr)
+                            {
+                                size_t j = i + 1;
+                                while (j < views.size() && views[j] == nullptr)
+                                {
+                                    j++;
+                                }
+
+                                if (j < views.size())
+                                {
+                                    views[i] = move(views[j]);
+                                }
+                                else
+                                {
+                                    finalSize--;
+                                }
+                            }
+                        }
+                        views.resize(finalSize);
                         
                         audioSessionViews = multi_threaded_observable_vector<AudioSessionView>(move(views));
                         // HACK: Can we use INotifyPropertyChanged to raise that the vector has changed ?
@@ -1293,6 +1331,8 @@ namespace winrt::SND_Vol::implementation
                 {
                     OutputDebugHString(to_hstring(error.what()));
                 }
+
+                AudioSessionsPanelProgressRing().Visibility(Visibility::Collapsed);
             }
         }
     }
