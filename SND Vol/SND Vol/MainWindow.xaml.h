@@ -135,6 +135,8 @@ namespace winrt::SND_Vol::implementation
         void KeepOnTopToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ReloadSessionsIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void RestartIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void OpenProfilesIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void CloseProfilesButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 };
 }
 
