@@ -11,27 +11,40 @@
     <Grid x:Name="RootGrid" SizeChanged="Grid_SizeChanged">
         <Grid.Resources>
             <Style x:Key="GridViewHorizontalLayout" TargetType="GridView">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 <Setter Property="ItemsPanel">
                     <Setter.Value>
                         <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Horizontal"/>
+                            <ItemsWrapGrid 
+                                Orientation="Horizontal" 
+                                VerticalAlignment="Center" 
+                                HorizontalAlignment="Center"/>
                         </ItemsPanelTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
 
             <Style x:Key="GridViewVerticalLayout" TargetType="GridView">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 <Setter Property="ItemsPanel">
                     <Setter.Value>
                         <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Vertical"/>
+                            <ItemsStackPanel 
+                                HorizontalAlignment="Stretch" 
+                                VerticalAlignment="Center" 
+                                GroupPadding="5"/>
                         </ItemsPanelTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
         </Grid.Resources>
 
-        <Image x:Name="BackgroundImage" Grid.RowSpan="2" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Image 
+            x:Name="BackgroundImage" Grid.RowSpan="2" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
         <Grid x:Name="WindowGrid">
             <Grid.RowDefinitions>
@@ -44,6 +57,7 @@
             
             <VisualStateManager.VisualStateGroups>
                 <VisualStateGroup>
+                    
                     <VisualState x:Name="Normal"/>
 
                     <VisualState x:Name="Below200Width">
@@ -52,7 +66,6 @@
                             <Setter Target="SystemVolumeSliderText.Visibility" Value="Collapsed"/>
                         </VisualState.Setters>
                     </VisualState>
-
                 </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
 
@@ -320,7 +333,7 @@
                                 Storyboard.TargetProperty="ScaleX"
                                 To="0"
                                 Duration="{StaticResource AudioMeterAnimationDuration}">
-                                
+
                                 <DoubleAnimation.EasingFunction>
                                     <QuadraticEase EasingMode="EaseOut"/>
                                 </DoubleAnimation.EasingFunction>
@@ -378,7 +391,7 @@
                         Height="7"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
-                        Translation="0,6.5,0">
+                        Translation="0,6,0">
                         
                         <Border.Clip>
                             <RectangleGeometry x:Name="SystemVolumeActivityBorderClippingRight">
@@ -466,9 +479,8 @@
 
                         <GridView
                             x:Name="AudioSessionsPanel"
+                            Style="{StaticResource GridViewHorizontalLayout}"
                             ItemsSource="{x:Bind AudioSessions}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
                             Margin="0,0,0,-7"
                             SelectionMode="None"
                             CanReorderItems="True"
@@ -480,7 +492,9 @@
                             <GridView.Resources>
                                 <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
                                     <Setter Property="AllowDrop" Value="False" />
-                                    <Setter Property="MaxHeight" Value="400"/>
+                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </GridView.Resources>
                         </GridView>
