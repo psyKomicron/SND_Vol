@@ -63,9 +63,9 @@ namespace Audio
         winrt::event<winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>> e_sessionAdded{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable>> e_endpointChanged {};
 
-        STDMETHOD(OnSessionCreated)(IAudioSessionControl* NewSession) noexcept;
+        STDMETHOD(OnSessionCreated)(IAudioSessionControl* NewSession);
         #pragma region IMMNotificationClient
-        STDMETHODIMP OnDeviceStateChanged(__in LPCWSTR pwstrDeviceId, __in DWORD /*dwNewState*/) noexcept;
+        STDMETHODIMP OnDeviceStateChanged(__in LPCWSTR /*pwstrDeviceId*/, __in DWORD /*dwNewState*/) noexcept;
         STDMETHODIMP OnDefaultDeviceChanged(__in EDataFlow flow, __in  ERole /*role*/, __in_opt LPCWSTR pwstrDefaultDeviceId) noexcept;
         // Not implemented.
         STDMETHOD(OnPropertyValueChanged)(__in LPCWSTR /*pwstrDeviceId*/, __in const PROPERTYKEY /*key*/) noexcept { return S_OK; };

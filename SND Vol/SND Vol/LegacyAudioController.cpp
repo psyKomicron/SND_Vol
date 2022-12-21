@@ -144,7 +144,7 @@ namespace Audio
     }
 
 
-    STDMETHODIMP LegacyAudioController::OnSessionCreated(IAudioSessionControl* NewSession) noexcept
+    STDMETHODIMP LegacyAudioController::OnSessionCreated(IAudioSessionControl* NewSession)
     {
         // HACK: Audio session creation notifications are sent in double. Once we receive one, we will ignore the next. This can cause non doubled events to be ignored.
         static bool ignoreNotification = false;
@@ -155,7 +155,6 @@ namespace Audio
             if (SUCCEEDED(NewSession->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
             {
                 // TODO: Insure thread safety.
-
                 try
                 {
                     // Windows sends OnSessionCreated event when disabling audio enhancements. The IAudioSessionControl received is not usable, making any calls to it's functions or properties fail.
