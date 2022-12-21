@@ -16,11 +16,13 @@ namespace SND_Vol
         AudioSessionView(String header, Double volume);
         AudioSessionView(String header, Double volume, String logoPath);
 
-        String Header{ get; set; };
-        Guid Id{ get; set; };
-        Boolean Muted{ get; set; };
+        String Header;
+        Guid Id;
+        Boolean Muted;
         String VolumeGlyph{ get; };
-        Double Volume{ get; set; };
+        Double Volume;
+        Microsoft.UI.Xaml.Controls.Orientation Orientation;
+
 
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs> VolumeChanged;
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Boolean> VolumeStateChanged;

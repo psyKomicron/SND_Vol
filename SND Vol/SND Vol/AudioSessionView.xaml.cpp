@@ -6,15 +6,15 @@
 
 #include <math.h>
 #include <limits>
-using namespace winrt::Microsoft::UI::Xaml::Media::Imaging;
+
 
 using namespace winrt;
-
 using namespace winrt::Microsoft::UI::Xaml;
-using namespace winrt::Microsoft::UI::Xaml::Input;
+using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
+using namespace winrt::Microsoft::UI::Xaml::Input;
 using namespace winrt::Microsoft::UI::Xaml::Media;
-
+using namespace winrt::Microsoft::UI::Xaml::Media::Imaging;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::UI;
 
@@ -24,6 +24,7 @@ namespace winrt::SND_Vol::implementation
     AudioSessionView::AudioSessionView()
     {
         InitializeComponent();
+        //VisualStateManager::GoToState(*this, L"HorizontalLayout", false);
     }
 
     AudioSessionView::AudioSessionView(winrt::hstring const& header, double const& volume) : AudioSessionView()
@@ -53,6 +54,17 @@ namespace winrt::SND_Vol::implementation
     winrt::hstring AudioSessionView::VolumeGlyph()
     {
         return _volumeGlyph;
+    }
+
+    Orientation AudioSessionView::Orientation()
+    {
+        return isVertical ? Orientation::Vertical : Orientation::Horizontal;
+    }
+
+    void AudioSessionView::Orientation(const ::Controls::Orientation& value)
+    {
+        isVertical = value == Orientation::Vertical;
+        VisualStateManager::GoToState(*this, isVertical ? L"VerticalLayout" : L"HorizontalLayout", false);
     }
 
     double AudioSessionView::Volume()
@@ -181,19 +193,27 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::SetPeak(float peak)
     {
-        if (!isActive) return;
-
-        LeftPeakAnimation().To(static_cast<double>(peak));
-        LeftPeakStoryboard().Begin();
+        SetPeak(peak, peak);
     }
 
     void AudioSessionView::SetPeak(const float& left, const float& right)
     {
-        LeftPeakAnimation().To(static_cast<double>(left));
-        LeftPeakStoryboard().Begin();
+        if (!isActive) return;
 
-        RightPeakAnimation().To(static_cast<double>(right));
-        RightPeakStoryboard().Begin();
+        LeftPeakAnimation().To(static_cast<double>(left * isVertical));
+        RightPeakAnimation().To(static_cast<double>(right * isVertical));
+
+        TopVolumeAnimation().To(static_cast<double>(left * !isVertical));
+        BottomVolumeAnimation().To(static_cast<double>(right * !isVertical));
+
+        if (isVertical)
+        {
+            VerticalPeakStoryboard().Begin();
+        }
+        else
+        {
+            HorizontalPeakStoryboard().Begin();
+        }
     }
 
 
@@ -233,10 +253,16 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
+        // For vertical layout.
         BorderClippingLeft().Rect(Rect(0, 0, VolumePeakBorderLeft().ActualWidth(), VolumePeakBorderLeft().ActualHeight()));
         BorderClippingRight().Rect(Rect(0, 0, VolumePeakBorderRight().ActualWidth(), VolumePeakBorderRight().ActualHeight()));
         BorderClippingLeftCompositeTransform().TranslateY(VolumePeakBorderLeft().ActualHeight());
         BorderClippingRightCompositeTransform().TranslateY(VolumePeakBorderRight().ActualHeight());
+
+        // For horizontal layout.
+        VolumePeakBorderClippingTop().Rect(Rect(0, 0, VolumePeakBorderTop().ActualWidth(), VolumePeakBorderTop().ActualHeight()));
+        VolumePeakBorderClippingBottom().Rect(
+            Rect(0, 0, VolumePeakBorderBottom().ActualWidth(), VolumePeakBorderBottom().ActualHeight()));
     }
 
     void AudioSessionView::RootGrid_PointerEntered(winrt::Windows::Foundation::IInspectable const&, PointerRoutedEventArgs const&)

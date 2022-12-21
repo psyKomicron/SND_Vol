@@ -23,6 +23,8 @@ namespace winrt::SND_Vol::implementation
         double Volume();
         void Volume(double const& value);
         winrt::hstring VolumeGlyph();
+        winrt::Microsoft::UI::Xaml::Controls::Orientation Orientation();
+        void Orientation(const winrt::Microsoft::UI::Xaml::Controls::Orientation& value);
 
         winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value);
         void PropertyChanged(winrt::event_token const& token);
@@ -56,6 +58,7 @@ namespace winrt::SND_Vol::implementation
         float lastPeak = 0;
         bool isActive = false;
         bool isLocked = false;
+        bool isVertical = true;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs>>
