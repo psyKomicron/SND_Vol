@@ -172,6 +172,16 @@ namespace winrt::SND_Vol::implementation
         }
 
         controllerPtr->Release(); // Release audio controller and associated resources.
+
+        // Load audio profiles names to warn user from overwriting another profile.
+        ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
+        for (auto&& container : audioProfilesContainer.Containers())
+        {
+            if (container.Key() != audioProfile.ProfileName())
+            {
+                existingProfileNames.push_back(container.Key());
+            }
+        }
     }
 
     void AudioProfileEditPage::NextButton_Click(IInspectable const&, RoutedEventArgs const&)
@@ -196,9 +206,9 @@ namespace winrt::SND_Vol::implementation
     {
         // TODO: Check if the profile name is already in use.
         hstring newName = ProfileNameEditTextBox().Text();
-        for (AudioSessionView&& view : audioSessions)
+        for (hstring name : existingProfileNames)
         {
-            if (view.Header() == newName)
+            if (name == newName)
             {
                 ProfileNameEditTextBox().Foreground(
                     Application::Current().Resources().Lookup(box_value(L"SystemErrorTextColor")).as<::Media::Brush>()
@@ -254,6 +264,14 @@ namespace winrt::SND_Vol::implementation
 
         co_await AudioProfileAddDialog().ShowAsync();
         //TODO: Add the user selected audio sessions to audioSessions.
+        auto&& selectedItems = ProfileAddGridView().SelectedItems();
+        for (auto&& selectedItem : selectedItems)
+        {
+            if (AudioSessionView view = selectedItem.try_as<AudioSessionView>())
+            {
+                audioSessions.Append(AudioSessionView(view));
+            }
+        }
     }
 
     void AudioProfileEditPage::LockSessionAppBarButton_Click(IInspectable const& sender, RoutedEventArgs const&)
@@ -280,6 +298,25 @@ namespace winrt::SND_Vol::implementation
                 break;
             }
         }
+    }
+
+    void AudioProfileEditPage::ProfileCreationTextBox_TextChanged(IInspectable const&, TextChangedEventArgs const&)
+    {
+        hstring newName = ProfileCreationTextBox().Text();
+        for (AudioSessionView&& view : audioSessions)
+        {
+            if (view.Header() == newName)
+            {
+                ProfileCreationTextBox().Foreground(
+                    Application::Current().Resources().Lookup(box_value(L"SystemErrorTextColor")).as<::Media::Brush>()
+                );
+                return;
+            }
+        }
+
+        ProfileCreationTextBox().Foreground(
+            Application::Current().Resources().Lookup(box_value(L"ApplicationForegroundThemeBrush")).as<::Media::Brush>()
+        );
     }
 
 

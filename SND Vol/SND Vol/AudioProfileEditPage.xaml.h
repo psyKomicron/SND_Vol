@@ -42,11 +42,14 @@ namespace winrt::SND_Vol::implementation
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer timer{ nullptr };
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::AudioSessionView> audioSessions = winrt::single_threaded_observable_vector< winrt::SND_Vol::AudioSessionView>();
         bool navigationOutAllowed = false;
+        std::vector<winrt::hstring> existingProfileNames{};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
 
         void SaveProfile();
         winrt::SND_Vol::AudioSessionView CreateAudioSessionView(winrt::hstring header, float volume, bool muted);
+    public:
+        void ProfileCreationTextBox_TextChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs const& e);
     };
 }
 
