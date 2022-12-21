@@ -41,7 +41,7 @@
     <x:Double x:Key="BackdropSecondaryLuminosityOpacity">0.95</x:Double>
     <x:Double x:Key="AudioSessionViewMinHeight">245</x:Double>
     <x:Double x:Key="AudioSessionViewMaxHeight">290</x:Double>
-    <x:Double x:Key="FontIconHeight">15</x:Double>
+    <x:Double x:Key="FontIconHeight">16</x:Double>
     <x:Double x:Key="SettingHostControlMinHeight">70</x:Double>
     <x:Double x:Key="PeakBorderOpacity">0.55</x:Double>
     
@@ -85,15 +85,17 @@
     <Style x:Key="MuteToggleButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}">
         <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="10,9"/>
+        <Setter Property="Padding" Value="0"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="Width" Value="37" />
+        <Setter Property="Height" Value="35" />
     </Style>
 
     <Style x:Key="MuteButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="11,10"/>
+        <Setter Property="Padding" Value="5,3"/>
     </Style>
 
     <Style x:Key="SettingToggleSwitchStyle" TargetType="ToggleSwitch">
