@@ -32,6 +32,11 @@
                 <ListViewHeaderItem Margin="-20,0"/>
 
                 <StackPanel Spacing="7" Grid.Row="2">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">New layout</TextBlock>
+                    <TextBlock>Vertical layout (available in the app's window menu) has been changed to better adapt to the window by rotating audio sessions horizontally.</TextBlock>
+                </StackPanel>
+
+                <StackPanel Spacing="7" Grid.Row="2">
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Add to startup</TextBlock>
                     <TextBlock>You can now find in settings a toggle to add the app to Window's startup app list. Is it not activated by default and you can at any time deactivate it using this app settings or Windows settings (right click on Croak, app settings).</TextBlock>
                 </StackPanel>
@@ -46,6 +51,7 @@
                 <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Changes"/>
                 <ListViewHeaderItem Margin="-20,0"/>
 
+                <TextBlock>- Previously some audio sessions were hidden because they were inactive at the time. They will now be added when their state change.</TextBlock>
                 <TextBlock>- The ability to set audio session positions when loading audio profiles has been re-enabled.</TextBlock>
                 <TextBlock>- Windows audio device peak graph has been updated to show the 2 stereo tracks.</TextBlock>
                 <TextBlock>- Updated volume graphs (for audio sessions and audio device) to fit the Windows 11 Fluent UI.</TextBlock>
