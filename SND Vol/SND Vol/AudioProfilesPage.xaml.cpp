@@ -82,33 +82,20 @@ namespace winrt::SND_Vol::implementation
 
     void AudioProfilesPage::OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args)
     {
-        if (args.NavigationMode() != ::Navigation::NavigationMode::Back && 
-            SecondWindow::Current().Breadcrumbs().GetAt(SecondWindow::Current().Breadcrumbs().Size() - 1).ItemTypeName().Name != xaml_typename<winrt::SND_Vol::AudioProfilesPage>().Name)
+        int32_t size = SecondWindow::Current().Breadcrumbs().Size();
+        int32_t index = size - 1;
+        if (args.NavigationMode() != ::Navigation::NavigationMode::Back &&
+            (
+                index < size ||
+                SecondWindow::Current().Breadcrumbs().GetAt(index).ItemTypeName().Name != xaml_typename<winrt::SND_Vol::AudioProfilesPage>().Name        
+            )
+        )
         {
             winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
             SecondWindow::Current().Breadcrumbs().Append(
                 NavigationBreadcrumbBarItem{ loader.GetString(L"AudioProfilesPageDisplayName"), xaml_typename<winrt::SND_Vol::AudioProfilesPage>() }
             );
         }
-
-        //AudioProfile profile = args.Parameter().try_as<AudioProfile>();
-
-        //if (profile)
-        //{
-        //    for (auto&& audioProfile : audioProfiles)
-        //    {
-        //        if (audioProfile.ProfileName() == profile.ProfileName())
-        //        {
-        //            // TODO: Show error that the profile already exist.
-        //            /*ErrorTextBlock().Text(L"Profile name already exists");
-        //            ErrorTextBlock().Visibility(Visibility::Visible);*/
-        //            return;
-        //        }
-        //    }
-
-        //    // If we reach here the profile name is unique.
-        //    audioProfiles.Append(profile);
-        //}
     }
 
     void AudioProfilesPage::Page_Loaded(IInspectable const&, RoutedEventArgs const&)
