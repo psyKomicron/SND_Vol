@@ -15,7 +15,7 @@ namespace Audio
         // Create the device enumerator.
         check_hresult(CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, IID_PPV_ARGS(&deviceEnumerator)));
         // Get the default audio device.
-        check_hresult(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice));
+        check_hresult(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &pDevice));
         // Get the session manager.
         check_hresult(pDevice->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, NULL, (void**)&audioSessionManager));
         // Get session enumerator
@@ -84,7 +84,7 @@ namespace Audio
         }
         else if (riid == __uuidof(IMMNotificationClient))
         {
-            *ppvInterface = static_cast<IAudioSessionNotification*>(this);
+            *ppvInterface = static_cast<IMMNotificationClient*>(this);
             AddRef();
         }
         else
@@ -104,13 +104,10 @@ namespace Audio
         {
             for (int i = 0; i < sessionCount; i++)
             {
-                GUID groupingParam{};
-
                 IAudioSessionControlPtr control;
                 IAudioSessionControl2* control2 = nullptr;
 
                 if (SUCCEEDED(audioSessionEnumerator->GetSession(i, &control)) &&
-                    SUCCEEDED(control->GetGroupingParam(&groupingParam)) &&
                     SUCCEEDED(control->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&control2)))
                 {
                     sessions->push_back(new AudioSession(control2, audioSessionID));
@@ -139,7 +136,7 @@ namespace Audio
     {
         IMMDevice* pDevice = nullptr;
         // Get the default audio device.
-        check_hresult(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice));
+        check_hresult(deviceEnumerator->GetDefaultAudioEndpoint(EDataFlow::eRender, ERole::eMultimedia, &pDevice));
         return new MainAudioEndpoint(pDevice, audioSessionID);
     }
 
@@ -182,15 +179,20 @@ namespace Audio
     {
         static bool notified = false;
 
-        if (!notified && flow == EDataFlow::eRender)
-        {
-            OutputDebugHString(L"Default device changed (id: " + to_hstring(pwstrDefaultDeviceId) + L").");
+        assert(pwstrDefaultDeviceId != nullptr);
 
+        wstring_view defaultDeviceId{ pwstrDefaultDeviceId };
+        if (!notified && flow == EDataFlow::eRender && 
+            (currentPwstrDefaultDeviceId.empty() || defaultDeviceId != currentPwstrDefaultDeviceId)
+        )
+        {
+            OutputDebugHString(L"Default device changed (id: " + defaultDeviceId + L").");
+            currentPwstrDefaultDeviceId = defaultDeviceId;
             e_endpointChanged(nullptr, nullptr);
         }
         else
         {
-            OutputDebugHString(L"Ignored notification : Default device changed (id: " + to_hstring(pwstrDefaultDeviceId) + L").");
+            OutputDebugHString(L"Ignored notification : Default device changed (id: " + defaultDeviceId + L").");
         }
 
         notified = !notified;

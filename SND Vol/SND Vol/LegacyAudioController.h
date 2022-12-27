@@ -59,6 +59,7 @@ namespace Audio
         IAudioSessionEnumeratorPtr audioSessionEnumerator{ nullptr };
         std::stack<AudioSession*> newSessions{};
         bool isRegistered = false;
+        std::wstring currentPwstrDefaultDeviceId{};
 
         winrt::event<winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>> e_sessionAdded{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable>> e_endpointChanged {};
