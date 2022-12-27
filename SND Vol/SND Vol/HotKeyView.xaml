@@ -15,7 +15,7 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Text="{x:Bind HotKeyName, Mode=OneWay}" VerticalAlignment="Center"/>
+        <TextBlock Text="{x:Bind HotKeyName}" VerticalAlignment="Center"/>
         
         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Stretch">
             <StackPanel.Resources>
