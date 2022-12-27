@@ -135,6 +135,105 @@ namespace winrt::SND_Vol::implementation
                 AutoViewMenuFlyoutItem_Click(nullptr, nullptr);
                 break;
         }
+
+#ifdef _DEBUG
+        using namespace Microsoft::Windows::System::Power;
+
+        PowerManager::EffectivePowerModeChanged([this](IInspectable, IInspectable)
+        {
+            OutputDebugHString(L"Effective power mode changed.");
+
+            auto powerMode = PowerManager::EffectivePowerMode2();
+            switch (powerMode)
+            {
+                case EffectivePowerMode::BatterySaver:
+                case EffectivePowerMode::BetterBattery:
+                {
+                    // Turn off animations.
+                    DispatcherQueue().TryEnqueue([this]()
+                    {
+                        if (!DisableAnimationsIconToggleButton().IsOn())
+                        {
+                            OutputDebugHString(L"Battery saver enabled, disabling animations.");
+                            DisableAnimationsIconButton_Click(nullptr, nullptr);
+                            DisableAnimationsIconToggleButton().IsOn(true);
+
+                            // I18N: Translate battery saver messages.
+                            WindowMessageBar().EnqueueMessage(L"Battery saver enabled, disabling animations.");
+                        }
+                    });
+                    break;
+                }
+                case EffectivePowerMode::Balanced:
+                case EffectivePowerMode::HighPerformance:
+                case EffectivePowerMode::MaxPerformance:
+                case EffectivePowerMode::GameMode:
+                case EffectivePowerMode::MixedReality:
+                default:
+                {
+                    DispatcherQueue().TryEnqueue([this]()
+                    {
+                        if (DisableAnimationsIconToggleButton().IsOn())
+                        {
+                            DisableAnimationsIconButton_Click(nullptr, nullptr);
+                            DisableAnimationsIconToggleButton().IsOn(false);
+
+                            // I18N: Translate battery saver messages.
+                            WindowMessageBar().EnqueueMessage(L"Battery saver disabled, re-enabling animations.");
+                        }
+                    });
+                    break;
+                }
+            }
+        });
+
+        PowerManager::UserPresenceStatusChanged([this](IInspectable, IInspectable)
+        {
+            auto userStatus = static_cast<int32_t>(PowerManager::UserPresenceStatus());
+            
+            switch (userStatus)
+            {
+                case static_cast<int32_t>(UserPresenceStatus::Present):
+                    OutputDebugHString(L"User presence status changed: user present.");
+                    DispatcherQueue().TryEnqueue([this]()
+                    {
+                        if (!mainAudioEndpointPeakTimer.IsRunning())
+                        {
+                            mainAudioEndpointPeakTimer.Start();
+                        }
+
+                        if (!audioSessionsPeakTimer.IsRunning())
+                        {
+                            audioSessionsPeakTimer.Start();
+                        }
+                    });
+                    break;
+                case static_cast<int32_t>(UserPresenceStatus::Absent):
+                case 2:
+                    OutputDebugHString(L"User presence status changed: user absent.");
+                    DispatcherQueue().TryEnqueue([this]()
+                    {
+                        if (mainAudioEndpointPeakTimer.IsRunning())
+                        {
+                            mainAudioEndpointPeakTimer.Stop();
+                            LeftVolumeAnimation().To(0.);
+                            RightVolumeAnimation().To(0.);
+                            VolumeStoryboard().Begin();
+                        }
+
+                        if (audioSessionsPeakTimer.IsRunning())
+                        {
+                            audioSessionsPeakTimer.Stop();
+                            for (auto&& view : audioSessionViews)
+                            {
+                                view.SetPeak(0, 0);
+                            }
+                        }
+                    });
+                    break;
+            }
+        });
+#endif
     }
 
     void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const&)
@@ -684,7 +783,6 @@ namespace winrt::SND_Vol::implementation
     {
         auto nativeWindow{ this->try_as<::IWindowNative>() };
         check_bool(nativeWindow);
-
         HWND handle = nullptr;
         nativeWindow->get_WindowHandle(&handle);
         WindowId windowID = GetWindowIdFromWindow(handle);
@@ -773,7 +871,86 @@ namespace winrt::SND_Vol::implementation
         }
 
         SetBackground();
-        LoadHotKeys();
+
+#if ENABLE_HOTKEYS
+#pragma warning(push)
+#pragma warning(disable:4305)
+#pragma warning(disable:4244)
+        /*
+        * Currently used hotkeys:
+        *  - Control + Shift + Up : system volume up
+        *  - Control + Shift + Down : system volume down
+        *  - Control + Shift + PageUp : system volume big up
+        *  - Control + Shift + PageDown : system volume big down
+        *  - Alt/Menu + Shift + M : system volume mute/unmute
+        */
+
+        volumeUpHotKeyPtr.Fired([this](auto, auto)
+        {
+            try
+            {
+                constexpr float stepping = 0.02f;
+                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() + stepping < 1.f ? mainAudioEndpoint->Volume() + stepping : 1.f);
+            }
+            catch (...)
+            {
+            }
+        });
+
+        volumeDownHotKeyPtr.Fired([this](auto, auto)
+        {
+            try
+            {
+                constexpr float stepping = 0.02f;
+                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() - stepping > 0.f ? mainAudioEndpoint->Volume() - stepping : 0.f);
+            }
+            catch (...)
+            {
+            }
+        });
+
+        volumePageUpHotKeyPtr.Fired([this](auto, auto)
+        {
+            try
+            {
+                constexpr float stepping = 0.07f;
+                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() + stepping < 1.f ? mainAudioEndpoint->Volume() + stepping : 1.f);
+            }
+            catch (...)
+            {
+            }
+        });
+
+        volumePageDownHotKeyPtr.Fired([this](auto, auto)
+        {
+            try
+            {
+                constexpr float stepping = 0.07f;
+                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() - stepping > 0.f ? mainAudioEndpoint->Volume() - stepping : 0.f);
+            }
+            catch (...)
+            {
+            }
+        });
+
+        muteHotKeyPtr.Fired([this](auto, auto)
+        {
+            try
+            {
+                mainAudioEndpoint->SetMute(!mainAudioEndpoint->Muted());
+                /*DispatcherQueue().TryEnqueue([this]()
+                {
+                    MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
+                    MuteToggleButton().IsChecked(IReference(mainAudioEndpoint->Muted()));
+                });*/
+            }
+            catch (...)
+            {
+            }
+        });
+
+#pragma warning(pop)  
+#endif // ENABLE_HOTKEYS
     }
 
     void MainWindow::SetBackground()
@@ -1026,88 +1203,6 @@ namespace winrt::SND_Vol::implementation
             compositeValue.Insert(L"Level", box_value(audioSessionViews.GetAt(i).Volume()));
             audioLevels.Values().Insert(audioSessionViews.GetAt(i).Header(), compositeValue);
         }
-    }
-
-    void MainWindow::LoadHotKeys()
-    {
-        #if ENABLE_HOTKEYS
-        #pragma warning(push)
-        #pragma warning(disable:4305)
-        #pragma warning(disable:4244)
-        /*
-        * Currently used hotkeys:
-        *  - Control + Shift + Up : system volume up
-        *  - Control + Shift + Down : system volume down
-        *  - Control + Shift + PageUp : system volume big up
-        *  - Control + Shift + PageDown : system volume big down
-        *  - Alt/Menu + Shift + M : system volume mute/unmute
-        */
-
-        volumeUpHotKeyPtr.Fired([this](auto, auto)
-        {
-            try
-            {
-                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() + .02f < 1.f ? mainAudioEndpoint->Volume() + 0.02f : 1.f);
-            }
-            catch (...)
-            {
-            }
-        });
-
-        volumeDownHotKeyPtr.Fired([this](auto, auto)
-        {
-            try
-            {
-                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() - 0.02f > 0.f ? mainAudioEndpoint->Volume() - 0.02f : 0.f);
-            }
-            catch (...)
-            {
-            }
-        });
-
-        volumePageUpHotKeyPtr.Fired([this](auto, auto)
-        {
-            try
-            {
-                constexpr float stepping = 0.07f;
-                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() + stepping < 1.f ? mainAudioEndpoint->Volume() + stepping : 1.f);
-            }
-            catch (...)
-            {
-            }
-        });
-
-        volumePageDownHotKeyPtr.Fired([this](auto, auto)
-        {
-            try
-            {
-                constexpr float stepping = 0.07f;
-                mainAudioEndpoint->SetVolume(mainAudioEndpoint->Volume() - stepping > 0.f ? mainAudioEndpoint->Volume() - stepping : 0.f);
-            }
-            catch (...)
-            {
-            }
-        });
-
-        muteHotKeyPtr.Fired([this](auto, auto)
-        {
-            try
-            {
-                mainAudioEndpoint->SetMute(!mainAudioEndpoint->Muted());
-                DispatcherQueue().TryEnqueue([this]()
-                {
-                    MuteToggleButtonFontIcon().Glyph(mainAudioEndpoint->Muted() ? L"\ue74f" : L"\ue767");
-                MuteToggleButton().IsChecked(IReference(mainAudioEndpoint->Muted()));
-                });
-            }
-            catch (...)
-            {
-            }
-        });
-
-        #pragma warning(pop)  
-        #endif // DEBUG
-
     }
 
     void MainWindow::LoadSettings()
@@ -1541,7 +1636,7 @@ namespace winrt::SND_Vol::implementation
         SaveSettings();
     }
 
-    void MainWindow::MainAudioEndpoint_VolumeChanged(winrt::Windows::Foundation::IInspectable, const float& newVolume)
+    void MainWindow::MainAudioEndpoint_VolumeChanged(IInspectable, const float& newVolume)
     {
         if (!loaded) return;
 
@@ -1679,7 +1774,7 @@ namespace winrt::SND_Vol::implementation
         });
     }
 
-    void MainWindow::AudioController_SessionAdded(winrt::Windows::Foundation::IInspectable, winrt::Windows::Foundation::IInspectable)
+    void MainWindow::AudioController_SessionAdded(IInspectable, IInspectable)
     {
         // TODO: Reorder audio sessions according to the currently loaded audio profile (if any).
         DispatcherQueue().TryEnqueue([this]()

@@ -52,6 +52,7 @@
 #include <winrt/Microsoft.UI.Xaml.Navigation.h>
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Microsoft.Windows.AppLifecycle.h>
+#include <winrt/Microsoft.Windows.System.Power.h>
 
 #include <winrt/Windows.ApplicationModel.Resources.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
