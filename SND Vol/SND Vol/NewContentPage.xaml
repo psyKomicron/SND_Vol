@@ -36,7 +36,7 @@
                     <TextBlock>Vertical layout (available in the app's window menu) has been changed to better adapt to the window by rotating audio sessions horizontally.</TextBlock>
                 </StackPanel>
 
-                <StackPanel Spacing="7" Grid.Row="2">
+                <StackPanel Spacing="7" Grid.Row="2" Margin="0,30,0,0">
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Add to startup</TextBlock>
                     <TextBlock>You can now find in settings a toggle to add the app to Window's startup app list. Is it not activated by default and you can at any time deactivate it using this app settings or Windows settings (right click on Croak, app settings).</TextBlock>
                 </StackPanel>
@@ -48,7 +48,7 @@
             </ListView>
 
             <ListView Grid.Row="1">
-                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Changes"/>
+                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Changes &amp; fixes"/>
                 <ListViewHeaderItem Margin="-20,0"/>
 
                 <TextBlock>- Previously some audio sessions were hidden because they were inactive at the time. They will now be added when their state change.</TextBlock>
@@ -57,15 +57,17 @@
                 <TextBlock>- Updated volume graphs (for audio sessions and audio device) to fit the Windows 11 Fluent UI.</TextBlock>
                 <TextBlock>- Increased audio sessions height for easier interactions.</TextBlock>
                 <TextBlock>- Added audio session app logo for supported applications (from the Windows Store or some native Windows apps).</TextBlock>
-            </ListView>
-
-            <ListView Grid.Row="2">
-                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Fixes"/>
-                <ListViewHeaderItem Margin="-20,0"/>
-
                 <TextBlock>- Fixed a bug where you couldn't set a session's volume to 100% or 0%.</TextBlock>
                 <TextBlock>- Fixed a bug causing audio sessions to not be shown after one had already been added.</TextBlock>
                 <TextBlock>- Fixed a error causing audio sessions not being shown (active audio sessions are now prioritized over grouping parameters).</TextBlock>
+            </ListView>
+
+            <ListView Grid.Row="2">
+                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Bugs"/>
+                <ListViewHeaderItem Margin="-20,0"/>
+
+                <TextBlock>- Plugging/unplugging an audio device (such as a audio jack) can crash the app.</TextBlock>
+                <TextBlock>- The menu button background will not change theme (dark/light) when switching it in Windows settings.</TextBlock>
             </ListView>
         </Grid>
     </ScrollViewer>
