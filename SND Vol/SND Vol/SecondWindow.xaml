@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="RootGrid" Background="{ThemeResource SolidBackgroundFillColorSecondary}">
+    <Grid x:Name="RootGrid" Background="{ThemeResource SolidBackgroundFillColorSecondary}" ActualThemeChanged="RootGrid_ActualThemeChanged">
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>

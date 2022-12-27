@@ -6,7 +6,6 @@
 
 #include <winrt/Windows.UI.Core.h>
 #include "HotKeyViewModel.h"
-using namespace winrt::Windows::ApplicationModel::Resources;
 
 
 using namespace winrt;
@@ -22,6 +21,7 @@ using namespace winrt::Microsoft::UI::Xaml::Media;
 using namespace winrt::Microsoft::UI::Xaml::Navigation;
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::ApplicationModel::Core;
+using namespace winrt::Windows::ApplicationModel::Resources;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics;
@@ -43,9 +43,18 @@ namespace winrt::SND_Vol::implementation
     }
 
 
+    bool SecondWindow::NavigateTo(const winrt::Windows::UI::Xaml::Interop::TypeName& typeName)
+    {
+        return NavigationFrame().Navigate(typeName);
+    }
+
     void SecondWindow::Grid_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
-        NavigationFrame().Navigate(xaml_typename<SettingsPage>(), box_value(L"SettingsPage"));
+        auto currentSourceTypePage = NavigationFrame().CurrentSourcePageType();
+        if (currentSourceTypePage.Kind == winrt::Windows::UI::Xaml::Interop::TypeKind::Primitive)
+        {
+            NavigationFrame().Navigate(xaml_typename<SettingsPage>(), box_value(L"SettingsPage"));
+        }
     }
 
     void SecondWindow::NavigationFrame_Navigated(IInspectable const&, NavigationEventArgs const& e)
@@ -64,9 +73,45 @@ namespace winrt::SND_Vol::implementation
         NavigationFrame().Navigate(item.ItemTypeName());
     }
 
-    void SecondWindow::NavigationFrame_NavigationFailed(IInspectable const&, NavigationFailedEventArgs const&)
+    void SecondWindow::NavigationFrame_NavigationFailed(IInspectable const&, NavigationFailedEventArgs const& e)
     {
         ErrorMessageBar().EnqueueMessage(L"Navigation failed");
+        try
+        {
+            auto exception = e.Exception();
+            e.Handled(true);
+        }
+        catch (const hresult_error& err)
+        {
+            ErrorMessageBar().EnqueueMessage(L"Navigation failed");
+        }
+    }
+
+    void SecondWindow::RootGrid_ActualThemeChanged(FrameworkElement const&, IInspectable const&)
+    {
+        // Change title bar buttons background to fit the new theme.
+        if (usingCustomTitleBar)
+        {
+            if (RootGrid().ActualTheme() == ElementTheme::Light)
+            {
+                appWindow.TitleBar().ButtonForegroundColor(Colors::Black());
+                appWindow.TitleBar().ButtonHoverForegroundColor(Colors::Black());
+                appWindow.TitleBar().ButtonPressedForegroundColor(Colors::Black());
+            }
+            else if (RootGrid().ActualTheme() == ElementTheme::Dark)
+            {
+                appWindow.TitleBar().ButtonForegroundColor(Colors::White());
+                appWindow.TitleBar().ButtonHoverForegroundColor(Colors::White());
+                appWindow.TitleBar().ButtonPressedForegroundColor(Colors::White());
+            }
+        }
+
+        if (systemBackdropConfiguration)
+        {
+            systemBackdropConfiguration.Theme((SystemBackdropTheme)RootGrid().ActualTheme());
+            backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
+            backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
+        }
     }
 
 
@@ -132,21 +177,32 @@ namespace winrt::SND_Vol::implementation
 
             if (appWindow.TitleBar().IsCustomizationSupported())
             {
+                usingCustomTitleBar = true;
                 appWindow.TitleBar().ExtendsContentIntoTitleBar(true);
                 appWindow.TitleBar().IconShowOptions(IconShowOptions::HideIconAndSystemMenu);
 
                 LeftPaddingColumn().Width(GridLengthHelper::FromPixels(static_cast<double>(appWindow.TitleBar().LeftInset())));
 
                 appWindow.TitleBar().ButtonBackgroundColor(Colors::Transparent());
-                appWindow.TitleBar().ButtonForegroundColor(Colors::White());
                 appWindow.TitleBar().ButtonInactiveBackgroundColor(Colors::Transparent());
                 appWindow.TitleBar().ButtonInactiveForegroundColor(
                     Application::Current().Resources().TryLookup(box_value(L"AppTitleBarHoverColor")).as<Windows::UI::Color>());
                 appWindow.TitleBar().ButtonHoverBackgroundColor(
                     Application::Current().Resources().TryLookup(box_value(L"ButtonHoverBackgroundColor")).as<Windows::UI::Color>());
-                appWindow.TitleBar().ButtonHoverForegroundColor(Colors::White());
                 appWindow.TitleBar().ButtonPressedBackgroundColor(Colors::Transparent());
-                appWindow.TitleBar().ButtonPressedForegroundColor(Colors::White());
+
+                if (RootGrid().ActualTheme() == ElementTheme::Light)
+                {
+                    appWindow.TitleBar().ButtonForegroundColor(Colors::Black());
+                    appWindow.TitleBar().ButtonHoverForegroundColor(Colors::Black());
+                    appWindow.TitleBar().ButtonPressedForegroundColor(Colors::Black());
+                }
+                else if (RootGrid().ActualTheme() == ElementTheme::Dark)
+                {
+                    appWindow.TitleBar().ButtonForegroundColor(Colors::White());
+                    appWindow.TitleBar().ButtonHoverForegroundColor(Colors::White());
+                    appWindow.TitleBar().ButtonPressedForegroundColor(Colors::White());
+                }
             }
         }
 

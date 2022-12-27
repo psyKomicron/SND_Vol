@@ -39,9 +39,13 @@ namespace winrt::SND_Vol::implementation
             return appWindow.Id();
         };
 
+        bool NavigateTo(const winrt::Windows::UI::Xaml::Interop::TypeName& typeName);
+
         void Grid_Loaded(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void NavigationFrame_Navigated(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e);
         void NavigationBreadcrumbBar_ItemClicked(winrt::Microsoft::UI::Xaml::Controls::BreadcrumbBar const& sender, winrt::Microsoft::UI::Xaml::Controls::BreadcrumbBarItemClickedEventArgs const& args);
+        void NavigationFrame_NavigationFailed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Navigation::NavigationFailedEventArgs const& e);
+        void RootGrid_ActualThemeChanged(winrt::Microsoft::UI::Xaml::FrameworkElement const& sender, winrt::Windows::Foundation::IInspectable const& args);
 
     private:
         static winrt::SND_Vol::SecondWindow singleton;
@@ -55,12 +59,11 @@ namespace winrt::SND_Vol::implementation
         {
             single_threaded_observable_vector<winrt::SND_Vol::NavigationBreadcrumbBarItem>()
         };
+        bool usingCustomTitleBar = false;
 
         void InitializeWindow();
         void SetBackground();
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
-    public:
-        void NavigationFrame_NavigationFailed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Navigation::NavigationFailedEventArgs const& e);
     };
 }
 
