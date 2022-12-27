@@ -59,7 +59,6 @@ namespace winrt::SND_Vol::implementation
         void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ViewHotKeysHyperlinkButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SplashScreen_Dismissed(winrt::SND_Vol::SplashScreen const& sender, winrt::Windows::Foundation::IInspectable const& args);
-        void MenuFlyout_Opening(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Foundation::IInspectable const& e);
         void SettingsIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void DisableHotKeysIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void ShowAppBarIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
@@ -70,6 +69,8 @@ namespace winrt::SND_Vol::implementation
         void RestartIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void OpenProfilesIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void CloseProfilesButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void OpenProfilesButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void RootGrid_ActualThemeChanged(winrt::Microsoft::UI::Xaml::FrameworkElement const& sender, winrt::Windows::Foundation::IInspectable const& args);
 
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
@@ -79,6 +80,7 @@ namespace winrt::SND_Vol::implementation
 
         // Logic related attributes.
         std::mutex audioSessionsMutex{};
+        std::mutex mainAudioEndpointMutex{};
         Audio::MainAudioEndpoint* mainAudioEndpoint = nullptr;
         Audio::LegacyAudioController* audioController = nullptr;
         std::unique_ptr<std::vector<Audio::AudioSession*>> audioSessions{ nullptr };
@@ -114,9 +116,8 @@ namespace winrt::SND_Vol::implementation
         {
             winrt::multi_threaded_observable_vector<winrt::SND_Vol::AudioSessionView>()
         };
-        winrt::Microsoft::UI::Xaml::Window secondWindow{ nullptr };
+        winrt::SND_Vol::SecondWindow secondWindow{ nullptr };
         winrt::SND_Vol::AudioProfile currentAudioProfile{ nullptr };
-        bool checkForDuplicates = true;
 
         void InitializeWindow();
         void SetBackground();
@@ -129,6 +130,7 @@ namespace winrt::SND_Vol::implementation
         void LoadSettings();
         void SaveSettings();
         void LoadProfile(const hstring& profileName);
+        void ReloadAudioSessions();
 
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
         void UpdatePeakMeters(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);

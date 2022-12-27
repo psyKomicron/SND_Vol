@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Activated="Window_Activated">
 
-    <Grid x:Name="RootGrid" SizeChanged="Grid_SizeChanged">
+    <Grid x:Name="RootGrid" SizeChanged="Grid_SizeChanged" ActualThemeChanged="RootGrid_ActualThemeChanged">
         <Grid.Resources>
             <Style x:Key="GridViewHorizontalLayout" TargetType="GridView">
                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -93,14 +93,19 @@
                     </Viewbox>
 
                     <Button.Flyout>
-                        <Flyout x:Name="SettingsButtonFlyout">
-                            <Grid Margin="-16,-17" CornerRadius="{StaticResource ControlCornerRadius}">
+                        <Flyout x:Name="SettingsButtonFlyout" ShowMode="Transient">
+                            <Grid 
+                                x:Name="SettingsButtonFlyoutGrid" 
+                                Margin="-16,-17" 
+                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                Background="Transparent">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <Grid Grid.Row="0" Padding="5,7,5,5" VerticalAlignment="Center">
+                                <Grid x:Name="CommandBarGrid" Grid.Row="0" Padding="5,7,5,5" VerticalAlignment="Center">
                                     <Grid.Background>
                                         <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorSecondary}" Opacity="0.4"/>
                                     </Grid.Background>
@@ -218,7 +223,6 @@
                                         </StackPanel.Transitions>
 
                                         <s:IconButton Glyph="&#xe748;" Click="OpenProfilesIconButton_Click">
-
                                             <s:IconButton.Content>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -272,6 +276,7 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
 
                                             <Button Style="{StaticResource IconButtonStyle}" Click="CloseProfilesButton_Click">
@@ -279,6 +284,14 @@
                                             </Button>
 
                                             <TextBlock Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Profiles" />
+
+                                            <Button 
+                                                Margin="0,0,5,0"
+                                                Style="{StaticResource IconButtonStyle}" 
+                                                Grid.Column="2" 
+                                                Click="OpenProfilesButton_Click">
+                                                <FontIcon Glyph="&#xe8a7;" FontSize="14" />
+                                            </Button>
                                         </Grid>
 
                                         <Border Grid.Row="1" Style="{StaticResource BorderFlyoutSeparatorStyle}" />
@@ -290,6 +303,8 @@
                                         </StackPanel>
                                     </Grid>
                                 </Grid>
+
+                                <Border Background="Transparent" Grid.Row="2" Height="100" HorizontalAlignment="Stretch" />
                             </Grid>
                         </Flyout>
                     </Button.Flyout>
@@ -414,13 +429,11 @@
                         </Slider.Transitions>
                     </Slider>
 
-                    <TextBlock
-                        x:Name="SystemVolumeSliderText"
+                    <s:NumberBlock
+                        x:Name="SystemVolumeNumberBlock"
                         Grid.Column="2"
                         VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        FontSize="14"
-                        FontWeight="SemiBold"/>
+                        HorizontalAlignment="Center"/>
                 </Grid>
 
                 <Border
