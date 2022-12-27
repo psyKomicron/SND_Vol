@@ -17,7 +17,7 @@ namespace winrt::SND_Vol::implementation
         InitializeComponent();
     }
 
-    void NewContentPage::OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args)
+    void NewContentPage::OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const&)
     {
         SecondWindow::Current().Breadcrumbs().Append(NavigationBreadcrumbBarItem(L"What's new", xaml_typename<winrt::SND_Vol::NewContentPage>()));
     }
