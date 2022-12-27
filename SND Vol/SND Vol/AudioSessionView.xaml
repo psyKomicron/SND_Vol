@@ -34,7 +34,8 @@
         MinWidth="90"
         SizeChanged="Grid_SizeChanged"
         PointerEntered="RootGrid_PointerEntered"
-        PointerExited="RootGrid_PointerExited">
+        PointerExited="RootGrid_PointerExited"
+        ActualThemeChanged="RootGrid_ActualThemeChanged">
         <Grid.BackgroundTransition>
             <BrushTransition Duration="0:0:0.083"/>
         </Grid.BackgroundTransition>
@@ -228,7 +229,11 @@
                 Grid.Row="3"
                 Click="MuteToggleButton_Click">
 
-                <FontIcon x:Name="VolumeFontIcon" FontSize="{StaticResource FontIconHeight}" Glyph="{x:Bind VolumeGlyph, Mode=OneWay}"/>
+                <FontIcon 
+                    x:Name="VolumeFontIcon" 
+                    FontSize="{StaticResource FontIconHeight}" 
+                    Glyph="{x:Bind VolumeGlyph, Mode=OneWay}"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
             </Button>
 
             <Border
@@ -370,8 +375,15 @@
                 Grid.Row="1"
                 ValueChanged="Slider_ValueChanged"/>
 
-            <TextBlock
-                Text="100"
+            <!--<TextBlock
+                Grid.Column="2" 
+                Grid.Row="1" 
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center"
+                Margin="5,0,0,0"/>-->
+
+            <local:NumberBlock
+                Double="{x:Bind Volume, Mode=OneWay}"
                 Grid.Column="2" 
                 Grid.Row="1" 
                 VerticalAlignment="Center" 

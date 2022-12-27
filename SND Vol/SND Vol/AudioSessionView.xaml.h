@@ -56,7 +56,7 @@ namespace winrt::SND_Vol::implementation
         winrt::guid _id{};
         bool _muted = false;
         float lastPeak = 0;
-        bool isActive = false;
+        bool active = false;
         bool isLocked = false;
         bool isVertical = true;
 
@@ -67,6 +67,8 @@ namespace winrt::SND_Vol::implementation
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, winrt::Windows::Foundation::IInspectable>> e_hidden;
 
         void SetGlyph();
+    public:
+        void RootGrid_ActualThemeChanged(winrt::Microsoft::UI::Xaml::FrameworkElement const& sender, winrt::Windows::Foundation::IInspectable const& args);
     };
 }
 

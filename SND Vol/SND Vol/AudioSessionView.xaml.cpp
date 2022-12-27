@@ -176,7 +176,7 @@ namespace winrt::SND_Vol::implementation
         switch (state)
         {
             case AudioSessionState::Active:
-                isActive = true;
+                active = true;
                 VolumeFontIcon().Foreground(::Media::SolidColorBrush(Windows::UI::Colors::LimeGreen()));
                 VolumeFontIcon().Opacity(1);
                 break;
@@ -184,8 +184,16 @@ namespace winrt::SND_Vol::implementation
             case AudioSessionState::Expired:
             case AudioSessionState::Inactive:
             default:
-                isActive = false;
-                VolumeFontIcon().Foreground(::Media::SolidColorBrush(Windows::UI::Colors::WhiteSmoke()));
+                active = false;
+                /*VolumeFontIcon().Foreground(
+                     RootGrid().ActualTheme() == ElementTheme::Dark ? 
+                        ::Media::SolidColorBrush(Windows::UI::Colors::WhiteSmoke()) :
+                        ::Media::SolidColorBrush(Windows::UI::Colors::DarkGray())
+                );*/
+
+                VolumeFontIcon().Foreground(
+                    Application::Current().Resources().Lookup(box_value(L"TextFillColorPrimaryBrush")).as<Brush>()
+                );
                 VolumeFontIcon().Opacity(0.6);
                 break;
         }
@@ -198,7 +206,7 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::SetPeak(const float& left, const float& right)
     {
-        if (!isActive) return;
+        if (!active) return;
 
         LeftPeakAnimation().To(static_cast<double>(left * isVertical));
         RightPeakAnimation().To(static_cast<double>(right * isVertical));
@@ -296,6 +304,16 @@ namespace winrt::SND_Vol::implementation
     void AudioSessionView::HideMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
     {
         e_hidden(*this, IInspectable());
+    }
+
+    void AudioSessionView::RootGrid_ActualThemeChanged(FrameworkElement const&, IInspectable const&)
+    {
+        if (!active)
+        {
+            VolumeFontIcon().Foreground(
+                Application::Current().Resources().Lookup(box_value(L"TextFillColorPrimaryBrush")).as<Brush>()
+            );
+        }
     }
 
 
