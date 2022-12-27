@@ -5,6 +5,7 @@
 #include "LetterKeyIcon.h"
 #include "IconButton.h"
 #include "IconToggleButton.h"
+#include "NumberBlock.h"
 
 namespace winrt::SND_Vol::implementation
 {

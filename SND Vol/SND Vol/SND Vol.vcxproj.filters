@@ -88,6 +88,9 @@
     <ClCompile Include="IconToggleButton.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
+    <ClCompile Include="NumberBlock.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

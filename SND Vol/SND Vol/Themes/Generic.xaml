@@ -115,10 +115,10 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleSwitch">
                     <Grid
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{TemplateBinding CornerRadius}">
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1655,14 +1655,14 @@
                         CornerRadius="{StaticResource ControlCornerRadius}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="15"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition x:Name="PresenterColumn" Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.BackgroundTransition>
                             <BrushTransition Duration="0:0:0.083" />
                         </Grid.BackgroundTransition>
 
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
+                            <VisualStateGroup x:Name="PointerStates">
                                 <VisualState x:Name="Normal" />
 
                                 <VisualState x:Name="PointerOver">
@@ -1700,7 +1700,6 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="ContentTypeStates">
@@ -1710,6 +1709,15 @@
                                     <VisualState.Setters>
                                         <Setter Target="TextControl.Visibility" Value="Collapsed" />
                                         <Setter Target="Presenter.Visibility" Value="Visible" />
+                                        <Setter Target="PresenterColumn.Width" Value="*" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CompactState">
+                                    <VisualState.Setters>
+                                        <Setter Target="TextControl.Visibility" Value="Collapsed" />
+                                        <Setter Target="Presenter.Visibility" Value="Collapsed" />
+                                        <Setter Target="PresenterColumn.Width" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1836,7 +1844,25 @@
                             </ContentPresenter.OpacityTransition>
                         </ContentPresenter>
                     </Grid>
-                    
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="local:NumberBlock" >
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:NumberBlock">
+                    <TextBlock 
+                        Text="{TemplateBinding Text}" 
+                        FontSize="{TemplateBinding FontSize}" 
+                        FontWeight="{TemplateBinding FontWeight}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -186,6 +186,10 @@
       <DependentUpon>NewContentPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="NumberBlock.h">
+      <DependentUpon>NumberBlock.cpp</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -310,6 +314,9 @@
       <DependentUpon>NewContentPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="NumberBlock.cpp">
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -397,6 +404,10 @@
     </Midl>
     <Midl Include="NewContentPage.idl">
       <DependentUpon>NewContentPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="NumberBlock.idl">
+      <DependentUpon>NumberBlock.cpp</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="SecondWindow.idl">
