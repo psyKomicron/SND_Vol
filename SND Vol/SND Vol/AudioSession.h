@@ -126,6 +126,7 @@ namespace Audio
         ::winrt::impl::atomic_ref_count refCount{ 1 };
         winrt::hstring sessionName{};
         winrt::hstring logoPath;
+        bool isSessionActive = false;
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float>> e_volumeChanged{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t>> e_stateChanged{};

@@ -66,12 +66,17 @@ namespace Audio
             }
         }
 
+        AudioSessionState state{};
+        if (SUCCEEDED(audioSessionControl->GetState(&state)))
+        {
+            isSessionActive = state == AudioSessionState::AudioSessionStateActive;
+        }
+
         check_hresult(audioSessionControl->QueryInterface(_uuidof(ISimpleAudioVolume), (void**)&simpleAudioVolume));
         if (FAILED(simpleAudioVolume->GetMute((BOOL*)&muted)))
         {
             OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get session state. Default (unmuted) assumed.");
         }
-
         if (FAILED(audioSessionControl->QueryInterface(__uuidof(IAudioMeterInformation), (void**)&audioMeter)))
         {
             OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get audio meter info. Peak values will be blank.");
@@ -206,17 +211,24 @@ namespace Audio
     pair<float, float> Audio::AudioSession::GetChannelsPeak() const
     {
         // TODO: Channel count
-        pair<float, float> peaks{};
-
-        UINT meteringChannelCount = 0;
-        if (SUCCEEDED(audioMeter->GetMeteringChannelCount(&meteringChannelCount)) && meteringChannelCount == 2) 
+        if (isSessionActive)
         {
-            float channelsPeak[2]{ 0 };
-            check_hresult(audioMeter->GetChannelsPeakValues(2, channelsPeak));
-            peaks.first = channelsPeak[0];
-            peaks.second = channelsPeak[1];
+            pair<float, float> peaks{};
+
+            UINT meteringChannelCount = 0;
+            if (SUCCEEDED(audioMeter->GetMeteringChannelCount(&meteringChannelCount)) && meteringChannelCount == 2)
+            {
+                float channelsPeak[2]{ 0 };
+                check_hresult(audioMeter->GetChannelsPeakValues(2, channelsPeak));
+                peaks.first = channelsPeak[0];
+                peaks.second = channelsPeak[1];
+            }
+            return peaks;
         }
-        return peaks;
+        else
+        {
+            return { 0.f, 0.f };
+        }
     }
 
     bool AudioSession::Register()
@@ -550,6 +562,7 @@ namespace Audio
 
     STDMETHODIMP AudioSession::OnStateChanged(::AudioSessionState NewState)
     {
+        isSessionActive = NewState == AudioSessionState::AudioSessionStateActive;
         e_stateChanged(id, static_cast<uint32_t>(NewState));
         return S_OK;
     }
