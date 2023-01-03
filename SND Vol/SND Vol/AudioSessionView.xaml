@@ -204,9 +204,10 @@
                 Stretch="Uniform"
                 Grid.Row="0"
                 Visibility="Collapsed"
-                Height="38"
+                MaxHeight="35"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"/>
+                VerticalAlignment="Stretch"
+                Margin="0,2,0,3"/>
 
             <Slider
                 x:Name="VolumeSlider"
