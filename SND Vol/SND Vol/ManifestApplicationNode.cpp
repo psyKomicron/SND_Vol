@@ -1,17 +1,18 @@
 #include "pch.h"
 #include "ManifestApplicationNode.h"
 #include <Shlwapi.h>
+#include <regex>
 
 using namespace std;
 
 
 namespace System::AppX
 {
-	ManifestApplicationNode::ManifestApplicationNode(IAppxManifestApplicationPtr& application, PWSTR packagePath)
-	{
-        wstring path = wstring(packagePath) + L"\\";
+    ManifestApplicationNode::ManifestApplicationNode(IAppxManifestApplicationPtr& application, PWSTR _packagePath)
+    {
+        wstring packagePath = wstring(_packagePath) + L"\\";
 
-        PWSTR value = nullptr;
+        wchar_t* value = nullptr;
         application->GetStringValue(L"Description", &value);
         if (value)
         {
@@ -50,38 +51,101 @@ namespace System::AppX
         application->GetStringValue(L"Logo", &value);
         if (value)
         {
-            logo = GetScale(path + wstring(value));
+            logo = GetScale(packagePath + wstring(value));
             CoTaskMemFree(value);
         }
 
         application->GetStringValue(L"SmallLogo", &value);
         if (value)
         {
-            smallLogo = GetScale(path + wstring(value));
+            smallLogo = GetScale(packagePath + wstring(value));
             CoTaskMemFree(value);
         }
 
         application->GetStringValue(L"Square150x150Logo", &value);
         if (value)
         {
-            square150x150Logo = GetScale(path + wstring(value));
+            square150x150Logo = GetScale(packagePath + wstring(value));
             CoTaskMemFree(value);
         }
 
         application->GetStringValue(L"Square70x70Logo", &value);
         if (value)
         {
-            square70x70Logo = GetScale(path + wstring(value));
+            square70x70Logo = GetScale(packagePath + wstring(value));
             CoTaskMemFree(value);
         }
 
         application->GetStringValue(L"Square30x30Logo", &value);
         if (value)
         {
-            square30x30Logo = GetScale(path + wstring(value));
+            square30x30Logo = GetScale(packagePath + wstring(value));
             CoTaskMemFree(value);
         }
-	}
+
+        application->GetStringValue(L"Square44x44Logo", &value);
+        if (value)
+        {
+            wstring logoPath = packagePath + wstring(value);
+            wstring assetsPath{};
+            CoTaskMemFree(value);
+
+            // Extract the file name and extension to input target size.
+            wstring filePathWithoutExt{};
+            wstring ext{};
+            for (int i = logoPath.size() - 1; i >= 0; i--)
+            {
+                if (logoPath[i] == '.')
+                {
+                    filePathWithoutExt = logoPath.substr(0, i);
+                    ext = logoPath.substr(i);
+
+                    // Extract the logos folder path.
+                    for (int j = i; j >= 0; j--)
+                    {
+                        // Windows path delimiter.
+                        if (logoPath[j] == '\\')
+                        {
+                            assetsPath = logoPath.substr(0, j + 1);
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            wregex targetScaleRegx{ L"(.+targetsize-)(\\d+)(.*-unplated.*)" };
+            WIN32_FIND_DATA findData{};
+            HANDLE findHandle = FindFirstFile((filePathWithoutExt + L"*").c_str(), &findData);
+            if (findHandle != INVALID_HANDLE_VALUE)
+            {
+                wstring maxRes{};
+                int max = 0;
+                do
+                {
+                    wstring fileName = wstring(findData.cFileName);
+                    wcmatch matches{};
+                    if (regex_match(fileName.c_str(), matches, targetScaleRegx) && matches.size() >= 3u)
+                    {
+                        int value = stoi(matches[2]);
+                        if (value > max)
+                        {
+                            max = value;
+                            maxRes = assetsPath + fileName;
+                        }
+                    }
+                }
+                while (FindNextFile(findHandle, &findData));
+                FindClose(findHandle);
+
+                OutputDebugHString(L"Best logo found target size : " + winrt::to_hstring(max) + L". File path : " + maxRes);
+                square44x44Logo = maxRes;
+                logo = maxRes;
+            }
+
+        }
+    }
 
     wstring ManifestApplicationNode::GetScale(wstring path)
     {
@@ -99,8 +163,7 @@ namespace System::AppX
 
         if (!filePathWithoutExt.empty() && !ext.empty())
         {
-            filePathWithoutExt += L".scale-100";
-            wstring filePath = filePathWithoutExt + ext;
+            wstring filePath = filePathWithoutExt + L".scale-100" + ext;
             if (PathFileExists(filePath.c_str()))
             {
                 return filePath;

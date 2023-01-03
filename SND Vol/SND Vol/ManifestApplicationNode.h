@@ -57,16 +57,17 @@ namespace System::AppX
 		};
 
 	private:
-		std::wstring description;
-		std::wstring displayName;
-		std::wstring logo;
-		std::wstring smallLogo;
-		std::wstring square150x150Logo;
-		std::wstring square30x30Logo;
-		std::wstring backgroundColor;
-		std::wstring foregroundText;
-		std::wstring shortName;
-		std::wstring square70x70Logo;
+		std::wstring description{};
+		std::wstring displayName{};
+		std::wstring backgroundColor{};
+		std::wstring foregroundText{};
+		std::wstring shortName{};
+		std::wstring logo{};
+		std::wstring smallLogo{};
+		std::wstring square30x30Logo{};
+		std::wstring square70x70Logo{};
+		std::wstring square150x150Logo{};
+		std::wstring square44x44Logo{};
 
 		std::wstring GetScale(std::wstring path);
 	};
