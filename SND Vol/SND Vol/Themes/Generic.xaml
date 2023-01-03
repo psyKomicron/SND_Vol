@@ -29,7 +29,7 @@
         </GradientStopCollection>
     </LinearGradientBrush>
 
-    <Thickness x:Key="ToggleSwitchCenterMargin">0,0,-75,0</Thickness>
+    <Thickness x:Key="ToggleSwitchCenterMargin">0,0,-20,0</Thickness>
 
     <x:Double x:Key="StackPanelButtonSpacing">10</x:Double>
     <x:Double x:Key="StackPanelDefaultSpacing">15</x:Double>
@@ -44,8 +44,8 @@
     <x:Double x:Key="FontIconHeight">16</x:Double>
     <x:Double x:Key="SettingHostControlMinHeight">70</x:Double>
     <x:Double x:Key="PeakBorderOpacity">0.55</x:Double>
-    
-    <x:Int32 x:Key="WindowWidth">300</x:Int32>
+
+    <x:Int32 x:Key="WindowWidth">500</x:Int32>
     <x:Int32 x:Key="WindowHeight">500</x:Int32>
     <x:Int32 x:Key="SecondWindowWidth">1050</x:Int32>
     <x:Int32 x:Key="SecondWindowHeight">800</x:Int32>
@@ -448,18 +448,18 @@
                         </Grid.RowDefinitions>
 
                         <ContentPresenter
-                                    x:Name="HeaderContentPresenter"
-                                    x:DeferLoadStrategy="Lazy"
-                                    Grid.Row="0"
-                                    Content="{TemplateBinding Header}"
-                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                    Foreground="{ThemeResource ToggleSwitchHeaderForeground}"
-                                    IsHitTestVisible="False"
-                                    Margin="{ThemeResource ToggleSwitchTopHeaderMargin}"
-                                    TextWrapping="Wrap"
-                                    VerticalAlignment="Top"
-                                    Visibility="Collapsed"
-                                    AutomationProperties.AccessibilityView="Raw"/>
+                            x:Name="HeaderContentPresenter"
+                            x:DeferLoadStrategy="Lazy"
+                            Grid.Row="0"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            Foreground="{ThemeResource ToggleSwitchHeaderForeground}"
+                            IsHitTestVisible="False"
+                            Margin="{ThemeResource ToggleSwitchTopHeaderMargin}"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Top"
+                            Visibility="Collapsed"
+                            AutomationProperties.AccessibilityView="Raw"/>
 
                         <Grid Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top">
                             <Grid.RowDefinitions>
@@ -1166,7 +1166,7 @@
 
     <Style x:Key="GridSettingStyle" TargetType="Grid">
         <Setter Property="Background" Value="{ThemeResource ExpanderBackground}"/>
-        <Setter Property="Padding" Value="16,0,8,0"/>
+        <Setter Property="Padding" Value="16,3,16,3"/>
         <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
         <Setter Property="BorderThickness" Value="{StaticResource ExpanderBorderThickness}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource ExpanderHeaderBorderBrush}"/>
@@ -1177,15 +1177,15 @@
         <Setter Property="Foreground" Value="{ThemeResource ToggleSwitchContentForeground}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="HorizontalContentAlignment" Value="Right" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="ManipulationMode" Value="System,TranslateX" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="MinWidth" Value="{StaticResource ToggleSwitchThemeMinWidth}" />
+        <Setter Property="MinWidth" Value="50" />
         <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />
         <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-        <Setter Property="Margin" Value="{StaticResource ToggleSwitchCenterMargin}"/>
+        <Setter Property="Margin" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleSwitch">
@@ -1644,6 +1644,7 @@
     </Style>
 
     <Style TargetType="local:IconButton">
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:IconButton">
@@ -1724,7 +1725,6 @@
 
                         </VisualStateManager.VisualStateGroups>
 
-
                         <FontIcon FontSize="14" Glyph="{TemplateBinding Glyph}"/>
                         <TextBlock x:Name="TextControl" Text="{TemplateBinding Text}" Grid.Column="1" TextWrapping="Wrap"/>
                         <ContentPresenter x:Name="Presenter" Content="{TemplateBinding Content}" Grid.Column="1" Visibility="Collapsed"/>
@@ -1736,10 +1736,10 @@
 
 
     <Style TargetType="local:IconToggleButton" >
+        <Setter Property="UseSystemFocusVisuals" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:IconToggleButton">
-
                     <Grid 
                         x:Name="RootGrid" 
                         ColumnSpacing="13" 
@@ -1828,17 +1828,43 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <FontIcon x:Name="Icon" Grid.Column="0" FontSize="14" Glyph="{TemplateBinding Glyph}" />
-                        <FontIcon x:Name="OnIcon" Grid.Column="0" FontSize="14" Glyph="{TemplateBinding OnIcon}" Visibility="Collapsed" />
-                        <FontIcon x:Name="OffIcon" Grid.Column="0" FontSize="14" Glyph="{TemplateBinding OnIcon}" Visibility="Collapsed" />
+                        <FontIcon 
+                            x:Name="Icon" 
+                            Grid.Column="0" 
+                            FontSize="14" 
+                            Glyph="{TemplateBinding Glyph}" />
+                        <FontIcon 
+                            x:Name="OnIcon" 
+                            Grid.Column="0" 
+                            FontSize="14" 
+                            Glyph="{TemplateBinding OnIcon}" 
+                            Visibility="Collapsed" />
+                        <FontIcon 
+                            x:Name="OffIcon" 
+                            Grid.Column="0" 
+                            FontSize="14" 
+                            Glyph="{TemplateBinding OffIcon}" 
+                            Visibility="Collapsed" />
 
-                        <ContentPresenter x:Name="OffContentPresenter" Visibility="Visible" Content="{TemplateBinding OffContent}" Grid.Column="1" Opacity="1" TextWrapping="Wrap">
+                        <ContentPresenter 
+                            x:Name="OffContentPresenter" 
+                            Visibility="Visible" 
+                            Content="{TemplateBinding OffContent}" 
+                            Grid.Column="1" 
+                            Opacity="1" 
+                            TextWrapping="Wrap">
                             <ContentPresenter.OpacityTransition>
                                 <ScalarTransition Duration="0:0:0.167" />
                             </ContentPresenter.OpacityTransition>
                         </ContentPresenter>
 
-                        <ContentPresenter x:Name="OnContentPresenter" Content="{TemplateBinding OnContent}" Grid.Column="1" Visibility="Collapsed" Opacity="0" TextWrapping="Wrap">
+                        <ContentPresenter 
+                            x:Name="OnContentPresenter" 
+                            Content="{TemplateBinding OnContent}" 
+                            Grid.Column="1" 
+                            Visibility="Collapsed" 
+                            Opacity="0" 
+                            TextWrapping="Wrap">
                             <ContentPresenter.OpacityTransition>
                                 <ScalarTransition Duration="0:0:0.167" />
                             </ContentPresenter.OpacityTransition>
