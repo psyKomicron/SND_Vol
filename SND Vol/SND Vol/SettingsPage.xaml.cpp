@@ -32,6 +32,7 @@ namespace winrt::SND_Vol::implementation
         CustomTitleBarToggleButton().IsOn(unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"UseCustomTitleBar"), true));
         StartupTask startupTask = co_await StartupTask::GetAsync(L"CroakStartupTaskId");
         AddToStartupToggleSwitch().IsOn(startupTask.State() == StartupTaskState::Enabled);
+        PowerEfficiencyToggleButton().IsOn(unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"PowerEfficiencyEnabled"), true));
     }
 
     void SettingsPage::OnNavigatedTo(NavigationEventArgs const& args)
@@ -84,7 +85,7 @@ namespace winrt::SND_Vol::implementation
                 StartupTaskState newState = co_await startupTask.RequestEnableAsync();
                 if (newState == StartupTaskState::Enabled)
                 {
-                    UserMessageBar().EnqueueMessage(L"App added to startup");
+                    UserMessageBar().EnqueueString(L"App added to startup");
                 }
             }
         }
@@ -95,7 +96,7 @@ namespace winrt::SND_Vol::implementation
             {
                 // Disable task
                 startupTask.Disable();
-                UserMessageBar().EnqueueMessage(L"App removed from startup");
+                UserMessageBar().EnqueueString(L"App removed from startup");
             }
         }
 
@@ -115,10 +116,15 @@ namespace winrt::SND_Vol::implementation
         picker.SuggestedStartLocation(PickerLocationId::PicturesLibrary);
         picker.ViewMode(PickerViewMode::List);
 
-        auto chosenFile = co_await picker.PickSingleFileAsync();
+        StorageFile chosenFile = co_await picker.PickSingleFileAsync();
         if (chosenFile)
         {
             ApplicationData::Current().LocalSettings().Values().Insert(L"BackgroundImageUri", box_value(chosenFile.Path()));
         }
+    }
+
+    void SettingsPage::PowerEfficiencyToggleButton_Toggled(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplicationData::Current().LocalSettings().Values().Insert(L"PowerEfficiencyEnabled", box_value(PowerEfficiencyToggleButton().IsOn()));
     }
 }

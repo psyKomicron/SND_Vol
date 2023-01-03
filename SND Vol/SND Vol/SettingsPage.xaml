@@ -9,7 +9,7 @@
     Loaded="Page_Loaded">
 
     <ScrollViewer>
-        <Grid RowSpacing="60" Margin="0,0,5,20">
+        <Grid RowSpacing="60" Margin="0,0,5,80">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -35,7 +35,7 @@
 
                 <Expander Style="{StaticResource ExpanderSettingStyle}">
                     <Expander.Header>
-                        <Grid Margin="0,0,-15,0">
+                        <Grid Margin="0,0,-5,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -91,7 +91,7 @@
                     <TextBlock Text="Custom title bar" VerticalAlignment="Center" Margin="15,0,0,0" Grid.Column="1"/>
                     <TextBlock Style="{StaticResource ErrorTextBlockStyle}" Grid.Column="2"/>
                     <ToggleSwitch 
-                        x:Name="CustomTitleBarToggleButton" Grid.Column="3" Style="{StaticResource FlippedToggleSwitchStyle}" Toggled="CustomTitleBarToggleButton_Toggled"/>
+                        x:Name="CustomTitleBarToggleButton" Grid.Column="3" Style="{StaticResource FlippedToggleSwitchStyle}" Toggled="CustomTitleBarToggleButton_Toggled" />
                 </Grid>
 
                 <Grid Style="{StaticResource GridSettingStyle}">
@@ -111,6 +111,44 @@
                         x:Name="AddToStartupToggleSwitch" Grid.Column="2" Style="{ThemeResource FlippedToggleSwitchStyle}" Toggled="AddToStartupToggleSwitch_Toggled"/>
                 </Grid>
 
+                <Grid Style="{StaticResource GridSettingStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Viewbox Height="20" Width="20" Grid.RowSpan="2">
+                        <FontIcon Glyph="&#xe8be;"/>
+                    </Viewbox>
+
+
+                    <Grid Margin="15,3,0,3" Grid.Column="1" RowSpacing="3" VerticalAlignment="Center" Padding="0,3,0,4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Text="Power efficiency" Grid.Row="0" />
+
+                        <TextBlock 
+                            Style="{ThemeResource CaptionTextBlockStyle}" 
+                            FontSize="12" 
+                            Opacity="0.7"
+                            Grid.Row="1" 
+                            Grid.Column="1">
+                            When power efficiency is turned on, audio animations will be turned off if the user is inactive or "Better battery" mode is active (on laptops). Animations will be turned back on automatically.
+                            </TextBlock>
+                    </Grid>
+
+                    <ToggleSwitch 
+                        x:Name="PowerEfficiencyToggleButton" 
+                        Style="{StaticResource FlippedToggleSwitchStyle}" 
+                        Grid.Column="2" 
+                        Grid.RowSpan="2"
+                        Toggled="PowerEfficiencyToggleButton_Toggled" />
+                </Grid>
+                
                 <ListViewHeaderItem Margin="0,10,0,0"/>
 
                 <Button Style="{ThemeResource SettingsButtonStyle}" Click="AudioProfilesButton_Click">
