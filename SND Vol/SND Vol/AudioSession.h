@@ -137,7 +137,8 @@ namespace Audio
          * @return The name of the process
         */
         winrt::hstring GetProcessName(DWORD const& pid);
-        bool GetPackageInfoFromHandle(HANDLE processHandle);
+        bool GetPackageInfoFromHandle(HANDLE& processHandle);
+        void GetWindowInfo();
 
         // IAudioSessionEvents
         STDMETHOD(OnDisplayNameChanged)(LPCWSTR NewDisplayName, LPCGUID EventContext);

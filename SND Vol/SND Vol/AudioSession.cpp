@@ -18,12 +18,12 @@ namespace Audio
 {
     AudioSession::AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId) :
         eventContextId{ eventContextId },
-        sessionName{ L"Unknown" },
+        sessionName{ L"" },
         audioSessionControl{ audioSessionControl }
     {
         check_bool(UuidCreate(&id) == 0);
         check_hresult(audioSessionControl->GetGroupingParam(&groupingParam));
-
+        check_hresult(audioSessionControl->GetProcessId(&processPID));
 
         if (audioSessionControl->IsSystemSoundsSession() == S_OK)
         {
@@ -34,35 +34,25 @@ namespace Audio
         else
         {
             LPWSTR wStr = nullptr;
-            DWORD pid;
+            hstring displayName{};
             if (SUCCEEDED(audioSessionControl->GetDisplayName(&wStr)))
             {
-                hstring displayName = to_hstring(wStr);
-                // Free memory allocated by audioSessionControl->GetDisplayName
+                displayName = to_hstring(wStr);
+                // Free memory allocated by audioSessionControl->GetDisplayName()
                 CoTaskMemFree(wStr);
+            }
 
-                if (displayName.empty())
-                {
-                    if (SUCCEEDED(audioSessionControl->GetProcessId(&pid)))
-                    {
-                        displayName = GetProcessName(pid);
-                        if (!displayName.empty())
-                        {
-                            sessionName = std::move(displayName);
-                        }
-                    }
-                }
-                else
+            if (displayName.empty())
+            {
+                displayName = GetProcessName(processPID);
+                if (!displayName.empty())
                 {
                     sessionName = std::move(displayName);
                 }
             }
             else
             {
-                if (SUCCEEDED(audioSessionControl->GetProcessId(&pid)))
-                {
-                    sessionName = GetProcessName(pid);
-                }
+                sessionName = std::move(displayName);
             }
         }
 
@@ -113,6 +103,11 @@ namespace Audio
                 }
             }
         }*/
+
+#ifdef DEBUG
+        GetWindowInfo();
+#endif // DEBUG
+
     }
 
 
@@ -332,7 +327,7 @@ namespace Audio
                     }
                 }
             }
-            
+
             // Default naming using PID.
             wchar_t executableName[MAX_PATH]{};
             DWORD executableNameLength = MAX_PATH;
@@ -390,6 +385,11 @@ namespace Audio
                                 }
                             }
                         }
+                        else
+                        {
+                            free(lpData);
+                            throw_last_error();
+                        }
 
                         free(lpData);
                     }
@@ -404,7 +404,7 @@ namespace Audio
         return processName;
     }
 
-    bool AudioSession::GetPackageInfoFromHandle(HANDLE processHandle)
+    bool AudioSession::GetPackageInfoFromHandle(HANDLE& processHandle)
     {
         bool success = false;
         uint32_t packageFullNameLength = 0;
@@ -482,15 +482,19 @@ namespace Audio
                                                 sessionName = applicationNode.DisplayName();
                                             }
 
-                                            if (!applicationNode.Square150Logo().empty())
+                                            wstring icon = applicationNode.Logo();
+                                            if (!icon.empty())
                                             {
-                                                logoPath = applicationNode.SmallLogo();
+                                                logoPath = icon;
                                             }
 
                                             manifestResEnumeratorPtr->MoveNext(&getHasCurrent);
                                         }
 
                                         success = true;
+
+                                        // I don't need to close ComPtrs thanks to the smart ComPtrs definitions.
+
                                         CloseHandle(processHandle); // Close the handle here to free up work.
                                     }
                                 }
@@ -505,10 +509,13 @@ namespace Audio
                             std::source_location location = source_location::current();
                             string log = string(location.file_name()) + " " + string(location.function_name());
                             OutputDebugHString(to_hstring(log) + L" : Catch all clause reached.");
+#ifdef DEBUG
                             if (IsDebuggerPresent())
                             {
                                 __debugbreak();
                             }
+#endif // DEBUG
+
                         }
                     }
 
@@ -534,6 +541,48 @@ namespace Audio
 
         return success;
     }
+
+    int __stdcall EnumWindowsProc(HWND hwnd, LPARAM lParam)
+    {
+        static DWORD processPID = static_cast<DWORD>(lParam);
+        DWORD hwndPid{};
+        DWORD hwndCreatorPid = GetWindowThreadProcessId(hwnd, &hwndPid);
+        if (hwndPid == processPID || hwndCreatorPid == processPID)
+        {
+            // I found the correct window to extract infos from.
+            int windowTextLength = GetWindowTextLength(hwnd);
+            if (windowTextLength > 0)
+            {
+                wchar_t* windowText = new wchar_t[windowTextLength]();
+                if (GetWindowText(hwnd, windowText, windowTextLength) > 0)
+                {
+                    OutputDebugString(L"Window text : ");
+                    OutputDebugHString(windowText);
+                }
+                delete[] windowText;
+
+                ULONG_PTR ptr = GetClassLongPtr(hwnd, GCLP_HICON);
+                if (ptr)
+                {
+                    // Bruuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuh.
+                    HICON windowIcon = reinterpret_cast<HICON>(ptr);
+                    DestroyIcon(windowIcon);
+                }
+            }
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    void AudioSession::GetWindowInfo()
+    {
+        if (!EnumWindows(EnumWindowsProc, processPID))
+        {
+            OutputDebugHString(L"Could not enumerate windows.");
+        }
+    }
+
 
     STDMETHODIMP AudioSession::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID)
     {
