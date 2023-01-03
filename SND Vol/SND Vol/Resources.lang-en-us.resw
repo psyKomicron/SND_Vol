@@ -219,6 +219,15 @@ unmute all</value>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
     <value>- View settings, app actions, change items layout customize display.</value>
   </data>
+  <data name="NewContentPageBugsTitleTextBlock.Text" xml:space="preserve">
+    <value>Bugs</value>
+  </data>
+  <data name="NewContentPageChangesTitleTextBlock.Text" xml:space="preserve">
+    <value>Changes &amp; fixes</value>
+  </data>
+  <data name="NewContentPageNewContentTitleTextBlock.Text" xml:space="preserve">
+    <value>What's new</value>
+  </data>
   <data name="SecondWindowTitle" xml:space="preserve">
     <value>Croak settings</value>
   </data>
