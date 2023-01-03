@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
 #include "pch.h"
 #include "AudioProfileEditPage.xaml.h"
 #if __has_include("AudioProfileEditPage.g.cpp")
@@ -26,7 +23,7 @@ namespace winrt::SND_Vol::implementation
         timer = DispatcherQueue().CreateTimer();
         timer.Interval(ProfileSavedAnimation().Duration().TimeSpan + std::chrono::milliseconds(200));
         timer.IsRepeating(false);
-        timer.Tick([this](auto, auto)
+        timer.Tick([this](IInspectable, IInspectable)
         {
             Frame().Navigate(xaml_typename<AudioProfilesPage>(), audioProfile);
         });
