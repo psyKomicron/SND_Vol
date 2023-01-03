@@ -12,8 +12,8 @@
             <!-- Other app resources here -->
 
             <Duration x:Key="AudioMeterAnimationDuration">00:00:0.100</Duration>
-            <Duration x:Key="MessageBarInterval">0:0:02</Duration>
-            <x:Int32 x:Key="MessageBarIntervalSeconds">2</x:Int32>
+            <Duration x:Key="MessageBarInterval">0:0:04</Duration>
+            <x:Int32 x:Key="MessageBarIntervalSeconds">4</x:Int32>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
