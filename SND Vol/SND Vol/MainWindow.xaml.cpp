@@ -56,7 +56,7 @@ namespace winrt::SND_Vol::implementation
             TextBlock block{};
             block.TextWrapping(TextWrapping::Wrap);
             block.Text(e.Message());
-            WindowMessageBar().EnqueueMessage(e.Message());
+            WindowMessageBar().EnqueueString(e.Message());
         });
     #endif // DEBUG
 
@@ -136,9 +136,7 @@ namespace winrt::SND_Vol::implementation
                 break;
         }
 
-#ifdef _DEBUG
         using namespace Microsoft::Windows::System::Power;
-
         PowerManager::EffectivePowerModeChanged([this](IInspectable, IInspectable)
         {
             OutputDebugHString(L"Effective power mode changed.");
@@ -155,11 +153,27 @@ namespace winrt::SND_Vol::implementation
                         if (!DisableAnimationsIconToggleButton().IsOn())
                         {
                             OutputDebugHString(L"Battery saver enabled, disabling animations.");
-                            DisableAnimationsIconButton_Click(nullptr, nullptr);
-                            DisableAnimationsIconToggleButton().IsOn(true);
+
+                            if (mainAudioEndpointPeakTimer.IsRunning())
+                            {
+                                mainAudioEndpointPeakTimer.Stop();
+                                LeftVolumeAnimation().To(0.);
+                                RightVolumeAnimation().To(0.);
+                                VolumeStoryboard().Begin();
+                            }
+
+                            if (audioSessionsPeakTimer.IsRunning())
+                            {
+                                audioSessionsPeakTimer.Stop();
+                                for (auto&& view : audioSessionViews)
+                                {
+                                    view.SetPeak(0, 0);
+                                }
+                            }
 
                             // I18N: Translate battery saver messages.
-                            WindowMessageBar().EnqueueMessage(L"Battery saver enabled, disabling animations.");
+                            WindowMessageBar().EnqueueString(L"Battery saver enabled, disabling animations.");
+                            DisableAnimationsIconToggleButton().IsOn(true);
                         }
                     });
                     break;
@@ -175,11 +189,19 @@ namespace winrt::SND_Vol::implementation
                     {
                         if (DisableAnimationsIconToggleButton().IsOn())
                         {
-                            DisableAnimationsIconButton_Click(nullptr, nullptr);
-                            DisableAnimationsIconToggleButton().IsOn(false);
+                            if (!mainAudioEndpointPeakTimer.IsRunning())
+                            {
+                                mainAudioEndpointPeakTimer.Start();
+                            }
+
+                            if (!audioSessionsPeakTimer.IsRunning())
+                            {
+                                audioSessionsPeakTimer.Start();
+                            }
 
                             // I18N: Translate battery saver messages.
-                            WindowMessageBar().EnqueueMessage(L"Battery saver disabled, re-enabling animations.");
+                            WindowMessageBar().EnqueueString(L"Battery saver disabled, re-enabling animations.");
+                            DisableAnimationsIconToggleButton().IsOn(false);
                         }
                     });
                     break;
@@ -195,45 +217,57 @@ namespace winrt::SND_Vol::implementation
             {
                 case static_cast<int32_t>(UserPresenceStatus::Present):
                     OutputDebugHString(L"User presence status changed: user present.");
-                    DispatcherQueue().TryEnqueue([this]()
-                    {
-                        if (!mainAudioEndpointPeakTimer.IsRunning())
-                        {
-                            mainAudioEndpointPeakTimer.Start();
-                        }
 
-                        if (!audioSessionsPeakTimer.IsRunning())
+                    if (
+                        unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"PowerEfficiencyEnabled"), true)
+                        )
+                    {
+                        DispatcherQueue().TryEnqueue([this]()
                         {
-                            audioSessionsPeakTimer.Start();
-                        }
-                    });
+                            if (!mainAudioEndpointPeakTimer.IsRunning())
+                            {
+                                mainAudioEndpointPeakTimer.Start();
+                            }
+
+                            if (!audioSessionsPeakTimer.IsRunning())
+                            {
+                                audioSessionsPeakTimer.Start();
+                            }
+                        });
+                    }
+                    
                     break;
                 case static_cast<int32_t>(UserPresenceStatus::Absent):
                 case 2:
                     OutputDebugHString(L"User presence status changed: user absent.");
-                    DispatcherQueue().TryEnqueue([this]()
-                    {
-                        if (mainAudioEndpointPeakTimer.IsRunning())
-                        {
-                            mainAudioEndpointPeakTimer.Stop();
-                            LeftVolumeAnimation().To(0.);
-                            RightVolumeAnimation().To(0.);
-                            VolumeStoryboard().Begin();
-                        }
 
-                        if (audioSessionsPeakTimer.IsRunning())
+                    if (
+                        unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"PowerEfficiencyEnabled"), true)
+                    )
+                    {
+                        DispatcherQueue().TryEnqueue([this]()
                         {
-                            audioSessionsPeakTimer.Stop();
-                            for (auto&& view : audioSessionViews)
+                            if (mainAudioEndpointPeakTimer.IsRunning())
                             {
-                                view.SetPeak(0, 0);
+                                mainAudioEndpointPeakTimer.Stop();
+                                LeftVolumeAnimation().To(0.);
+                                RightVolumeAnimation().To(0.);
+                                VolumeStoryboard().Begin();
                             }
-                        }
-                    });
+
+                            if (audioSessionsPeakTimer.IsRunning())
+                            {
+                                audioSessionsPeakTimer.Stop();
+                                for (auto&& view : audioSessionViews)
+                                {
+                                    view.SetPeak(0, 0);
+                                }
+                            }
+                        });
+                    }
                     break;
             }
         });
-#endif
     }
 
     void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const&)
@@ -325,7 +359,7 @@ namespace winrt::SND_Vol::implementation
         }
         catch (const std::invalid_argument&)
         {
-            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume up hot key");
+            WindowMessageBar().EnqueueString(L"Failed to activate system volume up hot key");
         }
 
         try
@@ -334,7 +368,7 @@ namespace winrt::SND_Vol::implementation
         }
         catch (const std::invalid_argument&)
         {
-            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume down hot key");
+            WindowMessageBar().EnqueueString(L"Failed to activate system volume down hot key");
         }
 
         try
@@ -343,7 +377,7 @@ namespace winrt::SND_Vol::implementation
         }
         catch (const std::invalid_argument&)
         {
-            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume up (PageUp) hot key");
+            WindowMessageBar().EnqueueString(L"Failed to activate system volume up (PageUp) hot key");
         }
 
         try
@@ -352,7 +386,7 @@ namespace winrt::SND_Vol::implementation
         }
         catch (const std::invalid_argument&)
         {
-            WindowMessageBar().EnqueueMessage(L"Failed to activate system volume down (PageDown) hot key");
+            WindowMessageBar().EnqueueString(L"Failed to activate system volume down (PageDown) hot key");
         }
 
         try
@@ -361,7 +395,7 @@ namespace winrt::SND_Vol::implementation
         }
         catch (const std::invalid_argument&)
         {
-            WindowMessageBar().EnqueueMessage(L"Failed to activate mute/unmute hot key");
+            WindowMessageBar().EnqueueString(L"Failed to activate mute/unmute hot key");
         }
 #endif // ENABLE_HOTKEYS
     }
@@ -536,11 +570,11 @@ namespace winrt::SND_Vol::implementation
         ResourceLoader loader{};
         if (muteHotKeyPtr.Enabled())
         {
-            WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysEnabled"));
+            WindowMessageBar().EnqueueString(loader.GetString(L"InfoHotKeysEnabled"));
         }
         else
         {
-            WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoHotKeysDisabled"));
+            WindowMessageBar().EnqueueString(loader.GetString(L"InfoHotKeysDisabled"));
         }
 #endif // ENABLE_HOTKEYS
     }
@@ -599,7 +633,9 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::ExpandFlyoutButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        MoreFlyoutStackpanel().Visibility(MoreFlyoutStackpanel().Visibility() == Visibility::Visible ? Visibility::Collapsed : Visibility::Visible);
+        MoreFlyoutGrid().Visibility(
+            MoreFlyoutGrid().Visibility() == Visibility::Visible ? Visibility::Collapsed : Visibility::Visible
+        );
     }
 
     void MainWindow::KeepOnTopToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
@@ -680,7 +716,7 @@ namespace winrt::SND_Vol::implementation
         }
 
         ResourceLoader loader{};
-        WindowMessageBar().EnqueueMessage(loader.GetString(L"InfoAudioSessionsReloaded"));
+        WindowMessageBar().EnqueueString(loader.GetString(L"InfoAudioSessionsReloaded"));
     }
 
     void MainWindow::RestartIconButton_Click(IconButton const&, RoutedEventArgs const&)
@@ -688,7 +724,7 @@ namespace winrt::SND_Vol::implementation
         if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(L"") != AppRestartFailureReason::RestartPending)
         {
             ResourceLoader loader{};
-            WindowMessageBar().EnqueueMessage(loader.GetString(L"ErrorAppFailedRestart"));
+            WindowMessageBar().EnqueueString(loader.GetString(L"ErrorAppFailedRestart"));
         }
     }
 
@@ -769,12 +805,12 @@ namespace winrt::SND_Vol::implementation
         );
         brush.Opacity(0.4);
         CommandBarGrid().Background(brush);
-        /*MoreFlyoutGrid().Background(
-            Application::Current().Resources().TryLookup(box_value(L"SubtleFillColorSecondaryBrush")).as<Brush>()
-        );*/
         SettingsButtonFlyoutGrid().Background(
             SolidColorBrush(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>())
         );
+        /*MoreFlyoutGrid().Background(
+            Application::Current().Resources().TryLookup(box_value(L"SubtleFillColorSecondaryBrush")).as<Brush>()
+        );*/
     }
     #pragma endregion
 
@@ -1005,7 +1041,7 @@ namespace winrt::SND_Vol::implementation
                 }
                 catch (const hresult_access_denied&)
                 {
-                    WindowMessageBar().EnqueueMessage(L"Failed to load background image.");
+                    WindowMessageBar().EnqueueString(L"Failed to load background image.");
                 }
             }
         }
@@ -1029,7 +1065,7 @@ namespace winrt::SND_Vol::implementation
                 }
                 else
                 {
-                    WindowMessageBar().EnqueueMessage(loader.GetString(L"ErrorAudioSessionsUnavailable"));
+                    WindowMessageBar().EnqueueString(loader.GetString(L"ErrorAudioSessionsUnavailable"));
                 }
 
 
@@ -1047,13 +1083,31 @@ namespace winrt::SND_Vol::implementation
                     });
                 }
 
-                audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
-                for (size_t i = 0; i < audioSessions->size(); i++)
+                
+                try
                 {
-                    if (AudioSessionView view = CreateAudioView(audioSessions->at(i)))
+                    audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
+                    for (size_t i = 0; i < audioSessions->size(); i++)
                     {
-                        audioSessionViews.Append(view);
+                        if (AudioSessionView view = CreateAudioView(audioSessions->at(i)))
+                        {
+                            audioSessionViews.Append(view);
+                        }
                     }
+                }
+                catch (const hresult_error&)
+                {
+                    if (audioSessions.get())
+                    {
+                        for (size_t j = 0; j < audioSessions->size(); j++)
+                        {
+                            audioSessions->at(j)->Release();
+                        }
+                        audioSessions.release();
+                        audioSessions = nullptr;
+                    }
+
+                    throw;
                 }
 
 
@@ -1063,6 +1117,7 @@ namespace winrt::SND_Vol::implementation
 
                 audioSessionsPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(100)));
                 audioSessionsPeakTimer.Tick({ this, &MainWindow::UpdatePeakMeters });
+                audioSessionsPeakTimer.Stop();
 
                 mainAudioEndpointPeakTimer.Interval(TimeSpan(std::chrono::milliseconds(100)));
                 mainAudioEndpointPeakTimer.Tick([&](auto, auto)
@@ -1092,12 +1147,13 @@ namespace winrt::SND_Vol::implementation
             }
             catch (const hresult_error& ex)
             {
-                WindowMessageBar().EnqueueMessage(loader.GetString(L"ErrorFatalFailure"));
+                WindowMessageBar().EnqueueString(loader.GetString(L"ErrorFatalFailure"));
+                OutputDebugHString(ex.message());
             }
         }
         else
         {
-            WindowMessageBar().EnqueueMessage(loader.GetString(L"ErrorFatalFailure"));
+            WindowMessageBar().EnqueueString(loader.GetString(L"ErrorFatalFailure"));
         }
     }
 
@@ -1106,7 +1162,7 @@ namespace winrt::SND_Vol::implementation
         if (!audioSession->Register())
         {
             OutputDebugHString(L"Failed to register audio session '" + audioSession->Name() + L"'.");
-            WindowMessageBar().EnqueueMessage(audioSession->Name() + L" notifications off");
+            WindowMessageBar().EnqueueString(audioSession->Name() + L" notifications off");
         }
 
         audioSessionVolumeChanged.insert({ audioSession->Id(), audioSession->VolumeChanged({ this, &MainWindow::AudioSession_VolumeChanged }) });
@@ -1488,7 +1544,7 @@ namespace winrt::SND_Vol::implementation
                                     AudioSessionsPanel().ItemsSource(audioSessionViews);
 
                                     // I18N: Loaded profile [profile name]
-                                    WindowMessageBar().EnqueueMessage(L"Loaded profile " + currentAudioProfile.ProfileName());
+                                    WindowMessageBar().EnqueueString(L"Loaded profile " + currentAudioProfile.ProfileName());
                                     AudioSessionsPanelProgressRing().Visibility(Visibility::Collapsed);
                                 });
                             }
@@ -1498,7 +1554,7 @@ namespace winrt::SND_Vol::implementation
                                 OutputDebugHString(to_hstring(ex.what()));
                                 DispatcherQueue().TryEnqueue([this]()
                                 {
-                                    WindowMessageBar().EnqueueMessage(L"Couldn't load profile " + currentAudioProfile.ProfileName());
+                                    WindowMessageBar().EnqueueString(L"Couldn't load profile " + currentAudioProfile.ProfileName());
                                 });
                             }
                             catch (const hresult_error& err)
@@ -1507,7 +1563,7 @@ namespace winrt::SND_Vol::implementation
                                 OutputDebugHString(err.message());
                                 DispatcherQueue().TryEnqueue([this]()
                                 {
-                                    WindowMessageBar().EnqueueMessage(L"Couldn't load profile " + currentAudioProfile.ProfileName());
+                                    WindowMessageBar().EnqueueString(L"Couldn't load profile " + currentAudioProfile.ProfileName());
                                 });
                             }
                         });
@@ -1516,7 +1572,7 @@ namespace winrt::SND_Vol::implementation
                 catch (const hresult_error& error)
                 {
                     // I18N: Failed to load profile [profile name]
-                    WindowMessageBar().EnqueueMessage(L"Couldn't load profile " + profileName);
+                    WindowMessageBar().EnqueueString(L"Couldn't load profile " + profileName);
                     OutputDebugHString(error.message());
                     AudioSessionsPanelProgressRing().Visibility(Visibility::Collapsed);
                 }
@@ -1548,25 +1604,32 @@ namespace winrt::SND_Vol::implementation
             // The lock can be realeased since no interactions will be made with audioSessions && audioSessionViews
         }
 
-        // Reload audio sessions.
-        audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
-        for (size_t i = 0; i < audioSessions->size(); i++)
+        try
         {
-            if (AudioSessionView view = CreateAudioView(audioSessions->at(i)))
+            // Reload audio sessions.
+            audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
+            for (size_t i = 0; i < audioSessions->size(); i++)
             {
-                audioSessionViews.Append(view);
+                if (AudioSessionView view = CreateAudioView(audioSessions->at(i)))
+                {
+                    audioSessionViews.Append(view);
+                }
+            }
+
+            if (!DisableAnimationsIconToggleButton().IsOn() && audioSessions.get())
+            {
+                audioSessionsPeakTimer.Start();
             }
         }
-
-        if (!DisableAnimationsIconToggleButton().IsOn() && audioSessions.get())
+        catch (const winrt::hresult_error& err)
         {
-            audioSessionsPeakTimer.Start();
+            OutputDebugHString(L"Failed to reload audio sessions: " + err.message());
         }
     }
 
     void MainWindow::UpdatePeakMeters(IInspectable, IInspectable)
     {
-        if (!loaded) return;
+        if (!loaded || !audioSessions.get()) return;
 
         // TODO: Try to see if I can update the code to make it faster. Multithreading is not an option since it's a single threaded appartement.
         for (size_t i = 0; i < audioSessions->size(); i++)
@@ -1762,7 +1825,7 @@ namespace winrt::SND_Vol::implementation
 
                                 if (audioSessionViews.Size() == 0)
                                 {
-                                    WindowMessageBar().EnqueueMessage(L"All sessions expired.");
+                                    WindowMessageBar().EnqueueString(L"All sessions expired.");
                                 }
                             }
                             break;
