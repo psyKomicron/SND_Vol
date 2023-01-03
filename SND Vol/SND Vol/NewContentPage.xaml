@@ -4,13 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Loading="Page_Loading">
 
     <ScrollViewer>
         <Grid Margin="15" RowSpacing="20">
             <Grid.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="TextWrapping" Value="Wrap" />
+                    <Setter Property="IsTextSelectionEnabled" Value="True" />
+                    <Setter Property="LineHeight" Value="24"/>
                 </Style>
                 <Style TargetType="ListView">
                     <Setter Property="SelectionMode" Value="None" />
@@ -20,6 +23,10 @@
                     <Setter Property="Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
                     <Setter Property="Padding" Value="5,12,5,22" />
                 </Style>
+                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="Margin" Value="5,7" />
+                </Style>
             </Grid.Resources>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -27,47 +34,31 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <ListView>
-                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="What's new"/>
-                <ListViewHeaderItem Margin="-20,0"/>
-
-                <StackPanel Spacing="7" Grid.Row="2">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">New layout</TextBlock>
-                    <TextBlock>Vertical layout (available in the app's window menu) has been changed to better adapt to the window by rotating audio sessions horizontally.</TextBlock>
-                </StackPanel>
-
-                <StackPanel Spacing="7" Grid.Row="2" Margin="0,30,0,0">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Add to startup</TextBlock>
-                    <TextBlock>You can now find in settings a toggle to add the app to Window's startup app list. Is it not activated by default and you can at any time deactivate it using this app settings or Windows settings (right click on Croak, app settings).</TextBlock>
-                </StackPanel>
-
-                <StackPanel Spacing="7" Grid.Row="3" Margin="0,30,0,0">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Personalization</TextBlock>
-                    <TextBlock>While you can disable transparency effects in Windows settings, you can also choose to disable this app background transparency effects in the settings. If you have it disabled inside the app, you can choose an picture as a background or leave it as is.</TextBlock>
-                </StackPanel>
+            <ListView x:Name="NewContentListView" Grid.Row="0">
+                <ListView.Header>
+                    <StackPanel>
+                        <TextBlock x:Uid="NewContentPageNewContentTitleTextBlock" Margin="20,0,0,0" Style="{StaticResource TitleLargeTextBlockStyle}" />
+                        <ListViewHeaderItem Margin="-20,0"/>
+                    </StackPanel>
+                </ListView.Header>
             </ListView>
 
-            <ListView Grid.Row="1">
-                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Changes &amp; fixes"/>
-                <ListViewHeaderItem Margin="-20,0"/>
-
-                <TextBlock>- Previously some audio sessions were hidden because they were inactive at the time. They will now be added when their state change.</TextBlock>
-                <TextBlock>- The ability to set audio session positions when loading audio profiles has been re-enabled.</TextBlock>
-                <TextBlock>- Windows audio device peak graph has been updated to show the 2 stereo tracks.</TextBlock>
-                <TextBlock>- Updated volume graphs (for audio sessions and audio device) to fit the Windows 11 Fluent UI.</TextBlock>
-                <TextBlock>- Increased audio sessions height for easier interactions.</TextBlock>
-                <TextBlock>- Added audio session app logo for supported applications (from the Windows Store or some native Windows apps).</TextBlock>
-                <TextBlock>- Fixed a bug where you couldn't set a session's volume to 100% or 0%.</TextBlock>
-                <TextBlock>- Fixed a bug causing audio sessions to not be shown after one had already been added.</TextBlock>
-                <TextBlock>- Fixed a error causing audio sessions not being shown (active audio sessions are now prioritized over grouping parameters).</TextBlock>
+            <ListView x:Name="ChangesListView" Grid.Row="1">
+                <ListView.Header>
+                    <StackPanel>
+                        <TextBlock x:Uid="NewContentPageChangesTitleTextBlock" Margin="20,0,0,0" Style="{StaticResource TitleLargeTextBlockStyle}" />
+                        <ListViewHeaderItem Margin="-20,0"/>
+                    </StackPanel>
+                </ListView.Header>
             </ListView>
 
-            <ListView Grid.Row="2">
-                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="Bugs"/>
-                <ListViewHeaderItem Margin="-20,0"/>
-
-                <TextBlock>- Plugging/unplugging an audio device (such as a audio jack) can crash the app.</TextBlock>
-                <TextBlock>- The menu button background will not change theme (dark/light) when switching it in Windows settings.</TextBlock>
+            <ListView x:Name="BugsListView" Grid.Row="2">
+                <ListView.Header>
+                    <StackPanel>
+                        <TextBlock x:Uid="NewContentPageBugsTitleTextBlock" Margin="20,0,0,0" Style="{StaticResource TitleLargeTextBlockStyle}" />
+                        <ListViewHeaderItem Margin="-20,0"/>
+                    </StackPanel>
+                </ListView.Header>
             </ListView>
         </Grid>
     </ScrollViewer>
