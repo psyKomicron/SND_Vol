@@ -75,7 +75,7 @@ namespace winrt::SND_Vol::implementation
 
     void SecondWindow::NavigationFrame_NavigationFailed(IInspectable const&, NavigationFailedEventArgs const& e)
     {
-        ErrorMessageBar().EnqueueMessage(L"Navigation failed");
+        ErrorMessageBar().EnqueueString(L"Navigation failed");
         try
         {
             auto exception = e.Exception();
@@ -83,7 +83,7 @@ namespace winrt::SND_Vol::implementation
         }
         catch (const hresult_error& err)
         {
-            ErrorMessageBar().EnqueueMessage(L"Navigation failed");
+            ErrorMessageBar().EnqueueString(L"Navigation failed");
         }
     }
 
