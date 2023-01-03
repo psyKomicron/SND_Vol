@@ -1,0 +1,76 @@
+{
+    "en-US": {
+        "news": [
+            {
+                "title": "New layout",
+                "text": "Vertical layout (available in the app's window menu) has been changed to better adapt to the window by rotating audio sessions horizontally."
+            },
+            {
+                "title": "Add to startup",
+                "text": "You can now find in settings a toggle to add the app to Window's startup app list. Is it not activated by default and you can at any time deactivate it using this app settings or Windows settings (right click on Croak, app settings)."
+            },
+            {
+                "title": "Personalization",
+                "text": "While you can disable transparency effects in Windows settings, you can also choose to disable this app background transparency effects in the settings. If you have it disabled inside the app, you can choose an picture as a background or leave it as is."
+            },
+            {
+                "title": "Power efficiency",
+                "text": "To improve power efficiency and for laptops improve battery life, animations will be disabled when the user is absent, when \"Better battery life\" power mode is turned on or when battery saver is on. Once the animations have been disabled, they will be re-enabled once the system exits battery saver/better battery life or when the user is present/active again. You can disable/enable this behavior in settings, power efficiency."
+            }
+        ],
+        "changes": [
+            "- Light theme is now supported better. The app's icon is still almost invisible when Windows light mode is on.",
+            "- Increased audio sessions height for easier interactions.",
+            "- Updated volume graphs (for audio sessions and audio device) to fit the Windows 11 Fluent UI.",
+            "- Windows audio device peak graph has been updated to show the 2 stereo tracks.",
+            "- The ability to set audio session positions when loading audio profiles has been re-enabled.",
+            "- Added audio session app logo for supported applications (from the Windows Store or some native Windows apps).",
+            "- Previously some audio sessions were hidden because they were inactive at the time. They will now be added when their state change.",
+            "- Fixed a error causing audio sessions not being shown (active audio sessions are now prioritized over grouping parameters).",
+            "- Fixed a bug causing audio sessions to not be shown after one had already been added.",
+            "- Fixed a bug where you couldn't set a session's volume to 100% or 0%."
+        ],
+        "bugs": [
+            "- Plugging/unplugging an audio device (such as a audio jack) can crash the app. It seems to be coming from hardware - software bad integration.",
+            "- The menu button background will not change theme (dark/light) when switching it in Windows settings. A temporary fix has been made to make it usable nonetheless."
+        ]
+    },
+
+    "fr-FR": {
+        "news": [
+            {
+                "title": "Nouvelle disposition",
+                "text": "La disposition verticale (disponible dans le menu) à été changée pour être mieux adaptée à l'espace disponible de la fenêtre."
+            },
+            {
+                "title": "Ajouter au demarrage",
+                "text": "Vous pouvez maintenant trouver dans les paramètres un bouton permettant d'ajouter l'application à la liste des applications de démarrage de Windows. Ce n'est pas activé par défaut et vous pouvez à tout moment le désactiver en utilisant les paramètres de cette application ou les paramètres de Windows (clic droit sur Croak, paramètres de l'application)."
+            },
+            {
+                "title": "Personalisation",
+                "text": "Si vous pouvez désactiver les effets de transparence dans les paramètres de Windows, vous pouvez également choisir de désactiver les effets de transparence de l'arrière-plan de cette application dans les paramètres. Si vous l'avez désactivé dans l'application, vous pouvez choisir une image comme arrière-plan."
+            },
+            {
+                "title": "Efficacité énergétique",
+                "text": "Pour améliorer l'efficacité énergétique et l'autonomie des ordinateurs portables, les animations seront désactivées lorsque l'utilisateur est absent, lorsque le mode d'alimentation \"Meilleure autonomie de la batterie\" est activé ou lorsque l'économiseur de batterie est activé. Une fois les animations désactivées, elles seront réactivées dès que le système quittera l'économiseur de batterie/l'amélioration de l'autonomie de la batterie ou lorsque l'utilisateur sera à nouveau présent/actif. Vous pouvez désactiver/activer ce comportement dans paramètres, efficacité énergétique."
+            }
+        ],
+        "changes": [
+            "- Le thème clair est maintenant mieux supporté. L'icone de l'application est cependant toujours quasiment invisible en thème clair.",
+            "- Increased audio sessions height for easier interactions.",
+            "- Les sessions audio sont plus hautes pour permettre des interactions plus faciles.",
+            "- Les graphes de volumes (pour les sessions audio et le périphérique audio) sont été mise à jour pour mieux correspondre à l'ergonomie Windows 11.",
+            "- Le graphe du périphérique audio à été mis à jour afin d'afficher les pistes stéréos.",
+            "- La possibilité de placer les sessions audio en chargeant un profile à été réactivée.",
+            "- Affichage des icones à la place des noms pour certaines applications spécifiques.",
+            "- Certaines sessions étaient précédemment cachées car inactives au démarrage de l'application. Elles seront désormais ajoutées lorsqu'elles deviennent actives.",
+            "- Correction d'une erreur cachant certaines sessions audio (les sessions actives sont maintenant prioritaires devant les ID de groupement).",
+            "- Correction d'une erreur faisant que les sessions audio n'étaient plus affichées après qu'une aie été ajoutées.",
+            "- Correction d'une erreur rendant impossible de mettre le volume d'une session à 0% ou 100%."
+        ],
+        "bugs": [
+            "- Brancher/débrancher un périphérique audio (comme un jack audio) peut provoquer un plantage de l'application. Cela semble venir d'une mauvaise intégration entre le hardware - software.",
+            "- L'arrière plan du menu bug lors d'un changement de thème."
+        ]
+    }
+}
