@@ -26,7 +26,7 @@ namespace winrt::SND_Vol::implementation
         timer.Tick({ this, &MessageBar::DispatcherQueueTimer_Tick });
     }
 
-    void MessageBar::EnqueueMessage(const winrt::hstring& message)
+    void MessageBar::EnqueueMessage(const IInspectable& message)
     {
         {
             std::unique_lock<std::mutex> lock{ messageQueueMutex };
@@ -38,6 +38,11 @@ namespace winrt::SND_Vol::implementation
             DisplayMessage();
             timer.Start();
         }
+    }
+
+    void MessageBar::EnqueueString(const winrt::hstring& message)
+    {
+        EnqueueMessage(box_value(message));
     }
 
     void MessageBar::CloseButton_Click(winrt::Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
@@ -60,7 +65,7 @@ namespace winrt::SND_Vol::implementation
     void MessageBar::DisplayMessage()
     {
         // Dequeue a message, send it to the UI
-        hstring message = L"";
+        IInspectable message = nullptr;
         {
             std::unique_lock<std::mutex> lock{ messageQueueMutex };
 
@@ -73,23 +78,19 @@ namespace winrt::SND_Vol::implementation
             {
                 timer.Stop();
                 // Hide the control.
-                //Visibility(Visibility::Collapsed);
-                //MainContentTextBlock().Text(L"");
-
                 VisualStateManager::GoToState(*this, L"Collapsed", true);
             }
         }
 
-        if (!message.empty())
+        if (message)
         {
             if (Visibility() == Visibility::Collapsed)
             {
                 // Show the control.
-                //Visibility(Visibility::Visible);
                 VisualStateManager::GoToState(*this, L"Visible", true);
             }
 
-            MainContentTextBlock().Text(message);
+            MainContentPresenter().Content(box_value(message));
             TimerProgressBarStoryboard().Begin();
         }
     }

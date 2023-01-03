@@ -8,6 +8,7 @@ namespace SND_Vol
     {
         MessageBar();
 
-        void EnqueueMessage(String message);
+        void EnqueueMessage(IInspectable message);
+        void EnqueueString(String message);
     }
 }
