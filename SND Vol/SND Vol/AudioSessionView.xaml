@@ -31,7 +31,7 @@
         BorderThickness="{x:Bind BorderThickness}"
         BorderBrush="{x:Bind BorderBrush}"
         Height="290"
-        MinWidth="90"
+        MinWidth="80"
         SizeChanged="Grid_SizeChanged"
         PointerEntered="RootGrid_PointerEntered"
         PointerExited="RootGrid_PointerExited"
@@ -106,7 +106,7 @@
 
         <Grid
             x:Name="VerticalLayoutGrid"
-            Width="90"
+            Width="80"
             MinHeight="280"
             RowSpacing="4"
             Padding="0,5,0,3"
@@ -162,7 +162,7 @@
                     </RectangleGeometry>
                 </Border.Clip>
             </Border>
-
+            
             <Border
                 x:Name="VolumePeakBorderRight"
                 Background="{StaticResource AudioMeterBackground}"
@@ -220,7 +220,7 @@
                 VerticalAlignment="Stretch"
                 Grid.Row="1"
                 Margin="0,0,0,0"
-                Translation=".5,0,0"
+                Translation="1.5,0,0"
                 ValueChanged="Slider_ValueChanged"/>
 
             <Button
@@ -330,7 +330,7 @@
                 Height="7"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Stretch"
-                Translation="0,-5,0"
+                Translation="0,-6.,0"
                 Grid.Row="1">
 
                 <Border.Clip>
@@ -351,7 +351,7 @@
                 Height="7"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Stretch"
-                Translation="0,6,0"
+                Translation="0,5.5,0"
                 Grid.Row="1">
                         
                 <Border.Clip>
