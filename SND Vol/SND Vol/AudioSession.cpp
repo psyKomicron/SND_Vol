@@ -378,10 +378,7 @@ namespace Audio
                                 }
                                 else if ((cbTranslate / sizeof(LANGANDCODEPAGE)) > 1)
                                 {
-                                    if (IsDebuggerPresent())
-                                    {
-                                        __debugbreak();
-                                    }
+                                    DEBUG_BREAK();
                                 }
                             }
                         }
@@ -509,13 +506,8 @@ namespace Audio
                             std::source_location location = source_location::current();
                             string log = string(location.file_name()) + " " + string(location.function_name());
                             OutputDebugHString(to_hstring(log) + L" : Catch all clause reached.");
-#ifdef DEBUG
-                            if (IsDebuggerPresent())
-                            {
-                                __debugbreak();
-                            }
-#endif // DEBUG
 
+                            DEBUG_BREAK();
                         }
                     }
 
@@ -612,7 +604,7 @@ namespace Audio
     STDMETHODIMP AudioSession::OnStateChanged(::AudioSessionState NewState)
     {
         isSessionActive = NewState == AudioSessionState::AudioSessionStateActive;
-        e_stateChanged(id, static_cast<uint32_t>(NewState));
+        e_stateChanged(id, static_cast<uint32_t>(NewState)); // Cast to uint32_t to cross ABI without more code.
         return S_OK;
     }
 

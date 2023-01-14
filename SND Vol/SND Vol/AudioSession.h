@@ -144,10 +144,18 @@ namespace Audio
         STDMETHOD(OnDisplayNameChanged)(LPCWSTR NewDisplayName, LPCGUID EventContext);
         STDMETHOD(OnIconPathChanged)(LPCWSTR NewIconPath, LPCGUID EventContext);
         STDMETHOD(OnSimpleVolumeChanged)(float NewVolume, BOOL NewMute, LPCGUID EventContext);
-        STDMETHOD(OnChannelVolumeChanged)(DWORD /*ChannelCount*/, float /*NewChannelVolumeArray*/[], DWORD /*ChangedChannel*/, LPCGUID /*EventContext*/) { return S_OK; };
-        STDMETHOD(OnGroupingParamChanged)(LPCGUID /*NewGroupingParam*/, LPCGUID /*EventContext*/) { return S_OK; };
         STDMETHOD(OnStateChanged)(AudioSessionState NewState);
         STDMETHOD(OnSessionDisconnected)(AudioSessionDisconnectReason DisconnectReason);
+        STDMETHOD(OnChannelVolumeChanged)(DWORD /*ChannelCount*/, float /*NewChannelVolumeArray*/[], DWORD /*ChangedChannel*/, LPCGUID /*EventContext*/) 
+        { 
+            OutputDebugHString(sessionName + L" : Channel volume changed.");
+            return S_OK;
+        };
+        STDMETHOD(OnGroupingParamChanged)(LPCGUID /*NewGroupingParam*/, LPCGUID /*EventContext*/) 
+        { 
+            OutputDebugHString(sessionName + L" : Grouping param changed.");
+            return S_OK; 
+        };
     };
 }
 
