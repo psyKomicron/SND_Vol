@@ -16,8 +16,7 @@ namespace winrt::SND_Vol::implementation
     struct MainWindow : MainWindowT<MainWindow>
     {
     public:
-        MainWindow();
-        ~MainWindow();
+        MainWindow(const winrt::hstring& args);
 
         static winrt::SND_Vol::MainWindow Current()
         {
