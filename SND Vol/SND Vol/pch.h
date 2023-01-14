@@ -75,3 +75,9 @@ inline void OutputDebugHString(winrt::hstring const& text)
     OutputDebugString(text.c_str());
     OutputDebugString(L"\n");
 };
+
+#ifdef DEBUG
+#define DEBUG_BREAK() if (IsDebuggerPresent()) __debugbreak()
+#else
+#define DEBUG_BREAK
+#endif // DEBUG
