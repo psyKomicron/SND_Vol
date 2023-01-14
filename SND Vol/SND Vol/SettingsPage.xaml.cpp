@@ -33,14 +33,18 @@ namespace winrt::SND_Vol::implementation
         StartupTask startupTask = co_await StartupTask::GetAsync(L"CroakStartupTaskId");
         AddToStartupToggleSwitch().IsOn(startupTask.State() == StartupTaskState::Enabled);
         PowerEfficiencyToggleButton().IsOn(unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"PowerEfficiencyEnabled"), true));
+        StartupProfileToggleSwitch().IsOn(unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"LoadLastProfile"), true));
     }
 
     void SettingsPage::OnNavigatedTo(NavigationEventArgs const& args)
     {
-        winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
-        SecondWindow::Current().Breadcrumbs().Append(
-            NavigationBreadcrumbBarItem{ loader.GetString(L"SettingsPageDisplayName"), xaml_typename<winrt::SND_Vol::SettingsPage>() }
-        );
+        if (args.NavigationMode() == NavigationMode::New)
+        {
+            winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+            SecondWindow::Current().Breadcrumbs().Append(
+                NavigationBreadcrumbBarItem{ loader.GetString(L"SettingsPageDisplayName"), xaml_typename<winrt::SND_Vol::SettingsPage>() }
+            );
+        }
     }
 
     void SettingsPage::AudioProfilesButton_Click(IInspectable const&, RoutedEventArgs const&)
@@ -126,5 +130,15 @@ namespace winrt::SND_Vol::implementation
     void SettingsPage::PowerEfficiencyToggleButton_Toggled(IInspectable const&, RoutedEventArgs const&)
     {
         ApplicationData::Current().LocalSettings().Values().Insert(L"PowerEfficiencyEnabled", box_value(PowerEfficiencyToggleButton().IsOn()));
+    }
+
+    void SettingsPage::StartupProfileToggleSwitch_Toggled(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplicationData::Current().LocalSettings().Values().Insert(L"LoadLastProfile", box_value(StartupProfileToggleSwitch().IsOn()));
+    }
+
+    void SettingsPage::AudioSessionsButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        Frame().Navigate(xaml_typename<AudioSessionsSettingsPage>());
     }
 }
