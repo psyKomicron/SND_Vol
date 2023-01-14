@@ -563,7 +563,8 @@
         <Setter Property="FontFamily" Value="{StaticResource KeyFontFamily}" />
         <Setter Property="FontWeight" Value="Light" />
     </Style>
-    
+
+    <!--#region KeyIcon -->
     <Style x:Key="NoneKeyIcon" TargetType="local:KeyIcon" >
         <Setter Property="Template">
             <Setter.Value>
@@ -1055,6 +1056,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!--#endregion-->
 
     <Style x:Key="SettingsButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
@@ -1734,7 +1736,6 @@
         </Setter>
     </Style>
 
-
     <Style TargetType="local:IconToggleButton" >
         <Setter Property="UseSystemFocusVisuals" Value="True"/>
         <Setter Property="Template">
@@ -1892,5 +1893,11 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="ExpanderContentGridStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="35,0,25,5" />
+        <Setter Property="RowSpacing" Value="10" />
+        <Setter Property="ColumnSpacing" Value="10" />
     </Style>
 </ResourceDictionary>
