@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
 #include "pch.h"
 #include "MessageBar.xaml.h"
 #if __has_include("MessageBar.g.cpp")
 #include "MessageBar.g.cpp"
 #endif
+
+#include <regex>
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -84,6 +83,29 @@ namespace winrt::SND_Vol::implementation
 
         if (message)
         {
+            if (std::optional<hstring> hs = message.try_as<hstring>())
+            {
+                static std::wregex word{ L"(\\w+)", std::regex_constants::optimize };
+                std::wstring text{ hs.value()};
+                auto iterator = std::wsregex_iterator(text.begin(), text.end(), word);
+                auto ptrDiff = std::distance(iterator, std::wsregex_iterator());
+                if (ptrDiff > 0)
+                {
+                    int64_t msCount = (ptrDiff / 3.5) * 1000;
+                    if (msCount < 1000)
+                    {
+                        msCount = 1000;
+                    }
+
+                    timer.Interval(
+                        std::chrono::milliseconds(msCount + 150)
+                    );
+                    TimerProgressBarAnimation().Duration(
+                        DurationHelper::FromTimeSpan(std::chrono::milliseconds(msCount))
+                    );
+                }
+            }
+
             if (Visibility() == Visibility::Collapsed)
             {
                 // Show the control.

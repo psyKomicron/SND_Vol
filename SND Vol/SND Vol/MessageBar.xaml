@@ -133,9 +133,9 @@
             <Grid.Resources>
                 <Storyboard x:Name="TimerProgressBarStoryboard">
                     <DoubleAnimation 
+                        x:Name="TimerProgressBarAnimation"
                         Storyboard.TargetName="TimerProgressBarClippingCompositeTransform"
-                        Storyboard.TargetProperty="ScaleX" 
-                        Duration="{StaticResource MessageBarInterval}"
+                        Storyboard.TargetProperty="ScaleX"
                         From="0"
                         To="1"/>
                 </Storyboard>
