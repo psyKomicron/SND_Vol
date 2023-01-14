@@ -45,19 +45,19 @@ namespace Audio
 		inline winrt::event_token VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler)
 		{
 			return e_volumeChanged.add(handler);
-		};
+		}
 		void VolumeChanged(winrt::event_token const& eventToken)
 		{
 			e_volumeChanged.remove(eventToken);
-		};
+		}
 		inline winrt::event_token StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, bool> const& handler)
 		{
 			return e_stateChanged.add(handler);
-		};
+		}
 		inline void StateChanged(const winrt::event_token& token)
 		{
 			e_stateChanged.remove(token);
-		};
+		}
 
 		IFACEMETHODIMP_(ULONG) AddRef();
 		IFACEMETHODIMP_(ULONG) Release();
