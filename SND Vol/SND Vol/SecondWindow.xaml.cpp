@@ -36,9 +36,9 @@ namespace winrt::SND_Vol::implementation
     SecondWindow::SecondWindow()
     {
         singleton = *this;
+
         InitializeComponent();
         InitializeWindow();
-
         TitleTextBlock().Text(appWindow.Title());
     }
 
@@ -75,11 +75,11 @@ namespace winrt::SND_Vol::implementation
 
     void SecondWindow::NavigationFrame_NavigationFailed(IInspectable const&, NavigationFailedEventArgs const& e)
     {
-        ErrorMessageBar().EnqueueString(L"Navigation failed");
         try
         {
             auto exception = e.Exception();
             e.Handled(true);
+            ErrorMessageBar().EnqueueString(L"Navigation failed");
         }
         catch (const hresult_error& err)
         {
@@ -111,6 +111,24 @@ namespace winrt::SND_Vol::implementation
             systemBackdropConfiguration.Theme((SystemBackdropTheme)RootGrid().ActualTheme());
             backdropController.TintColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
             backdropController.FallbackColor(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>());
+        }
+    }
+
+    void SecondWindow::NavigationBackButton_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        if (breadcrumbs.Size() > 0)
+        {
+            breadcrumbs.RemoveAtEnd();
+        }
+
+        if (NavigationFrame().CanGoBack())
+        {
+            NavigationFrame().GoBack();
+        }
+        else if (NavigationFrame().BackStackDepth() == 0)
+        {
+            NavigateTo(xaml_typename<SettingsPage>());
+            NavigationFrame().BackStack().Clear();
         }
     }
 
