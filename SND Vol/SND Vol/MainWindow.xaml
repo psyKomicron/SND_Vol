@@ -97,8 +97,13 @@
                             <Grid 
                                 x:Name="SettingsButtonFlyoutGrid" 
                                 Margin="-16,-17" 
-                                CornerRadius="{StaticResource ControlCornerRadius}"
-                                Background="Transparent">
+                                CornerRadius="{StaticResource ControlCornerRadius}">
+                                <Grid.Background>
+                                    <SolidColorBrush
+                                        Color="{ThemeResource SolidBackgroundFillColorBase}"
+                                        Opacity="0.6" />
+                                </Grid.Background>
+                                
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
@@ -108,6 +113,7 @@
                                     <Grid.Background>
                                         <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorSecondary}" Opacity="0.4"/>
                                     </Grid.Background>
+                                    
                                     <Grid.Resources>
                                         <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}"/>
                                         
@@ -452,13 +458,13 @@
                 <Border
                     Grid.Row="1"
                     Background="{ThemeResource SubtleFillColorSecondaryBrush}"/>
-            
                 <Grid
                     x:Name="AppBarGrid"
                     Grid.Row="1"
                     ColumnSpacing="10"
                     Padding="5,4"
-                    MaxWidth="400"
+                    MaxWidth="250"
+                    HorizontalAlignment="Stretch"
                     Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
@@ -469,7 +475,7 @@
                     <Grid.Resources>
                         <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}"/>
                         <Style TargetType="FontIcon">
-                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="FontSize" Value="16"/>
                         </Style>
                     </Grid.Resources>
 
@@ -576,24 +582,18 @@
 
             <TeachingTip
                 x:Name="SettingsButtonTeachingTip" 
-                PlacementMargin="3"
+                PlacementMargin="-3"
                 PreferredPlacement="Auto"
-                IsLightDismissEnabled="True">
+                IsLightDismissEnabled="False">
 
                 <TeachingTip.Content>
-                    <Grid RowSpacing="15" Padding="0,10,0,0">
+                    <Grid RowSpacing="15" Padding="0,10,30,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <TextBlock x:Uid="MainWindowTeachingTipViewSettingsTextBlock" TextWrapping="Wrap"/>
-
-                        <StackPanel Grid.Row="1" Spacing="10">
-                            <TextBlock x:Uid="MainWindowTeachingTipViewHotkeysTextBlock" TextWrapping="Wrap"/>
-
-                            <HyperlinkButton x:Uid="MainWindowTeachingTipViewHotkeysHyperlinkButton" Click="ViewHotKeysHyperlinkButton_Click"/>
-                        </StackPanel>
                     </Grid>
                 </TeachingTip.Content>
             </TeachingTip>
