@@ -19,9 +19,14 @@
 #include <restrictederrorinfo.h>
 #include <rpc.h>
 #include <Shobjidl.h>
+#include <Shlobj.h>
 #include <unknwn.h>
 #include <windows.h>
 #include <AppxPackaging.h>
+#include <objbase.h>
+#include <strsafe.h>
+#include <Shlwapi.h>
+#include <filesystem>
 
 
 #ifdef _DEBUG
@@ -79,5 +84,5 @@ inline void OutputDebugHString(winrt::hstring const& text)
 #ifdef DEBUG
 #define DEBUG_BREAK() if (IsDebuggerPresent()) __debugbreak()
 #else
-#define DEBUG_BREAK
+#define DEBUG_BREAK() 
 #endif // DEBUG
