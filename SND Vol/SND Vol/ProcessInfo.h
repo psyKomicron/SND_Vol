@@ -1,4 +1,6 @@
 #pragma once
+#include "ManifestApplicationNode.h"
+
 namespace System
 {
 	typedef unsigned long PID;
@@ -8,15 +10,31 @@ namespace System
 	public:
 		ProcessInfo(const PID& pid);
 
-		std::wstring_view Name();
-		std::wstring_view IconPath();
+		inline std::wstring_view Name()
+		{
+			return name;
+		}
+
+		inline System::AppX::ManifestApplicationNode Manifest()
+		{
+			return manifest;
+		}
+
+		inline std::wstring_view ExecutablePath()
+		{
+			return exePath;
+		}
 
 	private:
-		std::wstring name;
+		System::AppX::ManifestApplicationNode manifest;
+		std::wstring name{};
+		std::wstring exePath{};
 
 		void GetProcessInfo(const PID& pid);
 		bool GetProcessInfoWin32(const HANDLE& processHandle);
 		bool GetProcessInfoUWP(const HANDLE& processHandle);
+		bool GetProcessPackageInfo(const HANDLE& processHandle);
+		winrt::Windows::Foundation::IAsyncAction FindProcessIcon(std::wstring processIconPath);
 	};
 }
 

@@ -131,13 +131,7 @@ namespace Audio
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float>> e_volumeChanged{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t>> e_stateChanged{};
 
-        /**
-         * @brief Gets the process name from the audio session's PID.
-         * @param pid PID to get the name from
-         * @return The name of the process
-        */
-        winrt::hstring GetProcessName(DWORD const& pid);
-        bool GetPackageInfoFromHandle(HANDLE& processHandle);
+        
         void GetWindowInfo();
 
         // IAudioSessionEvents

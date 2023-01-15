@@ -2,14 +2,15 @@
 #include "ProcessInfo.h"
 
 #include <appmodel.h>
-#include <ShObjIdl.h>
-#include <objbase.h>
-#include <strsafe.h>
-#include <Shlwapi.h>
+#include <regex>
+#include <winrt/Windows.Data.Xml.Dom.h>
 #include "ManifestApplicationNode.h"
+#include "IconHelper.h"
 
 using namespace std;
 using namespace winrt;
+using namespace winrt::Windows::Data::Xml;
+using namespace winrt::Windows::Data::Xml::Dom;
 
 
 namespace System
@@ -34,6 +35,7 @@ namespace System
                 OutputDebugHString(L"Failed to get process info from process handle for PID " + to_hstring((uint64_t)pid));
 
                 DEBUG_BREAK(); // Failed to retreive infos for this process by searching through the app's manifest or using classic Win32 methods.
+
             }
         }
 
@@ -42,10 +44,107 @@ namespace System
 
     bool ProcessInfo::GetProcessInfoWin32(const HANDLE& processHandle)
     {
-        return false;
+        bool success = false;
+
+        wchar_t executableName[MAX_PATH]{};
+        DWORD executableNameLength = MAX_PATH;
+        if (QueryFullProcessImageName(processHandle, 0, executableName, &executableNameLength))
+        {
+            DWORD fileVersionInfoSize = GetFileVersionInfoSize(executableName, NULL);
+            if (fileVersionInfoSize > 0)
+            {
+                void* lpData = malloc(fileVersionInfoSize);
+                if (lpData)
+                {
+                    ZeroMemory(lpData, fileVersionInfoSize);
+
+                    // TODO: Numeric narrowing
+                    if (GetFileVersionInfo(executableName, 0, fileVersionInfoSize, lpData))
+                    {
+                        uint32_t cbTranslate = 0;
+                        struct LANGANDCODEPAGE
+                        {
+                            WORD wLanguage;
+                            WORD wCodePage;
+                        } *lpTranslate = nullptr;
+
+                        wchar_t strSubBlock[MAX_PATH]{ 0 };
+                        if (VerQueryValue(lpData, L"\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &cbTranslate))
+                        {
+                            // Check if the process only has 1 translation code file.
+                            if ((cbTranslate / sizeof(LANGANDCODEPAGE)) == 1)
+                            {
+                                // Format the string to query the value later.
+                                HRESULT hr = StringCchPrintf(
+                                    strSubBlock,
+                                    50,
+                                    L"\\StringFileInfo\\%04x%04x\\FileDescription",
+                                    lpTranslate[0].wLanguage,
+                                    lpTranslate[0].wCodePage
+                                );
+
+                                if (SUCCEEDED(hr))
+                                {
+                                    wchar_t* lpBuffer = nullptr;
+                                    uint32_t lpBufferSize = 0;
+                                    if (VerQueryValue(lpData, strSubBlock, (void**)&lpBuffer, &lpBufferSize) && lpBufferSize > 0)
+                                    {
+                                        name = to_hstring(lpBuffer);
+                                        success = true;
+                                    }
+                                }
+                            }
+                            else if ((cbTranslate / sizeof(LANGANDCODEPAGE)) > 1)
+                            {
+                                DEBUG_BREAK();
+                            }
+                        }
+                    }
+
+                    free(lpData);
+                }
+            }
+
+            exePath = executableName;
+        }
+
+        return success;
     }
 
     bool ProcessInfo::GetProcessInfoUWP(const HANDLE& processHandle)
+    {
+        uint32_t applicationUserModelIdLength = 0;
+        PWSTR applicationUserModelId = nullptr;
+
+        bool success = GetProcessPackageInfo(processHandle);
+
+        if (!success && (GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId) == ERROR_INSUFFICIENT_BUFFER))
+        {
+            applicationUserModelId = new WCHAR[applicationUserModelIdLength](0);
+            if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId)))
+            {
+                hstring shellPath = L"shell:appsfolder\\" + to_hstring(applicationUserModelId);
+                delete[] applicationUserModelId;
+
+                com_ptr<IShellItem> shellItem = nullptr;
+                if (SUCCEEDED(SHCreateItemFromParsingName(shellPath.c_str(), nullptr, IID_PPV_ARGS(&shellItem))))
+                {
+                    LPWSTR wStr = nullptr;
+                    if (SUCCEEDED(shellItem->GetDisplayName(SIGDN::SIGDN_NORMALDISPLAY, &wStr)))
+                    {
+                        name = to_hstring(wStr);
+                        CoTaskMemFree(wStr);
+                    }
+
+                    success = !name.empty();
+                }
+            }
+        }
+
+        return success;
+    }
+
+    bool ProcessInfo::GetProcessPackageInfo(const HANDLE& processHandle)
     {
         bool success = false;
         uint32_t packageFullNameLength = 0;
@@ -98,18 +197,18 @@ namespace System
                                         IAppxManifestPropertiesPtr properties = nullptr;
                                         manifestReaderPtr->GetProperties(&properties);
 
-                                        /*LPWSTR packageDisplayNameProperty = nullptr;
+                                        LPWSTR packageDisplayNameProperty = nullptr;
                                         if (SUCCEEDED(properties->GetStringValue(L"DisplayName", &packageDisplayNameProperty)))
                                         {
                                             name = to_hstring(packageDisplayNameProperty);
                                             CoTaskMemFree(packageDisplayNameProperty);
-                                        }*/
+                                        }
 
                                         //  Get manifest Applications node to get package data.
                                         IAppxManifestApplicationsEnumeratorPtr manifestResEnumeratorPtr = nullptr;
                                         manifestReaderPtr->GetApplications(&manifestResEnumeratorPtr);
                                         BOOL getHasCurrent = false;
-                                        while (SUCCEEDED(manifestResEnumeratorPtr->GetHasCurrent(&getHasCurrent)) && getHasCurrent)
+                                        if (SUCCEEDED(manifestResEnumeratorPtr->GetHasCurrent(&getHasCurrent)) && getHasCurrent)
                                         {
                                             IAppxManifestApplicationPtr application = nullptr;
                                             if (FAILED(manifestResEnumeratorPtr->GetCurrent(&application)))
@@ -117,26 +216,10 @@ namespace System
                                                 continue;
                                             }
 
-                                            System::AppX::ManifestApplicationNode applicationNode{ application, packageInfo.path };
-                                            if (name.empty())
-                                            {
-                                                name = applicationNode.DisplayName();
-                                            }
-
-                                            wstring icon = applicationNode.Logo();
-                                            if (!icon.empty())
-                                            {
-                                                // TODO: Icon handling.
-                                            }
-
-                                            manifestResEnumeratorPtr->MoveNext(&getHasCurrent);
+                                            manifest = System::AppX::ManifestApplicationNode(application, packageInfo.path);
                                         }
 
                                         success = true;
-
-                                        // I don't need to close ComPtrs thanks to the smart ComPtrs definitions.
-
-                                        CloseHandle(processHandle); // Close the handle here to free up work.
                                     }
                                 }
                             }
@@ -172,5 +255,54 @@ namespace System
         }
 
         return success;
+    }
+
+    winrt::Windows::Foundation::IAsyncAction ProcessInfo::FindProcessIcon(std::wstring processIconPath)
+    {
+        for (int i = processIconPath.size() - 1; i >= 0; i--)
+        {
+            if (processIconPath[i] == L'\\')
+            {
+                wstring parentPath = processIconPath.substr(0, i + 1);
+
+                wregex manifestRegex{ L".*(Manifest.xml)$" };
+
+                vector<wstring> pathes{};
+
+                WIN32_FIND_DATA findData{};
+                HANDLE findHandle = FindFirstFile((parentPath + L"*").c_str(), &findData);
+                if (findHandle != INVALID_HANDLE_VALUE)
+                {
+                    do
+                    {
+                        wstring filePath{ findData.cFileName };
+
+                        if (regex_match(filePath, manifestRegex))
+                        {
+                            // Read the content of the file.
+                            try
+                            {
+                                XmlDocument doc{};
+                                co_await doc.LoadFromUriAsync(winrt::Windows::Foundation::Uri(parentPath + filePath));
+                                auto node = doc.SelectSingleNode(L".\\Application\\VisualElements");
+                            }
+                            catch (hresult_error err)
+                            {
+                                OutputDebugHString(L"Could not load xml " + err.message());
+                            }
+                        }
+
+                        if (filePath != L"." && filePath != L"..")
+                        {
+                            pathes.push_back(parentPath + filePath);
+                        }
+                    }
+                    while (FindNextFile(findHandle, &findData));
+                    FindClose(findHandle);
+                }
+
+
+            }
+        }
     }
 }

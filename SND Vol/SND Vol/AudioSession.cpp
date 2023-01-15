@@ -3,12 +3,10 @@
 
 #include <rpc.h>
 #include <appmodel.h>
-#include <ShObjIdl.h>
-#include <objbase.h>
-#include <strsafe.h>
-#include <Shlwapi.h>
 #include "AudioSessionStates.h"
 #include "ManifestApplicationNode.h"
+#include "IconHelper.h"
+#include "ProcessInfo.h"
 
 using namespace winrt;
 using namespace std;
@@ -34,27 +32,71 @@ namespace Audio
         else
         {
             LPWSTR wStr = nullptr;
-            hstring displayName{};
             if (SUCCEEDED(audioSessionControl->GetDisplayName(&wStr)))
             {
-                displayName = to_hstring(wStr);
+                sessionName = to_hstring(wStr);
                 // Free memory allocated by audioSessionControl->GetDisplayName()
                 CoTaskMemFree(wStr);
             }
+        }
 
-            if (displayName.empty())
+        if (processPID > 0 && !isSystemSoundSession)
+        {
+            LPWSTR iconPathLPWSTR = nullptr;
+
+            System::ProcessInfo processInfo{ processPID };
+
+            sessionName = !processInfo.Name().empty() ? processInfo.Name() : processInfo.Manifest().DisplayName();
+            logoPath = processInfo.Manifest().Logo();
+
+            if (logoPath.empty() && !processInfo.ExecutablePath().empty())
             {
-                displayName = GetProcessName(processPID);
-                if (!displayName.empty())
+                HICON icon = nullptr;
+                try
                 {
-                    sessionName = std::move(displayName);
+                    Imaging::IconHelper helper{};
+                    icon = helper.LoadIconFromPath(processInfo.ExecutablePath());
+                    auto path = L"C:\\Users\\julie\\Pictures\\" + wstring(sessionName) + L".png";
+                    helper.WriteHICONToFile(icon, path);
+
+                    logoPath = path;
+                }
+                catch (const hresult_error& err)
+                {
+                    OutputDebugHString(err.message());
+                }
+
+                DestroyIcon(icon);
+            }
+            else if (SUCCEEDED(audioSessionControl->GetIconPath(&iconPathLPWSTR)))
+            {
+                wstring iconPath = wstring(iconPathLPWSTR);
+                CoTaskMemFree(iconPathLPWSTR);
+
+                if (!iconPath.empty())
+                {
+                    HICON icon = nullptr;
+                    try
+                    {
+                        Imaging::IconHelper iconHelper{};
+                        icon = iconHelper.LoadIconFromPath(iconPath);
+                        if (icon)
+                        {
+                            wstring filePath = L"C:\\Users\\julie\\Pictures\\" + wstring(sessionName) + L".png";
+                            iconHelper.WriteHICONToFile(icon, filePath);
+                            logoPath = filePath;
+                        }
+                    }
+                    catch (const hresult_error& err)
+                    {
+                        OutputDebugHString(err.message());
+                    }
+
+                    DestroyIcon(icon);
                 }
             }
-            else
-            {
-                sessionName = std::move(displayName);
-            }
         }
+
 
         AudioSessionState state{};
         if (SUCCEEDED(audioSessionControl->GetState(&state)))
@@ -71,43 +113,6 @@ namespace Audio
         {
             OutputDebugHString(L"Audio session '" + sessionName + L"' > Failed to get audio meter info. Peak values will be blank.");
         }
-
-        /*LPWSTR iconPathLPWSTR = nullptr;
-        if (SUCCEEDED(audioSessionControl->GetIconPath(&iconPathLPWSTR)))
-        {
-            wstring iconPath = wstring(iconPathLPWSTR);
-            CoTaskMemFree(iconPathLPWSTR);
-            
-            if (!iconPath.empty())
-            {
-                for (int i = iconPath.size() - 1; i >= 0; i--)
-                {
-                    if (iconPath[i] == L',')
-                    {
-                        wstring libraryPath = iconPath.substr(0, i);
-                        wstring iconId = iconPath.substr(i + 1);
-                        if (!iconId.empty())
-                        {
-
-                            auto&& library = LoadLibrary(libraryPath.c_str());
-                            if (library)
-                            {
-                                HRSRC resourceHandle = FindResource(library, iconId.c_str(), RT_GROUP_ICON);
-                                HGLOBAL hMem = LoadResource(library, resourceHandle);
-                                lpResource = LockResource(hMem);
-                            }
-                        }
-
-                        break;
-                    }
-                }
-            }
-        }*/
-
-#ifdef DEBUG
-        GetWindowInfo();
-#endif // DEBUG
-
     }
 
 
@@ -282,298 +287,6 @@ namespace Audio
         return S_OK;
     }
     #pragma endregion
-
-
-    hstring AudioSession::GetProcessName(DWORD const& pId)
-    {
-        hstring processName{};
-
-        HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pId);
-        if (processHandle != NULL && processHandle != INVALID_HANDLE_VALUE && !GetPackageInfoFromHandle(processHandle))
-        {
-            // Try to get display name for UWP-like apps
-            uint32_t applicationUserModelIdLength = 0;
-            PWSTR applicationUserModelId = nullptr;
-
-            if (GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId) == ERROR_INSUFFICIENT_BUFFER)
-            {
-                applicationUserModelId = new WCHAR[applicationUserModelIdLength](0);
-                if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId)))
-                {
-                    hstring shellPath = L"shell:appsfolder\\" + to_hstring(applicationUserModelId);
-                    delete[] applicationUserModelId;
-
-                    IShellItem* shellItem = nullptr;
-                    if (SUCCEEDED(SHCreateItemFromParsingName(shellPath.c_str(), nullptr, IID_PPV_ARGS(&shellItem))))
-                    {
-                        LPWSTR wStr = nullptr;
-                        if (SUCCEEDED(shellItem->GetDisplayName(SIGDN::SIGDN_NORMALDISPLAY, &wStr)))
-                        {
-                            processName = to_hstring(wStr);
-
-                            CoTaskMemFree(wStr);
-
-                            // If the shell item name is not empty, clean up resources and return name.
-                            if (!processName.empty())
-                            {
-                                shellItem->Release();
-                                CloseHandle(processHandle);
-                                return processName;
-                            }
-                        }
-
-                        // Failed to get shell item display name, release the object and continue to default naming using PID.
-                        shellItem->Release();
-                    }
-                }
-            }
-
-            // Default naming using PID.
-            wchar_t executableName[MAX_PATH]{};
-            DWORD executableNameLength = MAX_PATH;
-            if (QueryFullProcessImageName(processHandle, 0, executableName, &executableNameLength))
-            {
-                CloseHandle(processHandle); // Close handle since we don't need it anymore.
-
-                DWORD fileVersionInfoSize = GetFileVersionInfoSize(executableName, NULL);
-                if (fileVersionInfoSize > 0)
-                {
-                    void* lpData = malloc(fileVersionInfoSize);
-                    if (lpData)
-                    {
-                        ZeroMemory(lpData, fileVersionInfoSize);
-
-                        // TODO: Numeric narrowing
-                        if (GetFileVersionInfo(executableName, 0, fileVersionInfoSize, lpData))
-                        {
-                            uint32_t cbTranslate = 0;
-                            struct LANGANDCODEPAGE
-                            {
-                                WORD wLanguage;
-                                WORD wCodePage;
-                            } *lpTranslate = nullptr;
-
-                            wchar_t strSubBlock[MAX_PATH]{ 0 };
-                            if (VerQueryValue(lpData, L"\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &cbTranslate))
-                            {
-                                if ((cbTranslate / sizeof(LANGANDCODEPAGE)) == 1)
-                                {
-                                    HRESULT hr = StringCchPrintf(
-                                        strSubBlock,
-                                        50,
-                                        L"\\StringFileInfo\\%04x%04x\\FileDescription",
-                                        lpTranslate[0].wLanguage,
-                                        lpTranslate[0].wCodePage
-                                    );
-
-                                    if (SUCCEEDED(hr))
-                                    {
-                                        wchar_t* lpBuffer = nullptr;
-                                        uint32_t lpBufferSize = 0;
-                                        if (VerQueryValue(lpData, strSubBlock, (void**)&lpBuffer, &lpBufferSize) && lpBufferSize > 0)
-                                        {
-                                            processName = to_hstring(lpBuffer);
-                                        }
-                                    }
-                                }
-                                else if ((cbTranslate / sizeof(LANGANDCODEPAGE)) > 1)
-                                {
-                                    DEBUG_BREAK();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            free(lpData);
-                            throw_last_error();
-                        }
-
-                        free(lpData);
-                    }
-                }
-            }
-            else
-            {
-                CloseHandle(processHandle);
-            }
-        }
-
-        return processName;
-    }
-
-    bool AudioSession::GetPackageInfoFromHandle(HANDLE& processHandle)
-    {
-        bool success = false;
-        uint32_t packageFullNameLength = 0;
-        long result = GetPackageFullName(processHandle, &packageFullNameLength, nullptr);
-        if (result != ERROR_INSUFFICIENT_BUFFER)
-        {
-            return false;
-        }
-
-        PWSTR packageFullNameWstr = new WCHAR[packageFullNameLength](0);
-        if (SUCCEEDED(GetPackageFullName(processHandle, &packageFullNameLength, packageFullNameWstr)))
-        {
-            PACKAGE_INFO_REFERENCE packageInfoReference{};
-            if (SUCCEEDED(OpenPackageInfoByFullName(packageFullNameWstr, 0, &packageInfoReference)))
-            {
-                uint32_t bufferLength = 0;
-                uint32_t count = 0;
-                if (GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, nullptr, &count) == ERROR_INSUFFICIENT_BUFFER)
-                {
-                    BYTE* bytes = (BYTE*)malloc(bufferLength * sizeof(BYTE));
-                    if (SUCCEEDED(GetPackageInfo(packageInfoReference, PACKAGE_FILTER_HEAD, &bufferLength, bytes, &count)))
-                    {
-                        try
-                        {
-                            PACKAGE_INFO* packageInfos = reinterpret_cast<PACKAGE_INFO*>(bytes);
-                            if (packageInfos)
-                            {
-                                for (uint32_t i = 0; i < count; i++)
-                                {
-                                    PACKAGE_INFO packageInfo = packageInfos[i];
-
-                                    // Create AppX factory.
-                                    IAppxFactoryPtr factory = nullptr;
-                                    check_hresult(CoCreateInstance(__uuidof(AppxFactory), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory)));
-                                    
-                                    // Get the AppXManifest.xml path for the package.
-                                    wchar_t appxManifest[2048](0); // 32 768 bits -- Supported by UTF-8 APIs
-                                    PathCombine(appxManifest, packageInfo.path, L"AppXManifest.xml");
-                                    if (lstrlen(appxManifest) > 0) // Check if PathCombine succeeded.
-                                    {
-                                        // Create stream and package reader to read package data.
-                                        IStreamPtr streamPtr = nullptr;
-                                        IAppxManifestReaderPtr manifestReaderPtr = nullptr;
-                                        check_hresult(SHCreateStreamOnFileEx(appxManifest, STGM_SHARE_DENY_NONE, 0, false, nullptr, &streamPtr));
-                                        
-                                        check_hresult(factory->CreateManifestReader(streamPtr, &manifestReaderPtr));
-
-                                        // Get the manifest data for the package.
-                                        // Get package display name through manifest properties.
-                                        IAppxManifestPropertiesPtr properties = nullptr;
-                                        manifestReaderPtr->GetProperties(&properties);
-
-                                        LPWSTR packageDisplayNameProperty = nullptr;
-                                        if (SUCCEEDED(properties->GetStringValue(L"DisplayName", &packageDisplayNameProperty)))
-                                        {
-                                            sessionName = to_hstring(packageDisplayNameProperty);
-                                            CoTaskMemFree(packageDisplayNameProperty);
-                                        }
-
-                                        // Get manifest Applications node to get package data.
-                                        IAppxManifestApplicationsEnumeratorPtr manifestResEnumeratorPtr = nullptr;
-                                        manifestReaderPtr->GetApplications(&manifestResEnumeratorPtr);
-                                        BOOL getHasCurrent = false;
-                                        while (SUCCEEDED(manifestResEnumeratorPtr->GetHasCurrent(&getHasCurrent)) && getHasCurrent)
-                                        {
-                                            IAppxManifestApplicationPtr application = nullptr;
-                                            if (FAILED(manifestResEnumeratorPtr->GetCurrent(&application)))
-                                            {
-                                                continue;
-                                            }
-
-                                            System::AppX::ManifestApplicationNode applicationNode{ application, packageInfo.path };
-                                            if (sessionName.empty())
-                                            {
-                                                sessionName = applicationNode.DisplayName();
-                                            }
-
-                                            wstring icon = applicationNode.Logo();
-                                            if (!icon.empty())
-                                            {
-                                                logoPath = icon;
-                                            }
-
-                                            manifestResEnumeratorPtr->MoveNext(&getHasCurrent);
-                                        }
-
-                                        success = true;
-
-                                        // I don't need to close ComPtrs thanks to the smart ComPtrs definitions.
-
-                                        CloseHandle(processHandle); // Close the handle here to free up work.
-                                    }
-                                }
-                            }
-                        }
-                        catch (const hresult_error& err)
-                        {
-                            OutputDebugHString(err.message());
-                        }
-                        catch (...)
-                        {
-                            std::source_location location = source_location::current();
-                            string log = string(location.file_name()) + " " + string(location.function_name());
-                            OutputDebugHString(to_hstring(log) + L" : Catch all clause reached.");
-
-                            DEBUG_BREAK();
-                        }
-                    }
-
-                    free(bytes);
-                }
-                else
-                {
-                    OutputDebugString(L"Failed to get package info.\n");
-                }
-            }
-            else
-            {
-                OutputDebugString(L"Failed to open package.\n");
-            }
-
-            ClosePackageInfo(packageInfoReference);
-            delete[] packageFullNameWstr;
-        }
-        else
-        {
-            OutputDebugString(L"Failed to get package full name.\n");
-        }
-
-        return success;
-    }
-
-    int __stdcall EnumWindowsProc(HWND hwnd, LPARAM lParam)
-    {
-        static DWORD processPID = static_cast<DWORD>(lParam);
-        DWORD hwndPid{};
-        DWORD hwndCreatorPid = GetWindowThreadProcessId(hwnd, &hwndPid);
-        if (hwndPid == processPID || hwndCreatorPid == processPID)
-        {
-            // I found the correct window to extract infos from.
-            int windowTextLength = GetWindowTextLength(hwnd);
-            if (windowTextLength > 0)
-            {
-                wchar_t* windowText = new wchar_t[windowTextLength]();
-                if (GetWindowText(hwnd, windowText, windowTextLength) > 0)
-                {
-                    OutputDebugString(L"Window text : ");
-                    OutputDebugHString(windowText);
-                }
-                delete[] windowText;
-
-                ULONG_PTR ptr = GetClassLongPtr(hwnd, GCLP_HICON);
-                if (ptr)
-                {
-                    // Bruuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuh.
-                    HICON windowIcon = reinterpret_cast<HICON>(ptr);
-                    DestroyIcon(windowIcon);
-                }
-            }
-            return FALSE;
-        }
-
-        return TRUE;
-    }
-
-    void AudioSession::GetWindowInfo()
-    {
-        if (!EnumWindows(EnumWindowsProc, processPID))
-        {
-            OutputDebugHString(L"Could not enumerate windows.");
-        }
-    }
 
 
     STDMETHODIMP AudioSession::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID)
