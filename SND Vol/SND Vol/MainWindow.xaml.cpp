@@ -1290,7 +1290,10 @@ namespace winrt::SND_Vol::implementation
             ApplicationDataCompositeValue compositeValue{};
             compositeValue.Insert(L"Muted", box_value(audioSessionViews.GetAt(i).Muted()));
             compositeValue.Insert(L"Level", box_value(audioSessionViews.GetAt(i).Volume()));
-            audioLevels.Values().Insert(audioSessionViews.GetAt(i).Header(), compositeValue);
+            if (!audioSessionViews.GetAt(i).Header().empty())
+            {
+                audioLevels.Values().Insert(audioSessionViews.GetAt(i).Header(), compositeValue);
+            }
         }
     }
 
@@ -1400,9 +1403,6 @@ namespace winrt::SND_Vol::implementation
                         bool showMenu = currentAudioProfile.ShowMenu();
                         uint32_t windowLayout = currentAudioProfile.Layout();
 
-                        // Set system volume.
-                        mainAudioEndpoint->SetVolume(systemVolume);
-
                         if (disableAnimations)
                         {
                             DisableAnimationsIconButton_Click(nullptr, nullptr);
@@ -1443,6 +1443,22 @@ namespace winrt::SND_Vol::implementation
                         AudioSessionsPanel().ItemsSource(nullptr);
                         AudioSessionsPanelProgressRing().Visibility(Visibility::Visible);
 
+                        unique_lock lock{ audioSessionsMutex }; // Taking the lock will also lock sessions from being added to the display.
+                        for (auto pair : currentAudioProfile.AudioLevels())
+                        {
+                            for (size_t i = 0; i < audioSessions->size(); i++)
+                            {
+                                if (audioSessions->at(i)->Name() == pair.Key())
+                                {
+                                    audioSessions->at(i)->SetVolume(pair.Value());
+                                }
+                            }
+                        }
+
+                        // Set system volume.
+                        mainAudioEndpoint->SetVolume(systemVolume);
+
+
                         // Finish loading profile in non-UI thread.
                         concurrency::task<void> t = concurrency::task<void>([this]()
                         {
@@ -1453,16 +1469,6 @@ namespace winrt::SND_Vol::implementation
 
                                 // Set audio sessions volume.
                                 unique_lock lock{ audioSessionsMutex }; // Taking the lock will also lock sessions from being added to the display.
-                                for (auto pair : audioLevels)
-                                {
-                                    for (size_t i = 0; i < audioSessions->size(); i++)
-                                    {
-                                        if (audioSessions->at(i)->Name() == pair.Key())
-                                        {
-                                            audioSessions->at(i)->Volume(pair.Value());
-                                        }
-                                    }
-                                }
 
                                 for (auto pair : audioStates)
                                 {
@@ -1474,7 +1480,6 @@ namespace winrt::SND_Vol::implementation
                                         }
                                     }
                                 }
-                                
 
                                 vector<AudioSessionView> uniqueSessions{};
                                 // HACK: IVector<T>::GetMany does not seem to work. Manual copy.
