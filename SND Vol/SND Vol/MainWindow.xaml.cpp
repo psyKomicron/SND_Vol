@@ -62,9 +62,9 @@ namespace winrt::SND_Vol::implementation
 
         if (unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"ShowSplashScreen"), true))
         {
+            winrt::Windows::ApplicationModel::PackageId packageId = winrt::Windows::ApplicationModel::Package::Current().Id();
             ApplicationData::Current().LocalSettings().Values().Insert(L"ShowSplashScreen", IReference(false));
 
-            winrt::Windows::ApplicationModel::PackageId packageId = winrt::Windows::ApplicationModel::Package::Current().Id();
             ApplicationVersionTextBlock().Text(
                 to_hstring(packageId.Version().Major) + L"." + to_hstring(packageId.Version().Minor) + L"." + to_hstring(packageId.Version().Build)
             );
@@ -89,7 +89,7 @@ namespace winrt::SND_Vol::implementation
     {
         loaded = true;
 
-        #if USE_TIMER
+#if USE_TIMER
         if (!DisableAnimationsIconToggleButton().IsOn())
         {
             if (mainAudioEndpoint)
@@ -103,7 +103,7 @@ namespace winrt::SND_Vol::implementation
                 audioSessionsPeakTimer.Start();
             }
         }
-        #endif // USE_TIMER
+#endif // USE_TIMER
 
         // Generate size changed event to get correct clipping rectangle size
         SystemVolumeActivityBorder_SizeChanged(nullptr, nullptr);
@@ -206,7 +206,6 @@ namespace winrt::SND_Vol::implementation
                 }
             }
         });
-
         PowerManager::UserPresenceStatusChanged([this](IInspectable, IInspectable)
         {
             auto userStatus = static_cast<int32_t>(PowerManager::UserPresenceStatus());
@@ -266,6 +265,65 @@ namespace winrt::SND_Vol::implementation
                     break;
             }
         });
+
+
+        uint16_t lastMajor = 0;
+        uint16_t lastMinor = 0;
+        uint16_t lastBuild = 0;
+        bool packageDifferentVersion = false;
+
+        winrt::Windows::ApplicationModel::PackageId packageId = winrt::Windows::ApplicationModel::Package::Current().Id();
+
+        ApplicationDataContainer lastPackageIdContainer{ nullptr };
+        if (ApplicationData::Current().LocalSettings().Containers().HasKey(L"PackageId"))
+        {
+            lastPackageIdContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"PackageId");
+            lastMajor = unbox_value<uint16_t>(lastPackageIdContainer.Values().Lookup(L"Major"));
+            lastMinor = unbox_value<uint16_t>(lastPackageIdContainer.Values().Lookup(L"Minor"));
+            lastBuild = unbox_value<uint16_t>(lastPackageIdContainer.Values().Lookup(L"Build"));
+
+            auto Major = packageId.Version().Major;
+            auto Minor = packageId.Version().Minor;
+            auto Build = packageId.Version().Build;
+
+            packageDifferentVersion = Major != lastMajor || Minor != lastMinor || Build != lastBuild;
+        }
+        else
+        {
+            lastPackageIdContainer = ApplicationData::Current().LocalSettings().CreateContainer(L"PackageId", ApplicationDataCreateDisposition::Always);
+        }
+
+        lastPackageIdContainer.Values().Insert(L"Major", box_value(packageId.Version().Major));
+        lastPackageIdContainer.Values().Insert(L"Minor", box_value(packageId.Version().Minor));
+        lastPackageIdContainer.Values().Insert(L"Build", box_value(packageId.Version().Build));
+
+        if (packageDifferentVersion)
+        {
+            StackPanel panel{};
+            TextBlock block{};
+            block.Text(L"App has been updated");
+            HyperlinkButton button{};
+            button.Content(box_value(L"read notes here"));
+            // I can assume this will not be dereferenced.
+            button.Click([this](auto, auto)
+            {
+                if (!secondWindow)
+                {
+                    secondWindow = make<SecondWindow>();
+                    secondWindow.Closed([this](IInspectable, WindowEventArgs)
+                    {
+                        secondWindow = nullptr;
+                    });
+                }
+                secondWindow.Activate();
+                secondWindow.NavigateTo(xaml_typename<NewContentPage>());
+            });
+
+            panel.Children().Append(block);
+            panel.Children().Append(button);
+
+            WindowMessageBar().EnqueueMessage(panel);
+        }
     }
 
     void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const&)
@@ -838,7 +896,7 @@ namespace winrt::SND_Vol::implementation
         appWindow = AppWindow::GetFromWindowId(windowID);
         if (appWindow != nullptr)
         {   
-        #ifdef DEBUG
+#ifdef DEBUG
             TextBlock timestamp{};
             timestamp.IsHitTestVisible(false);
             timestamp.Opacity(0.6);
@@ -848,7 +906,7 @@ namespace winrt::SND_Vol::implementation
 
             Grid::SetRow(timestamp, WindowGrid().RowDefinitions().GetView().Size() - 1);
             RootGrid().Children().Append(timestamp);
-        #endif // _DEBUG
+#endif // _DEBUG
 
             appWindow.Title(Application::Current().Resources().Lookup(box_value(L"AppTitle")).as<hstring>());
 
@@ -1081,7 +1139,6 @@ namespace winrt::SND_Vol::implementation
                     WindowMessageBar().EnqueueString(loader.GetString(L"ErrorAudioSessionsUnavailable"));
                 }
 
-
                 mainAudioEndpoint = audioController->GetMainAudioEndpoint();
                 if (mainAudioEndpoint->Register())
                 {
@@ -1095,7 +1152,6 @@ namespace winrt::SND_Vol::implementation
                         });
                     });
                 }
-
                 
                 try
                 {
@@ -1771,7 +1827,6 @@ namespace winrt::SND_Vol::implementation
 
         // Cast state to AudioSessionState, uint32_t is only used to cross ABI
         AudioSessionState audioState = (AudioSessionState)state;
-
         if (audioState == AudioSessionState::Expired || audioState == AudioSessionState::Active)
         {
             audioSessionsPeakTimer.Stop();
