@@ -108,7 +108,7 @@ namespace Imaging
 		{
 			// firefox.exe
 			HICON largeIcon[1]{};
-			if (ExtractIconEx(resourcePath.data(), 0, largeIcon, nullptr, 1) > 0)
+			if (ExtractIconEx(resourcePath.data(), 0, largeIcon, nullptr, 1) == 1)
 			{
 				return largeIcon[0];
 			}
