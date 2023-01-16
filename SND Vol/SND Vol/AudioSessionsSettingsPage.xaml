@@ -18,7 +18,7 @@
         </ListView.Resources>
         
 
-        <Expander Style="{StaticResource ExpanderSettingStyle}">
+        <Expander Style="{StaticResource ExpanderSettingStyle}" IsEnabled="False">
             <Expander.Header>
                 <Grid Margin="0,0,-5,0">
                     <Grid.ColumnDefinitions>
@@ -73,7 +73,7 @@
             </Grid>
         </Expander>
 
-        <Expander Style="{StaticResource ExpanderSettingStyle}">
+        <Expander Style="{StaticResource ExpanderSettingStyle}" IsEnabled="False">
             <Expander.Header>
                 <Grid Margin="0,0,-5,0">
                     <Grid.ColumnDefinitions>
@@ -123,7 +123,13 @@
 
                 <TextBlock Text="Volume limit" VerticalAlignment="Center" />
 
-                <Slider x:Name="MaxVolumeSlider" Grid.Column="1" MaxWidth="300" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                <Slider 
+                    x:Name="MaxVolumeSlider" 
+                    Grid.Column="1" 
+                    MaxWidth="300" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Center" />
+                
             </Grid>
         </Expander>
 
