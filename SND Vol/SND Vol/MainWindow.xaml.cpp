@@ -8,6 +8,7 @@
 #include "SecondWindow.xaml.h"
 #include <ppl.h>
 #include <ppltasks.h>
+#include "IconHelper.h"
 
 #define USE_TIMER 1
 #define DEACTIVATE_TIMER 0
@@ -1226,15 +1227,36 @@ namespace winrt::SND_Vol::implementation
             }
         }
 
+
         AudioSessionView view = nullptr;
-        if (audioSession->LogoPath().empty())
+
+        if (audioSession->IsSystemSoundSession())
         {
             view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0);
+
+            FontIcon icon{};
+            icon.Glyph(L"\ue770");
+            icon.Foreground(
+                SolidColorBrush(Application::Current().Resources().TryLookup(box_value(L"SystemAccentColorLight1")).as<Windows::UI::Color>())
+            );
+            Viewbox iconViewbox{};
+            iconViewbox.HorizontalAlignment(HorizontalAlignment::Stretch);
+            iconViewbox.VerticalAlignment(VerticalAlignment::Stretch);
+            iconViewbox.Child(icon);
+            view.Logo().Content(iconViewbox);
         }
         else
         {
-            view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0, audioSession->LogoPath());
+            if (audioSession->LogoPath().empty())
+            {
+                view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0);
+            }
+            else
+            {
+                view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0, audioSession->LogoPath());
+            }
         }
+
         view.Id(guid(audioSession->Id()));
         view.Muted(audioSession->Muted());
         view.SetState((AudioSessionState)audioSession->State());
@@ -1376,6 +1398,31 @@ namespace winrt::SND_Vol::implementation
         if (currentAudioProfile)
         {
             settings.Insert(L"AudioProfile", box_value(currentAudioProfile.ProfileName()));
+        }
+
+        if (unbox_value_or(settings.TryLookup(L"AllowChangesToLoadedProfile"), false))
+        {
+            currentAudioProfile.SystemVolume(mainAudioEndpoint->Volume());
+            currentAudioProfile.Layout(layout);
+            currentAudioProfile.KeepOnTop(
+                appWindow.Presenter().as<OverlappedPresenter>().IsAlwaysOnTop()
+            );
+            currentAudioProfile.ShowMenu(
+                AppBarGrid().Visibility() == Visibility::Visible
+            );
+            currentAudioProfile.DisableAnimations(
+                mainAudioEndpointPeakTimer.IsRunning()
+            );
+
+            unique_lock lock{ audioSessionsMutex };
+            for (size_t i = 0; i < audioSessions->size(); i++)
+            {
+                auto muted = audioSessions->at(i)->Muted();
+                auto volume = audioSessions->at(i)->Volume();
+                auto name = audioSessions->at(i)->Name();
+                currentAudioProfile.AudioLevels().Insert(name, volume);
+                currentAudioProfile.AudioStates().Insert(name, muted);
+            }
         }
     }
 
