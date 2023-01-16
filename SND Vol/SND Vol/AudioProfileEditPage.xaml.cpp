@@ -133,7 +133,7 @@ namespace winrt::SND_Vol::implementation
             audioProfile.SystemVolume(value);
             mainAudioEndpointPtr->Release();
         }
-        SystemVolumeSlider().Value(audioProfile.SystemVolume() * 100.f);
+        SystemVolumeSlider().Value(static_cast<double>(audioProfile.SystemVolume()) * 100.);
 
 
         if (audioProfile.AudioLevels().Size() > 0)
