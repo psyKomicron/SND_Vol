@@ -77,6 +77,7 @@ namespace winrt::SND_Vol::implementation
                         titleBlock.Style(
                             Application::Current().Resources().Lookup(box_value(L"SubtitleTextBlockStyle")).as<::Style>()
                         );
+                        titleBlock.FontSize(24);
                         titleBlock.Text(title);
                         TextBlock textBlock{};
                         textBlock.Text(content);

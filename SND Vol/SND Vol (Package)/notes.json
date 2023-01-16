@@ -2,6 +2,14 @@
     "en-US": {
         "news": [
             {
+                "title": "Logos",
+                "text": "Some apps had their icons supported, but not all of them (for example you could see Spotify's logo but not Google Chrome's one). This feature has now been extended and more if not all of applications will now be shown with their associated logo."
+            },
+            {
+                "title": "New settings",
+                "text":  "New settings have been added for audio sessions and audio profiles."
+            },
+            {
                 "title": "New layout",
                 "text": "Vertical layout (available in the app's window menu) has been changed to better adapt to the window by rotating audio sessions horizontally."
             },
@@ -38,6 +46,14 @@
 
     "fr-FR": {
         "news": [
+            {
+                "title": "Logos",
+                "text": "Précedemment seulement quelques applications étaient affichées avec leurs logos (par exemple Spotify mais pas Google Chrome), dès maintenant quasiment toutes les applications seront affichées avec leur logo."
+            },
+            {
+                "title": "Nouveaux paramètres",
+                "text": "De nouveaux paramètres ont été ajoutés, pour les sessions audio ainsi que les profiles audio."
+            },
             {
                 "title": "Nouvelle disposition",
                 "text": "La disposition verticale (disponible dans le menu) à été changée pour être mieux adaptée à l'espace disponible de la fenêtre."

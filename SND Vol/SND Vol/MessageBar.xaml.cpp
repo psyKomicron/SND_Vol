@@ -65,6 +65,7 @@ namespace winrt::SND_Vol::implementation
     {
         // Dequeue a message, send it to the UI
         IInspectable message = nullptr;
+
         {
             std::unique_lock<std::mutex> lock{ messageQueueMutex };
 
@@ -85,10 +86,12 @@ namespace winrt::SND_Vol::implementation
         {
             if (std::optional<hstring> hs = message.try_as<hstring>())
             {
-                static std::wregex word{ L"(\\w+)", std::regex_constants::optimize };
                 std::wstring text{ hs.value()};
+
+                static std::wregex word{ L"(\\w+)", std::regex_constants::optimize };
                 auto iterator = std::wsregex_iterator(text.begin(), text.end(), word);
                 auto ptrDiff = std::distance(iterator, std::wsregex_iterator());
+
                 if (ptrDiff > 0)
                 {
                     int64_t msCount = (ptrDiff / 3.5) * 1000;
@@ -105,6 +108,15 @@ namespace winrt::SND_Vol::implementation
                     );
                 }
             }
+            else
+            {
+                timer.Interval(
+                    std::chrono::milliseconds(4150)
+                );
+                TimerProgressBarAnimation().Duration(
+                    DurationHelper::FromTimeSpan(std::chrono::milliseconds(4000))
+                );
+            }
 
             if (Visibility() == Visibility::Collapsed)
             {
@@ -114,6 +126,7 @@ namespace winrt::SND_Vol::implementation
 
             MainContentPresenter().Content(box_value(message));
             TimerProgressBarStoryboard().Begin();
+            timer.Start();
         }
     }
 
