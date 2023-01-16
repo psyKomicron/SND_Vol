@@ -18,43 +18,36 @@ namespace winrt::SND_Vol::implementation
     {
         InitializeComponent();
 
-        //audioProfiles.VectorChanged([this](auto sender, IVectorChangedEventArgs args)
-        //{
-        //    static bool reordering = false;
-
-        //    if (args.CollectionChange() == CollectionChange::ItemInserted && reordering)
-        //    {
-        //        if (audioProfiles.Size() > 0)
-        //        {
-        //            audioProfiles.GetAt(0).IsDefaultProfile(true);
-        //            // Save the new default profile.
-        //            ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().Lookup(L"AudioProfiles");
-        //            audioProfiles.GetAt(0).Save(audioProfilesContainer);
-
-        //            for (uint32_t i = 1; i < audioProfiles.Size(); i++)
-        //            {
-        //                audioProfiles.GetAt(i).IsDefaultProfile(false);
-        //                // Save the newly edited profile.
-        //                audioProfiles.GetAt(i).Save(audioProfilesContainer);
-        //            }
-        //        }
-        //    }
-
-        //    if (args.CollectionChange() == CollectionChange::ItemRemoved && !reordering)
-        //    {
-        //        reordering = true;
-        //    }
-        //    else
-        //    {
-        //        reordering = false;
-        //    }
-        //});
-
         ProfilesListView().ItemsSource(audioProfiles);
     }
 
 
     void AudioProfilesPage::Page_Loading(FrameworkElement const&, IInspectable const&)
+    {
+        AllowChangesToLoadedProfileToggleSwitch().IsOn(
+            unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"AllowChangesToLoadedProfile"), false)
+        );
+    }
+
+    void AudioProfilesPage::OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args)
+    {
+        int32_t size = SecondWindow::Current().Breadcrumbs().Size();
+        int32_t index = size - 1;
+        if (args.NavigationMode() != ::Navigation::NavigationMode::Back &&
+            (
+                index < size ||
+                SecondWindow::Current().Breadcrumbs().GetAt(index).ItemTypeName().Name != xaml_typename<winrt::SND_Vol::AudioProfilesPage>().Name        
+            )
+        )
+        {
+            winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
+            SecondWindow::Current().Breadcrumbs().Append(
+                NavigationBreadcrumbBarItem{ loader.GetString(L"AudioProfilesPageDisplayName"), xaml_typename<winrt::SND_Vol::AudioProfilesPage>() }
+            );
+        }
+    }
+
+    void AudioProfilesPage::Page_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
         // Load profiles into the page
         ApplicationDataContainer audioProfilesContainer = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"AudioProfiles");
@@ -78,28 +71,6 @@ namespace winrt::SND_Vol::implementation
                 }
             }
         }
-    }
-
-    void AudioProfilesPage::OnNavigatedTo(winrt::Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& args)
-    {
-        int32_t size = SecondWindow::Current().Breadcrumbs().Size();
-        int32_t index = size - 1;
-        if (args.NavigationMode() != ::Navigation::NavigationMode::Back &&
-            (
-                index < size ||
-                SecondWindow::Current().Breadcrumbs().GetAt(index).ItemTypeName().Name != xaml_typename<winrt::SND_Vol::AudioProfilesPage>().Name        
-            )
-        )
-        {
-            winrt::Windows::ApplicationModel::Resources::ResourceLoader loader{};
-            SecondWindow::Current().Breadcrumbs().Append(
-                NavigationBreadcrumbBarItem{ loader.GetString(L"AudioProfilesPageDisplayName"), xaml_typename<winrt::SND_Vol::AudioProfilesPage>() }
-            );
-        }
-    }
-
-    void AudioProfilesPage::Page_Loaded(IInspectable const&, RoutedEventArgs const&)
-    {
     }
 
     void AudioProfilesPage::AddProfileButton_Click(IInspectable const&, RoutedEventArgs const&)
@@ -181,5 +152,13 @@ namespace winrt::SND_Vol::implementation
                 break;
             }
         }
+    }
+
+    void AudioProfilesPage::AllowChangesToLoadedProfileToggleSwitch_Toggled(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplicationData::Current().LocalSettings().Values().Insert(
+            L"AllowChangesToLoadedProfile",
+            box_value(AllowChangesToLoadedProfileToggleSwitch().IsOn())
+        );
     }
 }

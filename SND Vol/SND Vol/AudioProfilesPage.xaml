@@ -14,10 +14,12 @@
         <Grid Padding="15,15,15,15" RowSpacing="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <Grid 
+                Grid.Row="1"
                 ColumnSpacing="10" 
                 Background="{ThemeResource SubtleFillColorTertiaryBrush}" 
                 MinHeight="70" 
@@ -48,9 +50,39 @@
                     Click="AddProfileButton_Click"/>
             </Grid>
 
+            <Grid 
+                Grid.Row="0"
+                ColumnSpacing="10" 
+                Background="{ThemeResource SubtleFillColorTertiaryBrush}" 
+                MinHeight="70" 
+                Padding="16,0,12,0" 
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Margin="4,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid VerticalAlignment="Center" RowSpacing="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Allow changes to the current profile"/>
+                    <TextBlock Text="Any change made while a profile is loaded will be use to edit it." Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.8" Grid.Row="1"/>
+                </Grid>
+
+                <ToggleSwitch
+                    x:Name="AllowChangesToLoadedProfileToggleSwitch"
+                    Style="{StaticResource FlippedToggleSwitchStyle}"
+                    Grid.Column="2"
+                    Toggled="AllowChangesToLoadedProfileToggleSwitch_Toggled"/>
+            </Grid>
+
             <ListView 
                 x:Name="ProfilesListView" 
-                Grid.Row="1" 
+                Grid.Row="2" 
                 CanReorderItems="True" 
                 AllowDrop="True"
                 ReorderMode="Enabled"
