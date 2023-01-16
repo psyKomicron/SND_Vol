@@ -25,6 +25,7 @@ namespace winrt::SND_Vol::implementation
         winrt::hstring VolumeGlyph();
         winrt::Microsoft::UI::Xaml::Controls::Orientation Orientation();
         void Orientation(const winrt::Microsoft::UI::Xaml::Controls::Orientation& value);
+        winrt::Microsoft::UI::Xaml::Controls::ContentPresenter Logo();
 
         winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value);
         void PropertyChanged(winrt::event_token const& token);

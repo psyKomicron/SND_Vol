@@ -199,11 +199,10 @@
                 MaxHeight="38"
                 Grid.Row="0"/>
 
-            <Image
+            <ContentPresenter
                 x:Name="AudioSessionAppLogo"
-                Stretch="Uniform"
                 Grid.Row="0"
-                Visibility="Collapsed"
+                Visibility="Visible"
                 MaxHeight="35"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"

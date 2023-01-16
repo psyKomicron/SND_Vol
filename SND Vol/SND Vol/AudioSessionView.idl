@@ -22,6 +22,7 @@ namespace SND_Vol
         String VolumeGlyph{ get; };
         Double Volume;
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
+        Microsoft.UI.Xaml.Controls.ContentPresenter Logo{ get; };
 
 
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs> VolumeChanged;

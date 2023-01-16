@@ -39,7 +39,10 @@ namespace winrt::SND_Vol::implementation
         try
         {
             BitmapImage imageSource{ Uri(logoPath) };
-            AudioSessionAppLogo().Source(imageSource);
+            Image image{};
+            image.Stretch(Stretch::Uniform);
+            image.Source(imageSource);
+            AudioSessionAppLogo().Content(image);
         }
         catch (const hresult_error& err)
         {
@@ -63,6 +66,11 @@ namespace winrt::SND_Vol::implementation
     {
         isVertical = value == Orientation::Vertical;
         VisualStateManager::GoToState(*this, isVertical ? L"VerticalLayout" : L"HorizontalLayout", false);
+    }
+
+    winrt::Microsoft::UI::Xaml::Controls::ContentPresenter AudioSessionView::Logo()
+    {
+        return AudioSessionAppLogo();
     }
 
     double AudioSessionView::Volume()
@@ -226,7 +234,7 @@ namespace winrt::SND_Vol::implementation
     {
         Grid_SizeChanged(nullptr, nullptr);
 
-        if (AudioSessionAppLogo().Source() != nullptr)
+        if (AudioSessionAppLogo().Content() != nullptr)
         {
             VisualStateManager::GoToState(*this, L"UsingLogo", true);
         }
