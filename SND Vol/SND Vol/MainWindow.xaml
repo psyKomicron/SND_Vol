@@ -93,7 +93,11 @@
                     </Viewbox>
 
                     <Button.Flyout>
-                        <Flyout x:Name="SettingsButtonFlyout" ShowMode="Transient">
+                        <Flyout 
+                            x:Name="SettingsButtonFlyout"
+                            ShowMode="Transient"
+                            Placement="BottomEdgeAlignedLeft"
+                            ScrollViewer.VerticalScrollBarVisibility="Visible">
                             <Grid 
                                 x:Name="SettingsButtonFlyoutGrid" 
                                 Margin="-16,-17" 
@@ -199,7 +203,7 @@
                                         <FontIcon Glyph="&#xe712;"/>
                                     </Button>
                                 </Grid>
-
+                                    
                                 <Grid 
                                     x:Name="MoreFlyoutGrid" 
                                     Grid.Row="1" 
