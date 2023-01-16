@@ -9,7 +9,7 @@
     Loaded="Page_Loaded">
 
     <ScrollViewer>
-        <Grid RowSpacing="60" Margin="0,0,5,80">
+        <Grid RowSpacing="60" Margin="0,0,5,60">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -46,8 +46,11 @@
                             <Viewbox Height="20" Width="20">
                                 <FontIcon Glyph="&#xf4a5;"/>
                             </Viewbox>
+                            
                             <TextBlock Text="Transparency effects" VerticalAlignment="Center" Margin="15,0,0,0" Grid.Column="1"/>
+
                             <TextBlock Style="{StaticResource ErrorTextBlockStyle}" Grid.Column="2"/>
+
                             <ToggleSwitch 
                                 x:Name="TransparencyEffectsToggleButton" Grid.Column="3" Style="{StaticResource FlippedToggleSwitchStyle}" Toggled="TransparencyEffectsToggleButton_Toggled" />
                         </Grid>
@@ -128,7 +131,7 @@
                             <RowDefinition />
                             <RowDefinition />
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock Text="Power efficiency" Grid.Row="0" />
 
                         <TextBlock 
@@ -138,7 +141,7 @@
                             Grid.Row="1" 
                             Grid.Column="1">
                             When power efficiency is turned on, audio animations will be turned off if the user is inactive or "Better battery" mode is active (on laptops). Animations will be turned back on automatically.
-                            </TextBlock>
+                        </TextBlock>
                     </Grid>
 
                     <ToggleSwitch 
@@ -148,9 +151,62 @@
                         Grid.RowSpan="2"
                         Toggled="PowerEfficiencyToggleButton_Toggled" />
                 </Grid>
-                
+
+                <Grid Style="{StaticResource GridSettingStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Viewbox Height="20" Width="20" Grid.RowSpan="2">
+                        <FontIcon Glyph="&#xe81c;"/>
+                    </Viewbox>
+
+
+                    <Grid Margin="15,3,0,3" Grid.Column="1" RowSpacing="3" VerticalAlignment="Center" Padding="0,3,0,4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Startup profile" Grid.Row="0" />
+
+                        <TextBlock 
+                            Style="{ThemeResource CaptionTextBlockStyle}" 
+                            FontSize="12" 
+                            Opacity="0.7"
+                            Grid.Row="1" 
+                            Grid.Column="1">
+                            Load the last used profile on app start up.
+                        </TextBlock>
+                    </Grid>
+
+                    <ToggleSwitch 
+                        x:Name="StartupProfileToggleSwitch" 
+                        Style="{StaticResource FlippedToggleSwitchStyle}" 
+                        Grid.Column="2" 
+                        Grid.RowSpan="2"
+                        Toggled="StartupProfileToggleSwitch_Toggled" />
+                </Grid>
+
                 <ListViewHeaderItem Margin="0,10,0,0"/>
 
+                <Button Style="{ThemeResource SettingsButtonStyle}" Click="AudioSessionsButton_Click">
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Viewbox Height="20" Width="20">
+                            <FontIcon Glyph="&#xe8d6;"/>
+                        </Viewbox>
+
+                        <TextBlock Text="Audio sessions" VerticalAlignment="Center" Grid.Column="1"/>
+                    </Grid>
+                </Button>
+                
                 <Button Style="{ThemeResource SettingsButtonStyle}" Click="AudioProfilesButton_Click">
                     <Grid ColumnSpacing="15">
                         <Grid.ColumnDefinitions>

@@ -25,17 +25,6 @@ using namespace SND_Vol::implementation;
 App::App()
 {
     InitializeComponent();
-
-#if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
-    UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e)
-    {
-        if (IsDebuggerPresent())
-        {
-            auto errorMessage = e.Message();
-            __debugbreak();
-        }
-    });
-#endif
 }
 
 /// <summary>
@@ -43,13 +32,13 @@ App::App()
 /// will be used such as when the application is launched to open a specific file.
 /// </summary>
 /// <param name="e">Details about the launch request and process.</param>
-void App::OnLaunched(LaunchActivatedEventArgs const&)
+void App::OnLaunched(LaunchActivatedEventArgs const& e)
 {
     #if defined DEBUG & FALSE
     window = make<SecondWindow>();
     window.Activate();
     #else
-    window = make<MainWindow>();
+    window = make<MainWindow>(e.Arguments());
     window.Activate();
     #endif
 }

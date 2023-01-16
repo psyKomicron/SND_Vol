@@ -19,7 +19,6 @@ namespace winrt::SND_Vol::implementation
 
         props.Values().Insert(L"IsDefaultProfile", IReference(isDefaultProfile));
         props.Values().Insert(L"DisableAnimations", IReference(disableAnimations));
-        props.Values().Insert(L"ShowAdditionalButtons", IReference(showAdditionalButtons));
         props.Values().Insert(L"KeepOnTop", IReference(keepOnTop));
         props.Values().Insert(L"ShowMenu", IReference(showMenu));
         props.Values().Insert(L"SystemVolume", IReference(systemVolume));
@@ -58,7 +57,6 @@ namespace winrt::SND_Vol::implementation
         profileName = container.Name();
         isDefaultProfile = unbox_value<bool>(container.Values().Lookup(L"IsDefaultProfile"));
         disableAnimations = unbox_value<bool>(container.Values().Lookup(L"DisableAnimations"));
-        showAdditionalButtons = unbox_value<bool>(container.Values().Lookup(L"ShowAdditionalButtons"));
         keepOnTop = unbox_value<bool>(container.Values().Lookup(L"KeepOnTop"));
         showMenu = unbox_value<bool>(container.Values().Lookup(L"ShowMenu"));
         systemVolume = unbox_value<float>(container.Values().Lookup(L"SystemVolume"));

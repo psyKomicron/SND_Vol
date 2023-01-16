@@ -24,7 +24,6 @@ namespace winrt::SND_Vol::implementation
     AudioSessionView::AudioSessionView()
     {
         InitializeComponent();
-        //VisualStateManager::GoToState(*this, L"HorizontalLayout", false);
     }
 
     AudioSessionView::AudioSessionView(winrt::hstring const& header, double const& volume) : AudioSessionView()
@@ -41,7 +40,6 @@ namespace winrt::SND_Vol::implementation
         {
             BitmapImage imageSource{ Uri(logoPath) };
             AudioSessionAppLogo().Source(imageSource);
-            VisualStateManager::GoToState(*this, L"UsingLogo", false);
         }
         catch (const hresult_error& err)
         {
@@ -206,13 +204,12 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::SetPeak(const float& left, const float& right)
     {
-        if (!active) return;
+        float isVerticalFloat = static_cast<float>(isVertical);
+        LeftPeakAnimation().To(static_cast<double>(left * isVerticalFloat));
+        RightPeakAnimation().To(static_cast<double>(right * isVerticalFloat));
 
-        LeftPeakAnimation().To(static_cast<double>(left * isVertical));
-        RightPeakAnimation().To(static_cast<double>(right * isVertical));
-
-        TopVolumeAnimation().To(static_cast<double>(left * !isVertical));
-        BottomVolumeAnimation().To(static_cast<double>(right * !isVertical));
+        TopVolumeAnimation().To(static_cast<double>(left * !isVerticalFloat));
+        BottomVolumeAnimation().To(static_cast<double>(right * !isVerticalFloat));
 
         if (isVertical)
         {
@@ -228,6 +225,11 @@ namespace winrt::SND_Vol::implementation
     void AudioSessionView::UserControl_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
         Grid_SizeChanged(nullptr, nullptr);
+
+        if (AudioSessionAppLogo().Source() != nullptr)
+        {
+            VisualStateManager::GoToState(*this, L"UsingLogo", true);
+        }
     }
 
     void AudioSessionView::Slider_ValueChanged(IInspectable const&, RangeBaseValueChangedEventArgs const& e)
@@ -262,10 +264,14 @@ namespace winrt::SND_Vol::implementation
     void AudioSessionView::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
         // For vertical layout.
-        BorderClippingLeft().Rect(Rect(0, 0, VolumePeakBorderLeft().ActualWidth(), VolumePeakBorderLeft().ActualHeight()));
-        BorderClippingRight().Rect(Rect(0, 0, VolumePeakBorderRight().ActualWidth(), VolumePeakBorderRight().ActualHeight()));
-        BorderClippingLeftCompositeTransform().TranslateY(VolumePeakBorderLeft().ActualHeight());
-        BorderClippingRightCompositeTransform().TranslateY(VolumePeakBorderRight().ActualHeight());
+        Rect borderClippingLeftRect = Rect(0, 0, VolumePeakBorderLeft().ActualWidth(), VolumePeakBorderLeft().ActualHeight());
+        BorderClippingLeft().Rect(borderClippingLeftRect);
+        Rect borderClippingRightRect = Rect(0, 0, VolumePeakBorderRight().ActualWidth(), VolumePeakBorderRight().ActualHeight());
+        BorderClippingRight().Rect(borderClippingRightRect);
+        double yTranslate = VolumePeakBorderLeft().ActualHeight();
+        double yTranslate2 = VolumePeakBorderRight().ActualHeight();
+        BorderClippingLeftCompositeTransform().TranslateY(yTranslate);
+        BorderClippingRightCompositeTransform().TranslateY(yTranslate2);
 
         // For horizontal layout.
         VolumePeakBorderClippingTop().Rect(Rect(0, 0, VolumePeakBorderTop().ActualWidth(), VolumePeakBorderTop().ActualHeight()));

@@ -41,6 +41,9 @@
     <Page Include="NewContentPage.xaml">
       <Filter>Pages</Filter>
     </Page>
+    <Page Include="AudioSessionsSettingsPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
@@ -91,6 +94,12 @@
     <ClCompile Include="NumberBlock.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
+    <ClCompile Include="IconHelper.cpp">
+      <Filter>Imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessInfo.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -120,6 +129,12 @@
     <ClInclude Include="ManifestApplicationNode.h">
       <Filter>System\AppX</Filter>
     </ClInclude>
+    <ClInclude Include="IconHelper.h">
+      <Filter>Imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessInfo.h">
+      <Filter>System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -148,6 +163,9 @@
     </Filter>
     <Filter Include="System\AppX">
       <UniqueIdentifier>{d57053af-92c7-45a4-bcf5-be2ca997a37a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Imaging">
+      <UniqueIdentifier>{231d0b4d-5fe6-444b-b3b2-2418c1f04ea9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

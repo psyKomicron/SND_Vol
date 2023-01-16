@@ -20,7 +20,6 @@
         ],
         "changes": [
             "- Light theme is now supported better. The app's icon is still almost invisible when Windows light mode is on.",
-            "- Increased audio sessions height for easier interactions.",
             "- Updated volume graphs (for audio sessions and audio device) to fit the Windows 11 Fluent UI.",
             "- Windows audio device peak graph has been updated to show the 2 stereo tracks.",
             "- The ability to set audio session positions when loading audio profiles has been re-enabled.",
@@ -28,7 +27,8 @@
             "- Previously some audio sessions were hidden because they were inactive at the time. They will now be added when their state change.",
             "- Fixed a error causing audio sessions not being shown (active audio sessions are now prioritized over grouping parameters).",
             "- Fixed a bug causing audio sessions to not be shown after one had already been added.",
-            "- Fixed a bug where you couldn't set a session's volume to 100% or 0%."
+            "- Fixed a bug where you couldn't set a session's volume to 100% or 0%.",
+            "- Fixed a bug where the audio sessions peak graph would not work when the audio session had a logo."
         ],
         "bugs": [
             "- Plugging/unplugging an audio device (such as a audio jack) can crash the app. It seems to be coming from hardware - software bad integration.",
@@ -66,7 +66,8 @@
             "- Certaines sessions étaient précédemment cachées car inactives au démarrage de l'application. Elles seront désormais ajoutées lorsqu'elles deviennent actives.",
             "- Correction d'une erreur cachant certaines sessions audio (les sessions actives sont maintenant prioritaires devant les ID de groupement).",
             "- Correction d'une erreur faisant que les sessions audio n'étaient plus affichées après qu'une aie été ajoutées.",
-            "- Correction d'une erreur rendant impossible de mettre le volume d'une session à 0% ou 100%."
+            "- Correction d'une erreur rendant impossible de mettre le volume d'une session à 0% ou 100%.",
+            "- Correction d'une erreur provoquant la disparition du graphe audio pour les sessions audio avec logo."
         ],
         "bugs": [
             "- Brancher/débrancher un périphérique audio (comme un jack audio) peut provoquer un plantage de l'application. Cela semble venir d'une mauvaise intégration entre le hardware - software.",

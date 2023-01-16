@@ -309,13 +309,23 @@
 
             </Grid.Resources>
 
-            <BreadcrumbBar x:Name="NavigationBreadcrumbBar" Margin="10,0" ItemClicked="NavigationBreadcrumbBar_ItemClicked" ItemsSource="{x:Bind Breadcrumbs}">
-                <BreadcrumbBar.ItemTemplate>
-                    <DataTemplate x:DataType="s:NavigationBreadcrumbBarItem">
-                        <TextBlock Text="{x:Bind DisplayName}"/>
-                    </DataTemplate>
-                </BreadcrumbBar.ItemTemplate>
-            </BreadcrumbBar>
+            <Grid Margin="10,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Style="{StaticResource IconButtonStyle}" Click="NavigationBackButton_Click" Margin="0,5,0,0">
+                    <FontIcon Glyph="&#xe830;" FontSize="{StaticResource FontIconHeight}" />
+                </Button>
+                
+                <BreadcrumbBar x:Name="NavigationBreadcrumbBar" Grid.Column="1" VerticalAlignment="Center" ItemClicked="NavigationBreadcrumbBar_ItemClicked" ItemsSource="{x:Bind Breadcrumbs}">
+                    <BreadcrumbBar.ItemTemplate>
+                        <DataTemplate x:DataType="s:NavigationBreadcrumbBarItem">
+                            <TextBlock Text="{x:Bind DisplayName}"/>
+                        </DataTemplate>
+                    </BreadcrumbBar.ItemTemplate>
+                </BreadcrumbBar>
+            </Grid>
 
             <s:MessageBar x:Name="ErrorMessageBar" Grid.Row="1" VerticalAlignment="Top" Visibility="Collapsed" />
 

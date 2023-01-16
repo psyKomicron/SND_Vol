@@ -12,7 +12,6 @@ namespace SND_Vol
         Boolean IsDefaultProfile{ get; set; };
         Single SystemVolume{ get; set; };
         Boolean DisableAnimations{ get; set; };
-        Boolean ShowAdditionalButtons{ get; set; };
         Boolean KeepOnTop{ get; set; };
         Boolean ShowMenu{ get; set; };
         UInt32 Layout{ get; set; };

@@ -130,6 +130,10 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="AudioSession.h" />
+    <ClInclude Include="AudioSessionsSettingsPage.xaml.h">
+      <DependentUpon>AudioSessionsSettingsPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="AudioSessionStates.h" />
     <ClInclude Include="AudioSessionView.xaml.h">
       <DependentUpon>AudioSessionView.xaml</DependentUpon>
@@ -159,6 +163,7 @@
       <DependentUpon>IconButton.cpp</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="IconHelper.h" />
     <ClInclude Include="IconToggleButton.h">
       <DependentUpon>IconToggleButton.cpp</DependentUpon>
       <SubType>Code</SubType>
@@ -197,6 +202,7 @@
     <ClInclude Include="MainWindow.xaml.h">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="ProcessInfo.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SecondWindow.xaml.h">
       <DependentUpon>SecondWindow.xaml</DependentUpon>
@@ -217,6 +223,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="AudioProfilesPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="AudioSessionsSettingsPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="AudioSessionView.xaml">
@@ -265,6 +274,10 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="AudioSession.cpp" />
+    <ClCompile Include="AudioSessionsSettingsPage.xaml.cpp">
+      <DependentUpon>AudioSessionsSettingsPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="AudioSessionView.xaml.cpp">
       <DependentUpon>AudioSessionView.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -290,6 +303,7 @@
     <ClCompile Include="IconButton.cpp">
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="IconHelper.cpp" />
     <ClCompile Include="IconToggleButton.cpp">
       <SubType>Code</SubType>
     </ClCompile>
@@ -327,6 +341,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="ProcessInfo.cpp" />
     <ClCompile Include="SecondWindow.xaml.cpp">
       <DependentUpon>SecondWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -354,6 +369,10 @@
     </Midl>
     <Midl Include="AudioProfilesPage.idl">
       <DependentUpon>AudioProfilesPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="AudioSessionsSettingsPage.idl">
+      <DependentUpon>AudioSessionsSettingsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="AudioSessionView.idl">

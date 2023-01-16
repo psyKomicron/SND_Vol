@@ -12,7 +12,6 @@
 #define USE_TIMER 1
 #define DEACTIVATE_TIMER 0
 #define ENABLE_HOTKEYS 1
-#define FORCE_SHOW_SPLASH_SCREEN 0
 
 using namespace Audio;
 
@@ -43,12 +42,13 @@ namespace winrt::SND_Vol::implementation
 {
     winrt::SND_Vol::MainWindow MainWindow::singleton{ nullptr };
 
-    MainWindow::MainWindow()
+    MainWindow::MainWindow(const winrt::hstring& args)
     {
         singleton = *this;
 
         InitializeComponent();
         InitializeWindow();
+        SettingsButtonTeachingTip().Target(SettingsButton());
 
     #ifdef DEBUG
         Application::Current().UnhandledException([&](IInspectable const&/*sender*/, UnhandledExceptionEventArgs const& e)
@@ -60,9 +60,6 @@ namespace winrt::SND_Vol::implementation
         });
     #endif // DEBUG
 
-    #if FORCE_SHOW_SPLASH_SCREEN & defined DEBUG
-        ApplicationData::Current().LocalSettings().Values().Remove(L"ShowSplashScreen");
-    #endif
         if (unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"ShowSplashScreen"), true))
         {
             ApplicationData::Current().LocalSettings().Values().Insert(L"ShowSplashScreen", IReference(false));
@@ -77,10 +74,13 @@ namespace winrt::SND_Vol::implementation
             WindowSplashScreen().Visibility(Visibility::Collapsed);
             ContentGrid().Visibility(Visibility::Visible);
         }
-    }
 
-    MainWindow::~MainWindow()
-    {
+        // If the application has been restarted by the user, or started with arguments.
+        wstring_view argsView{ args };
+        if (argsView.find(L"-secondWindow") != string_view::npos) // -secondWindow -> open the second window/settings window.
+        {
+            SettingsIconButton_Click(nullptr, nullptr);
+        }
     }
 
 
@@ -110,7 +110,6 @@ namespace winrt::SND_Vol::implementation
         Grid_SizeChanged(nullptr, nullptr);
 
         // Teaching tips
-        SettingsButtonTeachingTip().Target(SettingsButton());
         ApplicationDataContainer teachingTips = ApplicationData::Current().LocalSettings().Containers().TryLookup(L"TeachingTips");
         if (!teachingTips)
         {
@@ -119,7 +118,6 @@ namespace winrt::SND_Vol::implementation
         if (!teachingTips.Values().HasKey(L"ShowSettingsTeachingTip"))
         {
             teachingTips.Values().Insert(L"ShowSettingsTeachingTip", IReference(false));
-            SettingsButtonTeachingTip().IsOpen(true);
         }
 
         switch (layout)
@@ -345,11 +343,14 @@ namespace winrt::SND_Vol::implementation
     {
         LoadContent();
 
-        /*hstring profileName = unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"AudioProfile"), L"");
-        if (!profileName.empty())
+        if (unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"LoadLastProfile"), true))
         {
-            LoadProfile(profileName);
-        }*/
+            hstring profileName = unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"AudioProfile"), L"");
+            if (!profileName.empty())
+            {
+                LoadProfile(profileName);
+            }
+        }
 
 #if ENABLE_HOTKEYS
         // Activate hotkeys.
@@ -577,6 +578,7 @@ namespace winrt::SND_Vol::implementation
             WindowMessageBar().EnqueueString(loader.GetString(L"InfoHotKeysDisabled"));
         }
 #endif // ENABLE_HOTKEYS
+        SettingsButtonFlyout().Hide();
     }
 
     void MainWindow::ShowAppBarIconButton_Click(IconToggleButton const& /*sender*/, RoutedEventArgs const& /*args*/)
@@ -613,6 +615,7 @@ namespace winrt::SND_Vol::implementation
         {
             view.SetPeak(0, 0);
         }
+        SettingsButtonFlyout().Hide();
     }
 
     void MainWindow::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
@@ -717,11 +720,12 @@ namespace winrt::SND_Vol::implementation
 
         ResourceLoader loader{};
         WindowMessageBar().EnqueueString(loader.GetString(L"InfoAudioSessionsReloaded"));
+        SettingsButtonFlyout().Hide();
     }
 
     void MainWindow::RestartIconButton_Click(IconButton const&, RoutedEventArgs const&)
     {
-        if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(L"") != AppRestartFailureReason::RestartPending)
+        if (Microsoft::Windows::AppLifecycle::AppInstance::Restart(secondWindow ? L"-secondWindow" : L"") != AppRestartFailureReason::RestartPending)
         {
             ResourceLoader loader{};
             WindowMessageBar().EnqueueString(loader.GetString(L"ErrorAppFailedRestart"));
@@ -740,11 +744,19 @@ namespace winrt::SND_Vol::implementation
             for (auto&& profile : audioProfilesContainer.Containers())
             {
                 hstring key = profile.Key();
-                Button item{};
+                ToggleButton item{};
                 item.Content(box_value(key));
                 item.Tag(box_value(key));
+                item.IsChecked(currentAudioProfile && (key == currentAudioProfile.ProfileName()));
+                item.HorizontalAlignment(HorizontalAlignment::Stretch);
+                item.Background(SolidColorBrush(Colors::Transparent()));
+                item.BorderThickness(Thickness(0));
+
                 item.Click([this](const IInspectable& sender, RoutedEventArgs)
                 {
+                    MoreFlyoutStackpanel().Visibility(Visibility::Visible);
+                    ProfilesGrid().Visibility(Visibility::Collapsed);
+                    SettingsButtonFlyout().Hide();
                     LoadProfile(sender.as<FrameworkElement>().Tag().as<hstring>());
                 });
 
@@ -775,6 +787,7 @@ namespace winrt::SND_Vol::implementation
 
     void MainWindow::RootGrid_ActualThemeChanged(FrameworkElement const&, IInspectable const&)
     {
+        WindowMessageBar().EnqueueString(L"Actual application theme has changed. Loading new theme right now, all effects will be applied on restart.");
         // Change title bar buttons background to fit the new theme.
         if (usingCustomTitleBar)
         {
@@ -808,9 +821,9 @@ namespace winrt::SND_Vol::implementation
         SettingsButtonFlyoutGrid().Background(
             SolidColorBrush(Application::Current().Resources().TryLookup(box_value(L"SolidBackgroundFillColorBase")).as<Windows::UI::Color>())
         );
-        /*MoreFlyoutGrid().Background(
+        MoreFlyoutGrid().Background(
             Application::Current().Resources().TryLookup(box_value(L"SubtleFillColorSecondaryBrush")).as<Brush>()
-        );*/
+        );
     }
     #pragma endregion
 
@@ -1089,9 +1102,27 @@ namespace winrt::SND_Vol::implementation
                     audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
                     for (size_t i = 0; i < audioSessions->size(); i++)
                     {
-                        if (AudioSessionView view = CreateAudioView(audioSessions->at(i)))
+                        // Check if the session is active, if not check if the user asked to show inactive sessions on startup.
+                        if (audioSessions->at(i)->State() == ::AudioSessionState::AudioSessionStateActive ||
+                            unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"ShowInactiveSessionsOnStartup"), false))
                         {
-                            audioSessionViews.Append(view);
+                            if (AudioSessionView view = CreateAudioView(audioSessions->at(i)))
+                            {
+                                audioSessionViews.Append(view);
+                            }
+                        }
+                        else // Register to events since we are not adding/creating the view.
+                        {
+                            if (audioSessions->at(i)->Register())
+                            {
+                                audioSessionVolumeChanged.insert({ audioSessions->at(i)->Id(), audioSessions->at(i)->VolumeChanged({ this, &MainWindow::AudioSession_VolumeChanged }) });
+                                audioSessionsStateChanged.insert({ audioSessions->at(i)->Id(), audioSessions->at(i)->StateChanged({ this, &MainWindow::AudioSession_StateChanged }) });
+                            }
+                            else
+                            {
+                                OutputDebugHString(L"Failed to register audio session '" + audioSessions->at(i)->Name() + L"'. This session will never be shown.");
+                                WindowMessageBar().EnqueueString(audioSessions->at(i)->Name() + L" : notifications off");
+                            }
                         }
                     }
                 }
@@ -1159,14 +1190,16 @@ namespace winrt::SND_Vol::implementation
 
     AudioSessionView MainWindow::CreateAudioView(AudioSession* audioSession)
     {
-        if (!audioSession->Register())
+        if (audioSession->Register())
+        {
+            audioSessionVolumeChanged.insert({ audioSession->Id(), audioSession->VolumeChanged({ this, &MainWindow::AudioSession_VolumeChanged }) });
+            audioSessionsStateChanged.insert({ audioSession->Id(), audioSession->StateChanged({ this, &MainWindow::AudioSession_StateChanged }) });
+        }
+        else
         {
             OutputDebugHString(L"Failed to register audio session '" + audioSession->Name() + L"'.");
             WindowMessageBar().EnqueueString(audioSession->Name() + L" notifications off");
         }
-
-        audioSessionVolumeChanged.insert({ audioSession->Id(), audioSession->VolumeChanged({ this, &MainWindow::AudioSession_VolumeChanged }) });
-        audioSessionsStateChanged.insert({ audioSession->Id(), audioSession->StateChanged({ this, &MainWindow::AudioSession_StateChanged }) });
 
         return CreateAudioSessionView(audioSession, false);
     }
@@ -1179,7 +1212,7 @@ namespace winrt::SND_Vol::implementation
         {
             unique_lock lock{ audioSessionsMutex };
 
-            char hitcount = 0;
+            uint8_t hitcount = 0u;
             for (size_t j = 0; j < audioSessions->size(); j++)
             {
                 if (audioSessions->at(j)->GroupingParam() == audioSession->GroupingParam())
@@ -1257,7 +1290,10 @@ namespace winrt::SND_Vol::implementation
             ApplicationDataCompositeValue compositeValue{};
             compositeValue.Insert(L"Muted", box_value(audioSessionViews.GetAt(i).Muted()));
             compositeValue.Insert(L"Level", box_value(audioSessionViews.GetAt(i).Volume()));
-            audioLevels.Values().Insert(audioSessionViews.GetAt(i).Header(), compositeValue);
+            if (!audioSessionViews.GetAt(i).Header().empty())
+            {
+                audioLevels.Values().Insert(audioSessionViews.GetAt(i).Header(), compositeValue);
+            }
         }
     }
 
@@ -1367,11 +1403,6 @@ namespace winrt::SND_Vol::implementation
                         bool showMenu = currentAudioProfile.ShowMenu();
                         uint32_t windowLayout = currentAudioProfile.Layout();
 
-                        // Set system volume.
-                        mainAudioEndpoint->SetVolume(systemVolume);
-
-                        
-
                         if (disableAnimations)
                         {
                             DisableAnimationsIconButton_Click(nullptr, nullptr);
@@ -1382,9 +1413,11 @@ namespace winrt::SND_Vol::implementation
                             presenter.IsAlwaysOnTop(keepOnTop);
                             presenter.IsMaximizable(!keepOnTop);
                             presenter.IsMinimizable(!keepOnTop);
-                            KeepOnTopToggleButton().IsChecked(true);
+                            KeepOnTopToggleButton().IsChecked(keepOnTop);
 
-                            RightPaddingColumn().Width(GridLengthHelper::FromPixels(!keepOnTop ? 135 : 45));
+                            // 45px  -> Only close button.
+                            // 135px -> Minimize + maximize + close buttons.
+                            RightPaddingColumn().Width(GridLengthHelper::FromPixels(keepOnTop ? 45 : 135));
                         }
 
                         if (showMenu)
@@ -1410,6 +1443,22 @@ namespace winrt::SND_Vol::implementation
                         AudioSessionsPanel().ItemsSource(nullptr);
                         AudioSessionsPanelProgressRing().Visibility(Visibility::Visible);
 
+                        unique_lock lock{ audioSessionsMutex }; // Taking the lock will also lock sessions from being added to the display.
+                        for (auto pair : currentAudioProfile.AudioLevels())
+                        {
+                            for (size_t i = 0; i < audioSessions->size(); i++)
+                            {
+                                if (audioSessions->at(i)->Name() == pair.Key())
+                                {
+                                    audioSessions->at(i)->SetVolume(pair.Value());
+                                }
+                            }
+                        }
+
+                        // Set system volume.
+                        mainAudioEndpoint->SetVolume(systemVolume);
+
+
                         // Finish loading profile in non-UI thread.
                         concurrency::task<void> t = concurrency::task<void>([this]()
                         {
@@ -1420,16 +1469,6 @@ namespace winrt::SND_Vol::implementation
 
                                 // Set audio sessions volume.
                                 unique_lock lock{ audioSessionsMutex }; // Taking the lock will also lock sessions from being added to the display.
-                                for (auto pair : audioLevels)
-                                {
-                                    for (size_t i = 0; i < audioSessions->size(); i++)
-                                    {
-                                        if (audioSessions->at(i)->Name() == pair.Key())
-                                        {
-                                            audioSessions->at(i)->Volume(pair.Value());
-                                        }
-                                    }
-                                }
 
                                 for (auto pair : audioStates)
                                 {
@@ -1441,7 +1480,6 @@ namespace winrt::SND_Vol::implementation
                                         }
                                     }
                                 }
-                                
 
                                 vector<AudioSessionView> uniqueSessions{};
                                 // HACK: IVector<T>::GetMany does not seem to work. Manual copy.
@@ -1637,13 +1675,15 @@ namespace winrt::SND_Vol::implementation
             if (audioSessions->at(i))
             {
                 guid id = audioSessions->at(i)->Id();
-
                 for (auto const& view : audioSessionViews)
                 {
                     if (view.Id() == id)
                     {
                         auto&& pair = audioSessions->at(i)->GetChannelsPeak();
                         view.SetPeak(pair.first, pair.second);
+                        //OutputDebugHString(audioSessions->at(i)->Name() + L" peak values : [" + to_hstring(pair.first) + L", " + to_hstring(pair.second) + L"]");
+
+                        break;
                     }
                 }
             }

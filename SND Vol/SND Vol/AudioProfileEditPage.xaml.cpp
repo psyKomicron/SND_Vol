@@ -81,7 +81,6 @@ namespace winrt::SND_Vol::implementation
 
         // 2. Check settings changes.
         bool disableAnimations = DisableAnimationsCheckBox().IsChecked().GetBoolean();
-        bool showAdditionalButtons = ShowAdditionalButtonsCheckBox().IsChecked().GetBoolean();
         bool keepOnTop = KeepOnTopCheckBox().IsChecked().GetBoolean();
         bool showMenu = ShowMenuCheckBox().IsChecked().GetBoolean();
         /*
@@ -92,10 +91,11 @@ namespace winrt::SND_Vol::implementation
         */
         uint32_t layout = LayoutComboBox().SelectedIndex();
 
+        // Check equality.
         if (
             systemVolume != audioProfile.SystemVolume() || isDefaultProfile != audioProfile.IsDefaultProfile() || profileName != audioProfile.ProfileName() ||
             !audioLevelsEqual || !audioStatesEqual ||
-            disableAnimations != audioProfile.DisableAnimations() || showAdditionalButtons != audioProfile.ShowAdditionalButtons() || keepOnTop != audioProfile.KeepOnTop() || showMenu != audioProfile.ShowMenu() || layout != audioProfile.Layout()
+            disableAnimations != audioProfile.DisableAnimations() || keepOnTop != audioProfile.KeepOnTop() || showMenu != audioProfile.ShowMenu() || layout != audioProfile.Layout()
             )
         {
             args.Cancel(true);
@@ -120,7 +120,6 @@ namespace winrt::SND_Vol::implementation
     {
         ProfileNameEditTextBox().Text(audioProfile.ProfileName());
         DisableAnimationsCheckBox().IsChecked(audioProfile.DisableAnimations());
-        ShowAdditionalButtonsCheckBox().IsChecked(audioProfile.ShowAdditionalButtons());
         KeepOnTopCheckBox().IsChecked(audioProfile.KeepOnTop());
         ShowMenuCheckBox().IsChecked(audioProfile.ShowMenu());
         LayoutComboBox().SelectedIndex(audioProfile.Layout());
@@ -340,7 +339,6 @@ namespace winrt::SND_Vol::implementation
         }
 
         audioProfile.DisableAnimations(DisableAnimationsCheckBox().IsChecked().GetBoolean());
-        audioProfile.ShowAdditionalButtons(ShowAdditionalButtonsCheckBox().IsChecked().GetBoolean());
         audioProfile.KeepOnTop(KeepOnTopCheckBox().IsChecked().GetBoolean());
         audioProfile.ShowMenu(ShowMenuCheckBox().IsChecked().GetBoolean());
         audioProfile.Layout(LayoutComboBox().SelectedIndex());

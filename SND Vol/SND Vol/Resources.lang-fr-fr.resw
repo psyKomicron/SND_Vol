@@ -213,11 +213,8 @@ le son</value>
   <data name="MainWindowTeachingTipViewHotkeysHyperlinkButton.Content" xml:space="preserve">
     <value>Open settings</value>
   </data>
-  <data name="MainWindowTeachingTipViewHotkeysTextBlock.Text" xml:space="preserve">
-    <value>- Couper/rétablir le son, diminuer ou augmenter le volume du système à l'aide de touches de raccourci (shortcuts).</value>
-  </data>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
-    <value>- Afficher les paramètres, les fonctions de l'application, modifier la disposition des éléments et personnaliser l'affichage.</value>
+    <value>Afficher les paramètres, les fonctions de l'application, modifier la disposition des éléments et personnaliser l'affichage.</value>
   </data>
   <data name="NewContentPageBugsTitleTextBlock.Text" xml:space="preserve">
     <value>Bugs</value>

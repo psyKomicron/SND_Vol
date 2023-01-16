@@ -213,11 +213,8 @@ unmute all</value>
   <data name="MainWindowTeachingTipViewHotkeysHyperlinkButton.Content" xml:space="preserve">
     <value>Open settings</value>
   </data>
-  <data name="MainWindowTeachingTipViewHotkeysTextBlock.Text" xml:space="preserve">
-    <value>- Mute/unmute, lower or increase system volume using hot keys (shortcuts).</value>
-  </data>
   <data name="MainWindowTeachingTipViewSettingsTextBlock.Text" xml:space="preserve">
-    <value>- View settings, app actions, change items layout customize display.</value>
+    <value>Access settings, app actions, change items layout and customize display here.</value>
   </data>
   <data name="NewContentPageBugsTitleTextBlock.Text" xml:space="preserve">
     <value>Bugs</value>

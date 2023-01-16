@@ -4,6 +4,7 @@ namespace System::AppX
 	class ManifestApplicationNode
 	{
 	public:
+		ManifestApplicationNode() = default;
 		ManifestApplicationNode(IAppxManifestApplicationPtr& appxManifestApplicationPtr, PWSTR packagePath);
 
 		inline std::wstring Description() const
@@ -19,7 +20,12 @@ namespace System::AppX
 		inline std::wstring Logo() const
 		{
 			return logo;
-		};
+		}
+		
+		inline void Logo(const std::wstring& path)
+		{
+			logo = path;
+		}
 
 		inline std::wstring BackgroundColor() const
 		{

@@ -84,7 +84,6 @@
                     </Grid.RowDefinitions>
 
                     <CheckBox x:Name="DisableAnimationsCheckBox" Content="Disable animations" />
-                    <CheckBox x:Name="ShowAdditionalButtonsCheckBox" Content="Show additional buttons" Grid.Column="0" Grid.Row="1"/>
                     <CheckBox x:Name="KeepOnTopCheckBox" Content="Keep on top" Grid.Column="1" Grid.Row="0"/>
                     <CheckBox x:Name="ShowMenuCheckBox" Content="Show menu" Grid.Column="1" Grid.Row="1"/>
 
