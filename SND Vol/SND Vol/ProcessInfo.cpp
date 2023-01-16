@@ -114,17 +114,16 @@ namespace System
     bool ProcessInfo::GetProcessInfoUWP(const HANDLE& processHandle)
     {
         uint32_t applicationUserModelIdLength = 0;
-        PWSTR applicationUserModelId = nullptr;
+        unique_ptr<wchar_t> applicationUserModelId = nullptr;
 
         bool success = GetProcessPackageInfo(processHandle);
 
-        if (!success && (GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId) == ERROR_INSUFFICIENT_BUFFER))
+        if (!success && (GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId.get()) == ERROR_INSUFFICIENT_BUFFER))
         {
-            applicationUserModelId = new WCHAR[applicationUserModelIdLength](0);
-            if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId)))
+            applicationUserModelId = unique_ptr<wchar_t>(new wchar_t[applicationUserModelIdLength] { 0 });
+            if (SUCCEEDED(GetApplicationUserModelId(processHandle, &applicationUserModelIdLength, applicationUserModelId.get())))
             {
-                hstring shellPath = L"shell:appsfolder\\" + to_hstring(applicationUserModelId);
-                delete[] applicationUserModelId;
+                hstring shellPath = L"shell:appsfolder\\" + to_hstring(applicationUserModelId.get());
 
                 com_ptr<IShellItem> shellItem = nullptr;
                 if (SUCCEEDED(SHCreateItemFromParsingName(shellPath.c_str(), nullptr, IID_PPV_ARGS(&shellItem))))
@@ -154,11 +153,11 @@ namespace System
             return false;
         }
 
-        PWSTR packageFullNameWstr = new WCHAR[packageFullNameLength](0);
-        if (SUCCEEDED(GetPackageFullName(processHandle, &packageFullNameLength, packageFullNameWstr)))
+        unique_ptr<wchar_t> packageFullNameWstr{ new WCHAR[packageFullNameLength] { 0 } };
+        if (SUCCEEDED(GetPackageFullName(processHandle, &packageFullNameLength, packageFullNameWstr.get())))
         {
             PACKAGE_INFO_REFERENCE packageInfoReference{};
-            if (SUCCEEDED(OpenPackageInfoByFullName(packageFullNameWstr, 0, &packageInfoReference)))
+            if (SUCCEEDED(OpenPackageInfoByFullName(packageFullNameWstr.get(), 0, &packageInfoReference)))
             {
                 uint32_t bufferLength = 0;
                 uint32_t count = 0;
@@ -247,7 +246,6 @@ namespace System
             }
 
             ClosePackageInfo(packageInfoReference);
-            delete[] packageFullNameWstr;
         }
         else
         {
