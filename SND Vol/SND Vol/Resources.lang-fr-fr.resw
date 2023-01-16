@@ -187,6 +187,9 @@ hot keys</value>
   <data name="MainWindowLayoutMenuFlyoutItemVertical.Text" xml:space="preserve">
     <value>Vertical</value>
   </data>
+  <data name="MainWindowNewContentHyperlinkButton.Content" xml:space="preserve">
+    <value>Voir les nouveautées</value>
+  </data>
   <data name="MainWindowReloadMenuFlyoutItem.Text" xml:space="preserve">
     <value>Recharger</value>
   </data>
