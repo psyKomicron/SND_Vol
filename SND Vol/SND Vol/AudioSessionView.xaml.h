@@ -39,6 +39,7 @@ namespace winrt::SND_Vol::implementation
         void SetState(const winrt::SND_Vol::AudioSessionState& state);
         void SetPeak(float peak);
         void SetPeak(const float& peak1, const float& peak2);
+        Windows::Foundation::IAsyncAction SetImageSource(IStream* stream);
 
         void Slider_ValueChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
         void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&);

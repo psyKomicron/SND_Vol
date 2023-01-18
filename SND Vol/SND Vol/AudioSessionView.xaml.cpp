@@ -39,9 +39,11 @@ namespace winrt::SND_Vol::implementation
         try
         {
             BitmapImage imageSource{ Uri(logoPath) };
+
             Image image{};
             image.Stretch(Stretch::Uniform);
             image.Source(imageSource);
+
             AudioSessionAppLogo().Content(image);
         }
         catch (const hresult_error& err)
@@ -227,6 +229,11 @@ namespace winrt::SND_Vol::implementation
         {
             HorizontalPeakStoryboard().Begin();
         }
+    }
+
+    Windows::Foundation::IAsyncAction AudioSessionView::SetImageSource(IStream* stream)
+    {
+        
     }
 
 
