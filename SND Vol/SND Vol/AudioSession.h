@@ -55,10 +55,15 @@ namespace Audio
         */
         void Volume(float const& desiredVolume);
 
-        inline winrt::hstring LogoPath()
+        inline DWORD PID()
         {
-            return logoPath;
-        };
+            return processPID;
+        }
+
+        inline wstring_view ProcessPath()
+        {
+
+        }
 
         /**
          * @brief State changed event subscriber.
@@ -124,8 +129,8 @@ namespace Audio
         bool muted;
         DWORD processPID = 0;
         ::winrt::impl::atomic_ref_count refCount{ 1 };
-        winrt::hstring sessionName{};
-        winrt::hstring logoPath;
+        std::wstring sessionName{};
+        std::wstring processPath;
         bool isSessionActive = false;
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float>> e_volumeChanged{};

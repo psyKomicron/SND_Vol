@@ -47,54 +47,7 @@ namespace Audio
             System::ProcessInfo processInfo{ processPID };
 
             sessionName = !processInfo.Name().empty() ? processInfo.Name() : processInfo.Manifest().DisplayName();
-            logoPath = processInfo.Manifest().Logo();
-
-            if (logoPath.empty() && !processInfo.ExecutablePath().empty())
-            {
-                HICON icon = nullptr;
-                try
-                {
-                    Imaging::IconHelper helper{};
-                    icon = helper.LoadIconFromPath(processInfo.ExecutablePath());
-                    auto path = L"C:\\Users\\julie\\Pictures\\" + wstring(sessionName) + L".png";
-                    helper.WriteHICONToFile(icon, path);
-
-                    logoPath = path;
-                }
-                catch (const hresult_error& err)
-                {
-                    OutputDebugHString(err.message());
-                }
-
-                DestroyIcon(icon);
-            }
-            else if (SUCCEEDED(audioSessionControl->GetIconPath(&iconPathLPWSTR)))
-            {
-                wstring iconPath = wstring(iconPathLPWSTR);
-                CoTaskMemFree(iconPathLPWSTR);
-
-                if (!iconPath.empty())
-                {
-                    HICON icon = nullptr;
-                    try
-                    {
-                        Imaging::IconHelper iconHelper{};
-                        icon = iconHelper.LoadIconFromPath(iconPath);
-                        if (icon)
-                        {
-                            wstring filePath = L"C:\\Users\\julie\\Pictures\\" + wstring(sessionName) + L".png";
-                            iconHelper.WriteHICONToFile(icon, filePath);
-                            logoPath = filePath;
-                        }
-                    }
-                    catch (const hresult_error& err)
-                    {
-                        OutputDebugHString(err.message());
-                    }
-
-                    DestroyIcon(icon);
-                }
-            }
+            processPath = processInfo.ExecutablePath();
         }
 
 
