@@ -1303,6 +1303,37 @@ namespace winrt::SND_Vol::implementation
         }
         else
         {
+#ifdef DEBUG
+            if (!audioSession->ProcessPath().empty())
+            {
+                ::Imaging::IconHelper iconHelper{};
+                HICON hIcon = iconHelper.LoadIconFromPath(audioSession->ProcessPath());
+
+                using namespace Windows::Storage::Streams;
+                InMemoryRandomAccessStream inMemoryRAS{};
+                Windows::Storage::Streams::DataWriter dataWriter{ inMemoryRAS };
+                dataWriter.UnicodeEncoding(UnicodeEncoding::Utf8);
+
+                unsigned char buffer[2048]{};
+                void* pv = buffer;
+                ULONG cb = 0;
+                ULONG cbRead = 0;
+                while (hIconStream->Read(
+                    pv,
+                    cb,
+                    &cbRead)
+                    )
+                {
+                    dataWriter.WriteBytes(buffer);
+
+                    // Check of EOF.
+                    if (cbRead < cb)
+                    {
+                        break;
+                    }
+                }
+            };
+#else
             if (audioSession->LogoPath().empty())
             {
                 view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0);
@@ -1311,6 +1342,7 @@ namespace winrt::SND_Vol::implementation
             {
                 view = AudioSessionView(audioSession->Name(), audioSession->Volume() * 100.0, audioSession->LogoPath());
             }
+#endif
         }
 
         view.Id(guid(audioSession->Id()));
