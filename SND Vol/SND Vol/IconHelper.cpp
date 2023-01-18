@@ -3,9 +3,11 @@
 
 #include <ocidl.h>
 #include <libloaderapi.h>
+#include <span>
 
 using namespace winrt;
 using namespace std;
+
 
 namespace Imaging
 {
@@ -115,6 +117,25 @@ namespace Imaging
 		}
 
 		return nullptr;
+	}
+
+	IStream* IconHelper::ExtractStreamFromHICON(const HICON& hIcon)
+	{
+		// Create factory.
+		com_ptr<IWICImagingFactory> wicImagingFactory{};
+		check_hresult(
+			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&wicImagingFactory))
+		);
+
+		// Get bitmap and bitmap source from HICON.
+		com_ptr<IWICBitmap> wicBitmap{};
+		check_hresult(
+			wicImagingFactory->CreateBitmapFromHICON(hIcon, wicBitmap.put())
+		);
+		com_ptr<IWICBitmapSource> wicBitmapSource = wicBitmap;
+
+		IStream* bitmapStream = GetBitmapSourceStream(wicImagingFactory.get(), wicBitmapSource.get(), GUID_ContainerFormatBmp);
+		return bitmapStream;
 	}
 
 
