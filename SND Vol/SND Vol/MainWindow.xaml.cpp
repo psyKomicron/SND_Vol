@@ -89,7 +89,7 @@ namespace winrt::SND_Vol::implementation
     void MainWindow::OnLoaded(IInspectable const&, RoutedEventArgs const&)
     {
         loaded = true;
-
+        
 #if USE_TIMER
         if (!DisableAnimationsIconToggleButton().IsOn())
         {
@@ -401,7 +401,7 @@ namespace winrt::SND_Vol::implementation
     void MainWindow::AudioSessionsPanel_Loading(FrameworkElement const&, IInspectable const&)
     {
         LoadContent();
-
+        
         if (unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"LoadLastProfile"), true))
         {
             hstring profileName = unbox_value_or(ApplicationData::Current().LocalSettings().Values().TryLookup(L"AudioProfile"), L"");
@@ -1137,7 +1137,7 @@ namespace winrt::SND_Vol::implementation
                 }
                 else
                 {
-                    WindowMessageBar().EnqueueString(loader.GetString(L"ErrorAudioSessionsUnavailable"));
+                 WindowMessageBar().EnqueueString(loader.GetString(L"ErrorAudioSessionsUnavailable"));
                 }
 
                 mainAudioEndpoint = audioController->GetMainAudioEndpoint();
@@ -1183,7 +1183,9 @@ namespace winrt::SND_Vol::implementation
                         }
                     }
                 }
-                catch (const hresult_error&)
+
+                audioSessions = unique_ptr<vector<AudioSession*>>(audioController->GetSessions());
+                for (size_t i = 0; i < audioSessions->size(); i++)
                 {
                     if (audioSessions.get())
                     {
@@ -1214,7 +1216,7 @@ namespace winrt::SND_Vol::implementation
                     {
                         return;
                     }
-
+                    
                     try
                     {
                         pair<float, float> peakValues = mainAudioEndpoint->GetPeaks();
