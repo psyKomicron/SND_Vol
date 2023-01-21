@@ -14,10 +14,20 @@ namespace Audio
 		device{ pDevice }
 	{
 		check_hresult(device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&audioEndpointVolume));
+		check_hresult(device->GetId(&deviceId));
+		
 
 		if (FAILED(device->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&audioMeterInfo)))
 		{
 			OutputDebugHString(L"Main audio endpoint failed to get audio meter information, peak values will be blank.");
+		}
+	}
+
+	MainAudioEndpoint::~MainAudioEndpoint()
+	{
+		if (deviceId)
+		{
+			CoTaskMemFree(deviceId);
 		}
 	}
 
@@ -71,6 +81,14 @@ namespace Audio
 		float peak = 0.f;
 		audioMeterInfo->GetPeakValue(&peak);
 		return peak;
+	}
+
+	std::pair<float, float> MainAudioEndpoint::GetPeaks()
+	{
+		float channelsPeakValues[2]{ 0 };
+		// TODO: Make sure we are giving the correct amount of channels.
+		check_hresult(audioMeterInfo->GetChannelsPeakValues(2, channelsPeakValues));
+		return std::pair<float, float>(channelsPeakValues[0], channelsPeakValues[1]);
 	}
 
 	bool MainAudioEndpoint::Register()
@@ -143,5 +161,23 @@ namespace Audio
 		}
 
 		return S_OK;
+	}
+
+	void MainAudioEndpoint::CheckIfAvailable()
+	{
+		DWORD state = 0;
+		if (SUCCEEDED(device->GetState(&state)) && state != DEVICE_STATE_ACTIVE)
+		{
+			throw std::out_of_range("Device is not active.");
+			switch (state)
+			{
+				case DEVICE_STATE_DISABLED:
+					break;
+				case DEVICE_STATE_NOTPRESENT:
+					break;
+				case DEVICE_STATE_UNPLUGGED:
+					break;
+			}
+		}
 	}
 }

@@ -7,13 +7,33 @@ namespace Audio
     class AudioSession : private IAudioSessionEvents, public IComEventImplementation
     {
     public:
-        AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId, uint32_t channel);
+        AudioSession(IAudioSessionControl2* audioSessionControl, GUID eventContextId);
 
-        uint32_t Channel();
+        /**
+         * @brief Grouping parameter for the audio session.
+         * @return GUID
+        */
         GUID GroupingParam();
+        /**
+         * @brief True if the audio session is the "System" audio session.
+         * @return 
+        */
         bool IsSystemSoundSession();
+        /**
+         * @brief Unique ID for this session.
+         * @return GUID
+        */
         GUID Id();
+        /**
+         * @brief Checks if the audio session is muted or not.
+         * @return True if the session is muted.
+        */
         bool Muted();
+        /**
+         * @brief Checks if the audio session is muted or not.
+         * @param isMuted 
+        */
+        void Muted(const bool& isMuted);
         /**
          * @brief Gets the name of the session. Can be the display name or the name of the executable associated with the audio session's PID.
          * @return The name of the session
@@ -32,9 +52,18 @@ namespace Audio
         /**
          * @brief Gets the volume of the session.
          * @param desiredVolume 
-         * @return True if the fonction succeeded
         */
         void Volume(float const& desiredVolume);
+
+        inline DWORD PID()
+        {
+            return processPID;
+        }
+
+        inline wstring_view ProcessPath()
+        {
+
+        }
 
         /**
          * @brief State changed event subscriber.
@@ -68,6 +97,11 @@ namespace Audio
         */
         bool SetMute(bool const& mute);
         /**
+         * @brief Sets the volume of the audio sessions, allowing for the VolumeChanged event to be fired.
+         * @param volume Desired volume in absolute percentage (0-1)
+        */
+        void SetVolume(const float& volume);
+        /**
          * @brief Gets the normalized peak PCM value for this audio session.
          * @return float between 0 and 1
         */
@@ -95,27 +129,32 @@ namespace Audio
         bool muted;
         DWORD processPID = 0;
         ::winrt::impl::atomic_ref_count refCount{ 1 };
-        winrt::hstring sessionName{};
-        uint32_t channel;
+        std::wstring sessionName{};
+        std::wstring processPath;
+        bool isSessionActive = false;
 
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, float>> e_volumeChanged{};
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::guid, uint32_t>> e_stateChanged{};
 
-        /**
-         * @brief Gets the process name from the audio session's PID.
-         * @param pid PID to get the name from
-         * @return The name of the process
-        */
-        winrt::hstring GetProcessName(DWORD const& pid);
+        
+        void GetWindowInfo();
 
         // IAudioSessionEvents
         STDMETHOD(OnDisplayNameChanged)(LPCWSTR NewDisplayName, LPCGUID EventContext);
         STDMETHOD(OnIconPathChanged)(LPCWSTR NewIconPath, LPCGUID EventContext);
         STDMETHOD(OnSimpleVolumeChanged)(float NewVolume, BOOL NewMute, LPCGUID EventContext);
-        STDMETHOD(OnChannelVolumeChanged)(DWORD /*ChannelCount*/, float /*NewChannelVolumeArray*/[], DWORD /*ChangedChannel*/, LPCGUID /*EventContext*/) { return S_OK; };
-        STDMETHOD(OnGroupingParamChanged)(LPCGUID /*NewGroupingParam*/, LPCGUID /*EventContext*/) { return S_OK; };
         STDMETHOD(OnStateChanged)(AudioSessionState NewState);
         STDMETHOD(OnSessionDisconnected)(AudioSessionDisconnectReason DisconnectReason);
+        STDMETHOD(OnChannelVolumeChanged)(DWORD /*ChannelCount*/, float /*NewChannelVolumeArray*/[], DWORD /*ChangedChannel*/, LPCGUID /*EventContext*/) 
+        { 
+            OutputDebugHString(sessionName + L" : Channel volume changed.");
+            return S_OK;
+        };
+        STDMETHOD(OnGroupingParamChanged)(LPCGUID /*NewGroupingParam*/, LPCGUID /*EventContext*/) 
+        { 
+            OutputDebugHString(sessionName + L" : Grouping param changed.");
+            return S_OK; 
+        };
     };
 }
 

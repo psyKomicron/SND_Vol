@@ -12,6 +12,7 @@ namespace winrt::SND_Vol::implementation
     public:
         AudioSessionView();
         AudioSessionView(winrt::hstring const& header, double const& volume);
+        AudioSessionView(winrt::hstring const& header, double const& volume, const winrt::hstring& logoPath);
 
         winrt::hstring Header();
         void Header(winrt::hstring const& value);
@@ -22,6 +23,9 @@ namespace winrt::SND_Vol::implementation
         double Volume();
         void Volume(double const& value);
         winrt::hstring VolumeGlyph();
+        winrt::Microsoft::UI::Xaml::Controls::Orientation Orientation();
+        void Orientation(const winrt::Microsoft::UI::Xaml::Controls::Orientation& value);
+        winrt::Microsoft::UI::Xaml::Controls::ContentPresenter Logo();
 
         winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value);
         void PropertyChanged(winrt::event_token const& token);
@@ -35,6 +39,7 @@ namespace winrt::SND_Vol::implementation
         void SetState(const winrt::SND_Vol::AudioSessionState& state);
         void SetPeak(float peak);
         void SetPeak(const float& peak1, const float& peak2);
+        Windows::Foundation::IAsyncAction SetImageSource(IStream* stream);
 
         void Slider_ValueChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
         void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&);
@@ -53,8 +58,9 @@ namespace winrt::SND_Vol::implementation
         winrt::guid _id{};
         bool _muted = false;
         float lastPeak = 0;
-        bool isActive = false;
+        bool active = false;
         bool isLocked = false;
+        bool isVertical = true;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> e_propertyChanged;
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs>>
@@ -63,6 +69,8 @@ namespace winrt::SND_Vol::implementation
         winrt::event<winrt::Windows::Foundation::TypedEventHandler<winrt::SND_Vol::AudioSessionView, winrt::Windows::Foundation::IInspectable>> e_hidden;
 
         void SetGlyph();
+    public:
+        void RootGrid_ActualThemeChanged(winrt::Microsoft::UI::Xaml::FrameworkElement const& sender, winrt::Windows::Foundation::IInspectable const& args);
     };
 }
 

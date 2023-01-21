@@ -7,13 +7,14 @@
 #include <math.h>
 #include <limits>
 
+
 using namespace winrt;
-
 using namespace winrt::Microsoft::UI::Xaml;
-using namespace winrt::Microsoft::UI::Xaml::Input;
+using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Controls::Primitives;
+using namespace winrt::Microsoft::UI::Xaml::Input;
 using namespace winrt::Microsoft::UI::Xaml::Media;
-
+using namespace winrt::Microsoft::UI::Xaml::Media::Imaging;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::UI;
 
@@ -32,11 +33,46 @@ namespace winrt::SND_Vol::implementation
         SetGlyph();
     }
 
+    AudioSessionView::AudioSessionView(winrt::hstring const& header, double const& volume, const winrt::hstring& logoPath) :
+        AudioSessionView(header, volume)
+    {
+        try
+        {
+            BitmapImage imageSource{ Uri(logoPath) };
+
+            Image image{};
+            image.Stretch(Stretch::Uniform);
+            image.Source(imageSource);
+
+            AudioSessionAppLogo().Content(image);
+        }
+        catch (const hresult_error& err)
+        {
+            OutputDebugHString(err.message());
+        }
+    }
+
 
     #pragma region Properties
     winrt::hstring AudioSessionView::VolumeGlyph()
     {
         return _volumeGlyph;
+    }
+
+    Orientation AudioSessionView::Orientation()
+    {
+        return isVertical ? Orientation::Vertical : Orientation::Horizontal;
+    }
+
+    void AudioSessionView::Orientation(const ::Controls::Orientation& value)
+    {
+        isVertical = value == Orientation::Vertical;
+        VisualStateManager::GoToState(*this, isVertical ? L"VerticalLayout" : L"HorizontalLayout", false);
+    }
+
+    winrt::Microsoft::UI::Xaml::Controls::ContentPresenter AudioSessionView::Logo()
+    {
+        return AudioSessionAppLogo();
     }
 
     double AudioSessionView::Volume()
@@ -46,7 +82,7 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::Volume(double const& value)
     {
-        if (value > 0.0 && value < 100.0)
+        if (value >= 0.0 && value <= 100.0)
         {
             _volume = value;
             e_propertyChanged(*this, PropertyChangedEventArgs(L"Volume"));
@@ -148,7 +184,7 @@ namespace winrt::SND_Vol::implementation
         switch (state)
         {
             case AudioSessionState::Active:
-                isActive = true;
+                active = true;
                 VolumeFontIcon().Foreground(::Media::SolidColorBrush(Windows::UI::Colors::LimeGreen()));
                 VolumeFontIcon().Opacity(1);
                 break;
@@ -156,8 +192,16 @@ namespace winrt::SND_Vol::implementation
             case AudioSessionState::Expired:
             case AudioSessionState::Inactive:
             default:
-                isActive = false;
-                VolumeFontIcon().Foreground(::Media::SolidColorBrush(Windows::UI::Colors::WhiteSmoke()));
+                active = false;
+                /*VolumeFontIcon().Foreground(
+                     RootGrid().ActualTheme() == ElementTheme::Dark ? 
+                        ::Media::SolidColorBrush(Windows::UI::Colors::WhiteSmoke()) :
+                        ::Media::SolidColorBrush(Windows::UI::Colors::DarkGray())
+                );*/
+
+                VolumeFontIcon().Foreground(
+                    Application::Current().Resources().Lookup(box_value(L"TextFillColorPrimaryBrush")).as<Brush>()
+                );
                 VolumeFontIcon().Opacity(0.6);
                 break;
         }
@@ -165,42 +209,42 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::SetPeak(float peak)
     {
-        if (!isActive) return;
-        
-        /*if (peak > 0.9f)
+        SetPeak(peak, peak);
+    }
+
+    void AudioSessionView::SetPeak(const float& left, const float& right)
+    {
+        float isVerticalFloat = static_cast<float>(isVertical);
+        LeftPeakAnimation().To(static_cast<double>(left * isVerticalFloat));
+        RightPeakAnimation().To(static_cast<double>(right * isVerticalFloat));
+
+        TopVolumeAnimation().To(static_cast<double>(left * !isVerticalFloat));
+        BottomVolumeAnimation().To(static_cast<double>(right * !isVerticalFloat));
+
+        if (isVertical)
         {
-            StatusEllipse().Fill(SolidColorBrush(Colors::LimeGreen()));
-        }
-        else if (peak > 0.5f)
-        {
-            StatusEllipse().Fill(SolidColorBrush(Colors::Green()));
-        }
-        else if (peak > 0.2f)
-        {
-            StatusEllipse().Fill(SolidColorBrush(Colors::DarkGreen()));
+            VerticalPeakStoryboard().Begin();
         }
         else
         {
-            StatusEllipse().Fill(SolidColorBrush(Colors::Transparent()));
-        }*/
-
-        LeftPeakAnimation().To(static_cast<double>(peak));
-        LeftPeakStoryboard().Begin();
+            HorizontalPeakStoryboard().Begin();
+        }
     }
 
-    void AudioSessionView::SetPeak(const float& peak1, const float& peak2)
+    Windows::Foundation::IAsyncAction AudioSessionView::SetImageSource(IStream* stream)
     {
-        LeftPeakAnimation().To(static_cast<double>(peak1));
-        LeftPeakStoryboard().Begin();
-
-        RightPeakAnimation().To(static_cast<double>(peak2));
-        RightPeakStoryboard().Begin();
+        
     }
 
 
     void AudioSessionView::UserControl_Loaded(IInspectable const&, RoutedEventArgs const&)
     {
         Grid_SizeChanged(nullptr, nullptr);
+
+        if (AudioSessionAppLogo().Content() != nullptr)
+        {
+            VisualStateManager::GoToState(*this, L"UsingLogo", true);
+        }
     }
 
     void AudioSessionView::Slider_ValueChanged(IInspectable const&, RangeBaseValueChangedEventArgs const& e)
@@ -216,7 +260,7 @@ namespace winrt::SND_Vol::implementation
         e_volumeChanged(*this, e);
     }
 
-    void AudioSessionView::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const& e)
+    void AudioSessionView::MuteToggleButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
         _muted = !_muted;
         if (_muted)
@@ -234,14 +278,23 @@ namespace winrt::SND_Vol::implementation
 
     void AudioSessionView::Grid_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        /*double height = CenterRow().ActualHeight();
-        VolumePeakBorder().Height(height);
-        ::Numerics::float3 translation = VolumePeakBorder().Translation();
-        translation.y = height;
-        VolumePeakBorder().Translation(translation);*/
+        // For vertical layout.
+        Rect borderClippingLeftRect = Rect(0, 0, VolumePeakBorderLeft().ActualWidth(), VolumePeakBorderLeft().ActualHeight());
+        BorderClippingLeft().Rect(borderClippingLeftRect);
+        Rect borderClippingRightRect = Rect(0, 0, VolumePeakBorderRight().ActualWidth(), VolumePeakBorderRight().ActualHeight());
+        BorderClippingRight().Rect(borderClippingRightRect);
+        double yTranslate = VolumePeakBorderLeft().ActualHeight();
+        double yTranslate2 = VolumePeakBorderRight().ActualHeight();
+        BorderClippingLeftCompositeTransform().TranslateY(yTranslate);
+        BorderClippingRightCompositeTransform().TranslateY(yTranslate2);
+
+        // For horizontal layout.
+        VolumePeakBorderClippingTop().Rect(Rect(0, 0, VolumePeakBorderTop().ActualWidth(), VolumePeakBorderTop().ActualHeight()));
+        VolumePeakBorderClippingBottom().Rect(
+            Rect(0, 0, VolumePeakBorderBottom().ActualWidth(), VolumePeakBorderBottom().ActualHeight()));
     }
 
-    void AudioSessionView::RootGrid_PointerEntered(winrt::Windows::Foundation::IInspectable const& sender, PointerRoutedEventArgs const&)
+    void AudioSessionView::RootGrid_PointerEntered(winrt::Windows::Foundation::IInspectable const&, PointerRoutedEventArgs const&)
     {
         VisualStateManager::GoToState(*this, L"PointerOver", true);
     }
@@ -272,6 +325,16 @@ namespace winrt::SND_Vol::implementation
     void AudioSessionView::HideMenuFlyoutItem_Click(IInspectable const&, RoutedEventArgs const&)
     {
         e_hidden(*this, IInspectable());
+    }
+
+    void AudioSessionView::RootGrid_ActualThemeChanged(FrameworkElement const&, IInspectable const&)
+    {
+        if (!active)
+        {
+            VolumeFontIcon().Foreground(
+                Application::Current().Resources().Lookup(box_value(L"TextFillColorPrimaryBrush")).as<Brush>()
+            );
+        }
     }
 
 

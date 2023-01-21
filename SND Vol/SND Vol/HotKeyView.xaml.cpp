@@ -31,6 +31,12 @@ namespace winrt::SND_Vol::implementation
         }
     }
 
+    void HotKeyView::OnKeyDown(const winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs&)
+    {
+        OutputDebugHString(L"Key pressed.");
+    }
+
+
     void HotKeyView::SetModifiers()
     {
 		ControlToggleButton().IsChecked((_modifiers & VirtualKeyModifiers::Control) == VirtualKeyModifiers::Control);

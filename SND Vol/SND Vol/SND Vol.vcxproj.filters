@@ -23,11 +23,40 @@
     <Page Include="SecondWindow.xaml">
       <Filter>Windows</Filter>
     </Page>
+    <Page Include="SplashScreen.xaml">
+      <Filter>Controls</Filter>
+    </Page>
+    <Page Include="HotKeysPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
+    <Page Include="AudioProfilesPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
+    <Page Include="SettingsPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
+    <Page Include="AudioProfileEditPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
+    <Page Include="NewContentPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
+    <Page Include="AudioSessionsSettingsPage.xaml">
+      <Filter>Pages</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
-    <Midl Include="HotKeyViewModel.idl" />
+    <Midl Include="HotKeyViewModel.idl">
+      <Filter>ViewModels</Filter>
+    </Midl>
+    <Midl Include="AudioProfile.idl">
+      <Filter>ViewModels</Filter>
+    </Midl>
+    <Midl Include="NavigationBreadcrumbBarItem.idl">
+      <Filter>ViewModels</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -53,6 +82,24 @@
     <ClCompile Include="LetterKeyIcon.cpp">
       <Filter>Controls</Filter>
     </ClCompile>
+    <ClCompile Include="IconButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ManifestApplicationNode.cpp">
+      <Filter>System\AppX</Filter>
+    </ClCompile>
+    <ClCompile Include="IconToggleButton.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="NumberBlock.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="IconHelper.cpp">
+      <Filter>Imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessInfo.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -75,6 +122,19 @@
     <ClInclude Include="IComEventImplementation.h">
       <Filter>System</Filter>
     </ClInclude>
+    <ClInclude Include="AudioSessionStates.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="ComSmartPtrTypeDefs.h" />
+    <ClInclude Include="ManifestApplicationNode.h">
+      <Filter>System\AppX</Filter>
+    </ClInclude>
+    <ClInclude Include="IconHelper.h">
+      <Filter>Imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessInfo.h">
+      <Filter>System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -86,14 +146,26 @@
     <Filter Include="System">
       <UniqueIdentifier>{78036dd1-e109-4116-9bae-3b56bedb73a6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Translations">
-      <UniqueIdentifier>{c7557cbd-8373-4959-8b08-70cb664c7dc1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Controls">
       <UniqueIdentifier>{575436b8-e91e-46a3-8497-892f793ad9b2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Windows">
       <UniqueIdentifier>{43654ea6-5b0c-4f61-a9d9-61d4cf2a7a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pages">
+      <UniqueIdentifier>{4d4d00c7-80d1-4bd4-a866-c7b1fba101b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ViewModels">
+      <UniqueIdentifier>{f8e93d22-f71a-4f6a-9fc1-3d01674f92d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Translations">
+      <UniqueIdentifier>{c7557cbd-8373-4959-8b08-70cb664c7dc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\AppX">
+      <UniqueIdentifier>{d57053af-92c7-45a4-bcf5-be2ca997a37a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Imaging">
+      <UniqueIdentifier>{231d0b4d-5fe6-444b-b3b2-2418c1f04ea9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -111,7 +183,10 @@
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Resources.lang-en-us.resw">
-      <Filter>Translations</Filter>
+      <Filter>Assets\Translations</Filter>
+    </PRIResource>
+    <PRIResource Include="Resources.lang-fr-fr.resw">
+      <Filter>Assets\Translations</Filter>
     </PRIResource>
   </ItemGroup>
 </Project>

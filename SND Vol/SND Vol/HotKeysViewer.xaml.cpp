@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
 #include "pch.h"
 #include "HotKeysViewer.xaml.h"
 #if __has_include("HotKeysViewer.g.cpp")
@@ -25,6 +22,21 @@ namespace winrt::SND_Vol::implementation
     {
         InitializeComponent();
     }
+
+    void HotKeysViewer::ShowMouseMap(const bool& value)
+    {
+        if (value)
+        {
+            MouseMapColumn().Width(winrt::Microsoft::UI::Xaml::GridLengthHelper::FromValueAndType(1, winrt::Microsoft::UI::Xaml::GridUnitType::Star));
+        }
+        else
+        {
+            MouseMapColumn().Width(winrt::Microsoft::UI::Xaml::GridLengthHelper::FromPixels(0));
+        }
+
+        MouseMapViewBox().Visibility(value ? winrt::Microsoft::UI::Xaml::Visibility::Visible : winrt::Microsoft::UI::Xaml::Visibility::Collapsed);
+    }
+
 
     void HotKeysViewer::SetActiveKeys(const IVector<VirtualKey>& activeKeys)
     {
@@ -386,6 +398,23 @@ namespace winrt::SND_Vol::implementation
         hotKeys.push_back(hotKeyView);
         DependencyObject tooltipHolder{ nullptr };
 
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Control))
+        {
+            LeftControlKey().Background(GetActiveBrush());
+        }
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Menu))
+        {
+            LeftAltKey().Background(GetActiveBrush());
+        }
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Shift))
+        {
+            LeftShiftKey().Background(GetActiveBrush());
+        }
+        if (static_cast<uint32_t>(hotKeyView.Modifiers() & VirtualKeyModifiers::Windows))
+        {
+            LeftWindowsKey().Background(GetActiveBrush());
+        }
+
         switch (hotKeyView.Key())
         {
             case VirtualKey::LeftButton:
@@ -427,7 +456,7 @@ namespace winrt::SND_Vol::implementation
                 break;
 
             case VirtualKey::Clear:
-                // TODO:
+                // TODO: Clear key
                 break;
 
             case VirtualKey::Enter:
@@ -469,16 +498,16 @@ namespace winrt::SND_Vol::implementation
                 break;
 
             case VirtualKey::PageUp:
-                // TODO:
+                // TODO: PageUp key
                 break;
             case VirtualKey::PageDown:
-                // TODO:
+                // TODO: PageDown key
                 break;
             case VirtualKey::End:
-                // TODO:
+                // TODO: End key
                 break;
             case VirtualKey::Home:
-                // TODO:
+                // TODO: Home key
                 break;
 
             case VirtualKey::Left:
@@ -502,24 +531,24 @@ namespace winrt::SND_Vol::implementation
                 break;
 
             case VirtualKey::Select:
-                // TODO:
+                // TODO: Select key.
                 break;
             case VirtualKey::Print:
-                // TODO:
+                // TODO: Print key.
                 break;
             case VirtualKey::Execute:
-                // TODO:
+                // TODO: Execute key.
                 break;
             case VirtualKey::Snapshot:
                 break;
             case VirtualKey::Insert:
-                // TODO:
+                // TODO: Insert key.
                 break;
             case VirtualKey::Delete:
-                // TODO:
+                // TODO: Delete key.
                 break;
             case VirtualKey::Help:
-                // TODO:
+                // TODO: Help key.
                 break;
 
             case VirtualKey::Number0:

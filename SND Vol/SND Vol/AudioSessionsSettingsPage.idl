@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace SND_Vol
+{
+    [default_interface]
+    runtimeclass AudioSessionsSettingsPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        AudioSessionsSettingsPage();
+    }
+}

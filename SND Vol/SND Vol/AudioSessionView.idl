@@ -14,12 +14,16 @@ namespace SND_Vol
     {
         AudioSessionView();
         AudioSessionView(String header, Double volume);
+        AudioSessionView(String header, Double volume, String logoPath);
 
-        String Header{ get; set; };
-        Guid Id{ get; set; };
-        Boolean Muted{ get; set; };
+        String Header;
+        Guid Id;
+        Boolean Muted;
         String VolumeGlyph{ get; };
-        Double Volume{ get; set; };
+        Double Volume;
+        Microsoft.UI.Xaml.Controls.Orientation Orientation;
+        Microsoft.UI.Xaml.Controls.ContentPresenter Logo{ get; };
+
 
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs> VolumeChanged;
         event Windows.Foundation.TypedEventHandler<AudioSessionView, Boolean> VolumeStateChanged;
@@ -27,6 +31,6 @@ namespace SND_Vol
 
         void SetState(AudioSessionState state);
         void SetPeak(Single peak);
-        void SetPeak(Single peak1, Single peak2);
+        void SetPeak(Single left, Single right);
     }
 }

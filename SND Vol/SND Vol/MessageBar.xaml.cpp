@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
 #include "pch.h"
 #include "MessageBar.xaml.h"
 #if __has_include("MessageBar.g.cpp")
 #include "MessageBar.g.cpp"
 #endif
+
+#include <regex>
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -19,14 +18,14 @@ namespace winrt::SND_Vol::implementation
         InitializeComponent();
 
         timer = DispatcherQueue().CreateTimer();
-        auto duration = Application::Current().Resources().Lookup(box_value(L"MessageBarIntervalSeconds")).as<int32_t>();
+        auto duration = (Application::Current().Resources().Lookup(box_value(L"MessageBarIntervalSeconds")).as<int32_t>() * 1000) + 150;
         timer.Interval(
-            std::chrono::seconds(duration)
+            std::chrono::milliseconds(duration)
         );
         timer.Tick({ this, &MessageBar::DispatcherQueueTimer_Tick });
     }
 
-    void MessageBar::EnqueueMessage(const winrt::hstring& message)
+    void MessageBar::EnqueueMessage(const IInspectable& message)
     {
         {
             std::unique_lock<std::mutex> lock{ messageQueueMutex };
@@ -38,6 +37,11 @@ namespace winrt::SND_Vol::implementation
             DisplayMessage();
             timer.Start();
         }
+    }
+
+    void MessageBar::EnqueueString(const winrt::hstring& message)
+    {
+        EnqueueMessage(box_value(message));
     }
 
     void MessageBar::CloseButton_Click(winrt::Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
@@ -53,14 +57,15 @@ namespace winrt::SND_Vol::implementation
 
     void MessageBar::TimerProgressBar_SizeChanged(IInspectable const&, SizeChangedEventArgs const&)
     {
-        TimerProgressBarClipping().Rect(Rect(0, 0, BackgroundTimerBorder().ActualWidth(), BackgroundTimerBorder().ActualHeight()));
+        TimerProgressBarClipping().Rect(Rect(0.f, 0.f, static_cast<float>(BackgroundTimerBorder().ActualWidth()), static_cast<float>(BackgroundTimerBorder().ActualHeight())));
     }
 
 
     void MessageBar::DisplayMessage()
     {
         // Dequeue a message, send it to the UI
-        hstring message = L"";
+        IInspectable message = nullptr;
+
         {
             std::unique_lock<std::mutex> lock{ messageQueueMutex };
 
@@ -72,20 +77,56 @@ namespace winrt::SND_Vol::implementation
             else
             {
                 timer.Stop();
-                Visibility(Visibility::Collapsed);
-                MainContentTextBlock().Text(L"");
+                // Hide the control.
+                VisualStateManager::GoToState(*this, L"Collapsed", true);
             }
         }
 
-        if (!message.empty())
+        if (message)
         {
-            if (Visibility() == Visibility::Collapsed)
+            if (std::optional<hstring> hs = message.try_as<hstring>())
             {
-                Visibility(Visibility::Visible);
+                std::wstring text{ hs.value()};
+
+                static std::wregex word{ L"(\\w+)", std::regex_constants::optimize };
+                auto iterator = std::wsregex_iterator(text.begin(), text.end(), word);
+                auto ptrDiff = std::distance(iterator, std::wsregex_iterator());
+
+                if (ptrDiff > 0)
+                {
+                    int64_t msCount = (ptrDiff / 3.5) * 1000;
+                    if (msCount < 1000)
+                    {
+                        msCount = 1000;
+                    }
+
+                    timer.Interval(
+                        std::chrono::milliseconds(msCount + 150)
+                    );
+                    TimerProgressBarAnimation().Duration(
+                        DurationHelper::FromTimeSpan(std::chrono::milliseconds(msCount))
+                    );
+                }
+            }
+            else
+            {
+                timer.Interval(
+                    std::chrono::milliseconds(4150)
+                );
+                TimerProgressBarAnimation().Duration(
+                    DurationHelper::FromTimeSpan(std::chrono::milliseconds(4000))
+                );
             }
 
-            MainContentTextBlock().Text(message);
+            if (Visibility() == Visibility::Collapsed)
+            {
+                // Show the control.
+                VisualStateManager::GoToState(*this, L"Visible", true);
+            }
+
+            MainContentPresenter().Content(box_value(message));
             TimerProgressBarStoryboard().Begin();
+            timer.Start();
         }
     }
 

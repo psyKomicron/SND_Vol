@@ -15,12 +15,41 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Text="{x:Bind HotKeyName, Mode=OneWay}" VerticalAlignment="Center"/>
-        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <ToggleButton x:Name="ControlToggleButton" Content="Control" CornerRadius="5,0,0,5"/>
-            <ToggleButton x:Name="AltToggleButton" Content="Alt" CornerRadius="0"/>
-            <ToggleButton x:Name="WindowsToggleButton" Content="Windows" CornerRadius="0"/>
-            <ToggleButton x:Name="ShiftToggleButton" Content="Shift" CornerRadius="0,5,5,0"/>
+        <TextBlock Text="{x:Bind HotKeyName}" VerticalAlignment="Center"/>
+        
+        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+            <StackPanel.Resources>
+                <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}">
+                    <Setter Property="VerticalAlignment" Value="Stretch" />
+                    <Setter Property="FontFamily" Value="Cascadia Code" />
+                    <Setter Property="IsEnabled" Value="False" />
+                </Style>
+            </StackPanel.Resources>
+
+            <ToggleButton 
+                x:Name="ControlToggleButton" 
+                Content="Control" 
+                CornerRadius="5,0,0,5" 
+                VerticalAlignment="Stretch" 
+                FontFamily="Cascadia Code"/>
+            <ToggleButton 
+                x:Name="AltToggleButton" 
+                Content="Alt" 
+                CornerRadius="0" 
+                VerticalAlignment="Stretch" 
+                FontFamily="Cascadia Code"/>
+            <ToggleButton 
+                x:Name="WindowsToggleButton" 
+                Content="Windows" 
+                CornerRadius="0" 
+                VerticalAlignment="Stretch" 
+                FontFamily="Cascadia Code"/>
+            <ToggleButton 
+                x:Name="ShiftToggleButton" 
+                Content="Shift" 
+                CornerRadius="0,5,5,0" 
+                VerticalAlignment="Stretch" 
+                FontFamily="Cascadia Code"/>
         </StackPanel>
 
 
@@ -32,7 +61,8 @@
             Content="{x:Bind KeyName, Mode=OneWay}"
             MinHeight="40"
             MinWidth="40"
-            Padding="7,5"/>
+            Padding="7,5"
+            FontFamily="Cascadia Code"/>
 
         <ToggleSwitch IsOn="{x:Bind IsHotKeyEnabled}" Grid.Column="3" Style="{StaticResource SettingToggleSwitchStyle}" HorizontalAlignment="Right"/>
     </Grid>

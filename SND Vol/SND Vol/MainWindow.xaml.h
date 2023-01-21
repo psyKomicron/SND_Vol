@@ -6,7 +6,6 @@
 #include "AudioSession.h"
 #include "LegacyAudioController.h"
 #include "MainAudioEndpoint.h"
-#include "HotKeyManager.h"
 #include "HotKey.h"
 
 using namespace winrt::Windows::System;
@@ -17,12 +16,30 @@ namespace winrt::SND_Vol::implementation
     struct MainWindow : MainWindowT<MainWindow>
     {
     public:
-        MainWindow();
-        ~MainWindow();
+        MainWindow(const winrt::hstring& args);
+
+        static winrt::SND_Vol::MainWindow Current()
+        {
+            return singleton;
+        };
 
         inline winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::AudioSessionView> AudioSessions() const
         {
             return audioSessionViews;
+        };
+
+        inline winrt::Windows::Graphics::RectInt32 DisplayRect()
+        {
+            if (appWindow)
+            {
+                winrt::Windows::Graphics::PointInt32 position = appWindow.Position();
+                winrt::Windows::Graphics::SizeInt32 size = appWindow.Size();
+                return winrt::Windows::Graphics::RectInt32(position.X, position.Y, size.Width, size.Height);
+            }
+            else 
+            {
+                return winrt::Windows::Graphics::RectInt32();
+            }
         };
 
         void OnLoaded(winrt::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -34,24 +51,36 @@ namespace winrt::SND_Vol::implementation
         void Window_Activated(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
         void SystemVolumeActivityBorder_SizeChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const&);
         void HideMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void RestartMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SwitchStateMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void HorizontalViewMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void VerticalViewMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void AutoViewMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void ReloadMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void KeepOnTopToggleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void HotKeySettingsMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void MuteToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void DisableAnimationsToggleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void SwitchPresenterStyleMenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ViewHotKeysHyperlinkButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void SplashScreen_Dismissed(winrt::SND_Vol::SplashScreen const& sender, winrt::Windows::Foundation::IInspectable const& args);
+        void SettingsIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void DisableHotKeysIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ShowAppBarIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ExpandFlyoutButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void DisableAnimationsIconButton_Click(winrt::SND_Vol::IconToggleButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void KeepOnTopToggleButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void ReloadSessionsIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void RestartIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void OpenProfilesIconButton_Click(winrt::SND_Vol::IconButton const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void CloseProfilesButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void OpenProfilesButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void RootGrid_ActualThemeChanged(winrt::Microsoft::UI::Xaml::FrameworkElement const& sender, winrt::Windows::Foundation::IInspectable const& args);
+        void NewContentButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
         using BackdropController = winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController;
 
-        // Logic related attributes
+        // Static fields
+        static winrt::SND_Vol::MainWindow singleton;
+
+        // Logic related attributes.
         std::mutex audioSessionsMutex{};
+        std::mutex mainAudioEndpointMutex{};
         Audio::MainAudioEndpoint* mainAudioEndpoint = nullptr;
         Audio::LegacyAudioController* audioController = nullptr;
         std::unique_ptr<std::vector<Audio::AudioSession*>> audioSessions{ nullptr };
@@ -61,38 +90,47 @@ namespace winrt::SND_Vol::implementation
         winrt::event_token audioControllerEndpointChangedToken;
         std::map<winrt::guid, winrt::event_token> audioSessionVolumeChanged{};
         std::map<winrt::guid, winrt::event_token> audioSessionsStateChanged{};
-        //System::HotKeyManager hotKeyManager{};
-        System::HotKey volumeUpHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_UP);
-        System::HotKey volumeDownHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_DOWN);
-        System::HotKey volumePageUpHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_PRIOR);
-        System::HotKey volumePageDownHotKeyPtr = System::HotKey(VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_NEXT);
-        System::HotKey muteHotKeyPtr = System::HotKey(VirtualKeyModifiers::Menu | VirtualKeyModifiers::Shift, static_cast<uint32_t>('M'));
-        // UI related attributes
+        // Hot keys.
+        System::HotKey volumeUpHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_UP };
+        System::HotKey volumeDownHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_DOWN };
+        System::HotKey volumePageUpHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_PRIOR };
+        System::HotKey volumePageDownHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, VK_NEXT };
+        System::HotKey muteHotKeyPtr{ VirtualKeyModifiers::Control | VirtualKeyModifiers::Shift, static_cast<uint32_t>('M') };
+        // UI related attributes.
         bool loaded = false;
         bool compact = false;
         bool usingCustomTitleBar = false;
+        uint16_t layout = 0;
+        winrt::SND_Vol::AudioSessionState globalSessionAudioState = winrt::SND_Vol::AudioSessionState::Unmuted;
+        winrt::Windows::Graphics::RectInt32 displayRect;
         winrt::Microsoft::UI::Windowing::AppWindow appWindow = nullptr;
-        winrt::event_token appWindowClosingEventToken;
+        #pragma region Backdrop
         BackdropController backdropController = nullptr;
         winrt::Windows::System::DispatcherQueueController dispatcherQueueController = nullptr;
         winrt::Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration systemBackdropConfiguration = nullptr;
         winrt::Microsoft::UI::Xaml::FrameworkElement::ActualThemeChanged_revoker themeChangedRevoker;
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer audioSessionsPeakTimer = nullptr;
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer mainAudioEndpointPeakTimer = nullptr;
+        #pragma endregion
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::SND_Vol::AudioSessionView> audioSessionViews
         {
             winrt::multi_threaded_observable_vector<winrt::SND_Vol::AudioSessionView>()
         };
-        winrt::SND_Vol::AudioSessionState globalSessionAudioState = winrt::SND_Vol::AudioSessionState::Unmuted;
-        winrt::Microsoft::UI::Xaml::Window secondWindow{ nullptr };
+        winrt::SND_Vol::SecondWindow secondWindow{ nullptr };
+        winrt::SND_Vol::AudioProfile currentAudioProfile{ nullptr };
 
-        void InitWindow();
+        void InitializeWindow();
         void SetBackground();
         void LoadContent();
-        void CreateAudioView(Audio::AudioSession* audioSession, bool enabled);
+        winrt::SND_Vol::AudioSessionView CreateAudioView(Audio::AudioSession* audioSession);
+        winrt::SND_Vol::AudioSessionView CreateAudioSessionView(Audio::AudioSession* audioSession, bool skipDuplicates);
         void SetDragRectangles();
         void SaveAudioLevels();
         void LoadHotKeys();
+        void LoadSettings();
+        void SaveSettings();
+        void LoadProfile(const hstring& profileName);
+        void ReloadAudioSessions();
 
         void AppWindow_Closing(winrt::Microsoft::UI::Windowing::AppWindow, winrt::Microsoft::UI::Windowing::AppWindowClosingEventArgs);
         void UpdatePeakMeters(winrt::Windows::Foundation::IInspectable /*sender*/, winrt::Windows::Foundation::IInspectable /*args*/);

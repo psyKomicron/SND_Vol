@@ -1,0 +1,8 @@
+namespace SND_Vol
+{
+    [default_interface]
+    runtimeclass NewContentPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        NewContentPage();
+    }
+}

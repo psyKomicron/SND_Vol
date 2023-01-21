@@ -13,6 +13,7 @@ namespace Audio
 		 * @param eventContextId GUID used by this app to generate events.
 		*/
 		MainAudioEndpoint(IMMDevice* devicePtr, GUID eventContextId);
+		~MainAudioEndpoint();
 
 		/**
 		 * @brief Gets the volume of the session.
@@ -44,19 +45,19 @@ namespace Audio
 		inline winrt::event_token VolumeChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, float> const& handler)
 		{
 			return e_volumeChanged.add(handler);
-		};
+		}
 		void VolumeChanged(winrt::event_token const& eventToken)
 		{
 			e_volumeChanged.remove(eventToken);
-		};
+		}
 		inline winrt::event_token StateChanged(winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::Foundation::IInspectable, bool> const& handler)
 		{
 			return e_stateChanged.add(handler);
-		};
+		}
 		inline void StateChanged(const winrt::event_token& token)
 		{
 			e_stateChanged.remove(token);
-		};
+		}
 
 		IFACEMETHODIMP_(ULONG) AddRef();
 		IFACEMETHODIMP_(ULONG) Release();
@@ -73,9 +74,10 @@ namespace Audio
 		bool Unregister();
 		/**
 		 * @brief Gets the current peak PCM value for the audio endpoint.
-		 * @return the current peak PCM value ∈ [0, 1]
+		 * @return The current peak PCM value ∈ [0, 1]
 		*/
 		float GetPeak() const;
+		std::pair<float, float> GetPeaks();
 		/**
 		 * @brief Sets the audio endpoint muted or unmuted.
 		 * @param mute true to mute, false to unmute
@@ -101,6 +103,7 @@ namespace Audio
 		#pragma region IAudioEndpointVolumeCallback
 		STDMETHODIMP OnNotify(__in PAUDIO_VOLUME_NOTIFICATION_DATA pNotify);
 		#pragma endregion
+		void CheckIfAvailable();
 	};
 }
 

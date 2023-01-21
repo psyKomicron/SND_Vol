@@ -28,3 +28,7 @@
 #define VK_NAVIGATION_DOWN
 #define VK_PRIOR
 #define VK_NEXT
+#define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
+#define MAX_PATH
+#define GetFileVersionInfo
+#define PathFileExists
